@@ -1,0 +1,256 @@
+{
+  "name": "Clinica Dental - 03 Solicitud valoraciones post cita",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 * * * *"
+            }
+          ]
+        }
+      },
+      "id": "df949a75-3b27-4f53-881b-51b1ef2d9101",
+      "name": "Schedule Trigger Valoracion",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1000,
+        1980
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1nodk1oHDIlA9hLAUR3j7JvyB3N_koVTfkzL7MSUmtrM",
+          "mode": "list",
+          "cachedResultName": "Citas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nodk1oHDIlA9hLAUR3j7JvyB3N_koVTfkzL7MSUmtrM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Citas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nodk1oHDIlA9hLAUR3j7JvyB3N_koVTfkzL7MSUmtrM/edit#gid=0"
+        },
+        "options": {},
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "estado",
+              "lookupValue": "confirmada"
+            },
+            {
+              "lookupColumn": "valoracion_solicitada",
+              "lookupValue": "no"
+            }
+          ]
+        }
+      },
+      "id": "1f91a286-c578-4350-9a9a-d4eaf1f7eeb2",
+      "name": "Buscar citas para valoracion",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -760,
+        1980
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "64F5czTjTmpPjeJV",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const TIME_ZONE = 'Europe/Lisbon';\nconst ESPERA_POST_CITA_MIN = 60;\nconst DURACIONES_TRATAMIENTO = [\n  { patrones: ['revision', 'revision dental'], minutos: 30 },\n  { patrones: ['limpieza'], minutos: 60 },\n  { patrones: ['blanqueamiento'], minutos: 90 },\n  { patrones: ['empaste'], minutos: 45 },\n  { patrones: ['ortodoncia'], minutos: 60 }\n];\n\nconst normalizarTexto = texto => (texto || '').toString().toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').trim();\nconst duracionTratamiento = tratamiento => {\n  const valor = normalizarTexto(tratamiento);\n  const encontrado = DURACIONES_TRATAMIENTO.find(item => item.patrones.some(patron => valor.includes(normalizarTexto(patron))));\n  return encontrado ? encontrado.minutos : 60;\n};\n\nconst normHora = h => {\n  if (h === null || h === undefined || h === '') return '';\n  if (typeof h === 'number') {\n    const totalMin = h >= 0 && h < 1 ? Math.round(h * 24 * 60) : Math.round(Math.floor(h) * 60 + (h % 1) * 60);\n    return Math.floor(totalMin / 60).toString().padStart(2, '0') + ':' + (totalMin % 60).toString().padStart(2, '0');\n  }\n  let v = h.toString().trim().toLowerCase().replace(/\\s*(horas|hora|hrs?|h)\\s*$/i, '').replace('.', ':').trim();\n  if (/^\\d{1,2}$/.test(v)) return v.padStart(2, '0') + ':00';\n  if (/^\\d{1,2}:\\d{2}:\\d{2}$/.test(v)) v = v.slice(0, 5);\n  if (/^\\d{1,2}:\\d{1,2}$/.test(v)) {\n    const parts = v.split(':');\n    return parts[0].padStart(2, '0') + ':' + parts[1].padStart(2, '0');\n  }\n  return v;\n};\n\nconst normFecha = f => {\n  if (!f) return '';\n  const v = f.toString().trim();\n  const es = v.match(/^(\\d{2})\\/(\\d{2})\\/(\\d{4})$/);\n  if (es) return es[3] + '-' + es[2] + '-' + es[1];\n  const iso = v.match(/^(\\d{4})-(\\d{2})-(\\d{2})/);\n  if (iso) return iso[1] + '-' + iso[2] + '-' + iso[3];\n  return v;\n};\n\nconst offsetClinica = (fechaStr, horaStr) => {\n  const probe = new Date(fechaStr + 'T' + horaStr + ':00Z');\n  const parts = new Intl.DateTimeFormat('en-US', { timeZone: TIME_ZONE, hour: '2-digit', minute: '2-digit', timeZoneName: 'longOffset' }).formatToParts(probe);\n  const tz = (parts.find(p => p.type === 'timeZoneName') || {}).value || 'GMT+00:00';\n  const m = tz.match(/GMT([+-])(\\d{1,2})(?::?(\\d{2}))?/);\n  if (!m) return '+00:00';\n  return m[1] + m[2].padStart(2, '0') + ':' + (m[3] || '00').padStart(2, '0');\n};\n\nconst finCita = row => {\n  const fecha = normFecha(row.fecha || '');\n  const hora = normHora(row.hora || '');\n  if (!fecha || !hora) return null;\n  const inicio = new Date(fecha + 'T' + hora + ':00' + offsetClinica(fecha, hora));\n  if (Number.isNaN(inicio.getTime())) return null;\n  return new Date(inicio.getTime() + duracionTratamiento(row.tratamiento) * 60 * 1000);\n};\n\nconst ahora = new Date();\n\nreturn $input.all()\n  .map(item => item.json || {})\n  .filter(row => {\n    const estado = (row.estado || '').toLowerCase().trim();\n    const solicitada = (row.valoracion_solicitada || '').toLowerCase().trim();\n    const telefono = (row['Numero de telefono'] || row.telefono || row.phone || '').toString().trim();\n    const eventId = row['Event ID'];\n    const fin = finCita(row);\n    if (!fin) return false;\n    const disponibleParaPedir = ahora.getTime() >= fin.getTime() + ESPERA_POST_CITA_MIN * 60 * 1000;\n    return estado === 'confirmada' && solicitada === 'no' && telefono !== '' && !!eventId && disponibleParaPedir;\n  })\n  .map(row => ({\n    json: {\n      ...row,\n      eventId: row['Event ID'],\n      telefono: (row['Numero de telefono'] || row.telefono || row.phone || '').toString(),\n      respuesta: 'Hola ' + (row.nombre || '') + ', esperamos que tu visita haya ido muy bien. Podrias valorar tu experiencia del 1 al 5 estrellas? Si quieres, puedes anadir un comentario. Ej: 5 Todo genial'\n    }\n  }));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -520,
+        1980
+      ],
+      "id": "40699397-e8e9-4bb8-b72c-c506aaf359df",
+      "name": "Preparar solicitudes valoracion"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1084326274761313",
+        "recipientPhoneNumber": "={{ $json.telefono }}",
+        "textBody": "={{ $json.respuesta }}",
+        "additionalFields": {}
+      },
+      "id": "0ab16461-538e-4f49-b9db-38618024adf2",
+      "name": "Enviar solicitud valoracion",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        -260,
+        1980
+      ],
+      "webhookId": "f30ef673-bb8b-412e-a980-6863990f656d",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "nSeAIwtA48ly0LRi",
+          "name": "WhatsApp account 15"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1nodk1oHDIlA9hLAUR3j7JvyB3N_koVTfkzL7MSUmtrM",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Citas",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Event ID": "={{ $('Preparar solicitudes valoracion').item.json.eventId }}",
+            "valoracion_solicitada": "si",
+            "valoracion_estado": "pendiente",
+            "valoracion_enviada_en": "={{ $now.setZone('Europe/Lisbon').format('dd/MM/yyyy H:mm') }}"
+          },
+          "matchingColumns": [
+            "Event ID"
+          ],
+          "schema": [
+            {
+              "id": "Event ID",
+              "displayName": "Event ID",
+              "required": false,
+              "defaultMatch": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "valoracion_solicitada",
+              "displayName": "valoracion_solicitada",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "valoracion_estado",
+              "displayName": "valoracion_estado",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "valoracion_enviada_en",
+              "displayName": "valoracion_enviada_en",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "96c66fe1-7897-4475-b950-63fa5dccbc89",
+      "name": "Marcar valoracion solicitada",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        0,
+        1980
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "64F5czTjTmpPjeJV",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# Workflow 03 - Solicitud de valoraciones\n\nEste workflow se ejecuta cada hora.\n\n1. Busca citas confirmadas ya terminadas.\n2. Comprueba que todavia no se haya pedido valoracion.\n3. Envia WhatsApp pidiendo una puntuacion del 1 al 5.\n4. Marca la fila como valoracion_estado = pendiente.\n\nLa respuesta del paciente no se procesa aqui: vuelve por el Workflow 01, porque entra como mensaje normal de WhatsApp.",
+        "height": 440,
+        "width": 1360,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1080,
+        1840
+      ],
+      "typeVersion": 1,
+      "id": "459aef56-6c10-447c-a22a-c4cdb10e6b85",
+      "name": "NOTA 08 - Valoraciones"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger Valoracion": {
+      "main": [
+        [
+          {
+            "node": "Buscar citas para valoracion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar citas para valoracion": {
+      "main": [
+        [
+          {
+            "node": "Preparar solicitudes valoracion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar solicitudes valoracion": {
+      "main": [
+        [
+          {
+            "node": "Enviar solicitud valoracion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar solicitud valoracion": {
+      "main": [
+        [
+          {
+            "node": "Marcar valoracion solicitada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timezone": "Europe/Lisbon"
+  },
+  "versionId": "8d297e47-249a-4cd4-b02c-d9e26079e5fc",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b46ba6e189765812cf420e6f1d27507c3730c94070cb152a228939aec7fe29af"
+  },
+  "id": "MOD-CLINICA-03-SOLICITUD-VALORACIONES",
+  "tags": []
+}

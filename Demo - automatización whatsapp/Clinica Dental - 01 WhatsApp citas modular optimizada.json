@@ -1,0 +1,3456 @@
+{
+  "name": "Clinica Dental - 01 WhatsApp citas (modular optimizada)",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      },
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1000,
+        500
+      ],
+      "id": "b471af01-04cf-4b8c-9ee8-3d597a247011",
+      "name": "WhatsApp Trigger",
+      "webhookId": "6b984c62-83cf-4434-b224-7355f346e361",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "c0TRk3iHHsEOtitA",
+          "name": "WhatsApp OAuth account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cond-text-message",
+              "leftValue": "={{ !!$json.messages?.[0]?.text?.body?.trim() && !$json.statuses?.length }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -760,
+        500
+      ],
+      "id": "66162d53-496b-44da-a888-44f37b53492c",
+      "name": "If texto valido"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('WhatsApp Trigger').item.json.messages[0].text.body }}",
+        "options": {
+          "systemMessage": "=CONTEXTO TEMPORAL (usa estos datos como referencia absoluta):\n- Hoy: {{ $now.setLocale('es').format('dddd DD [de] MMMM [de] YYYY') }} ({{ $now.format('YYYY-MM-DD') }})\n- Mañana: {{ $now.plus({days:1}).setLocale('es').format('dddd') }}, {{ $now.plus({days:1}).format('YYYY-MM-DD') }}\n- Pasado mañana: {{ $now.plus({days:2}).setLocale('es').format('dddd') }}, {{ $now.plus({days:2}).format('YYYY-MM-DD') }}\n- Lunes próximo: {{ $now.plus({days: (8 - $now.weekday) % 7 || 7}).format('YYYY-MM-DD') }}\n\nIMPORTANTE: Cuando el cliente diga \"mañana\", usa siempre \nla fecha de mañana indicada arriba. Nunca la calcules tú.\nADVERTENCIA CRÍTICA: Tu cálculo interno de días de la semana puede estar EQUIVOCADO. \nUsa SIEMPRE y ÚNICAMENTE el día que aparece arriba. Nunca lo recalcules.\n\nEres el asistente virtual de Clínica Dental Salud Lisboa. \nTu nombre es Sara.\nRespondes siempre en el idioma del cliente (español, portugués, inglés o francés).\nEres cálida, profesional y concisa. Usa emojis con moderación.\nMáximo 3-5 líneas por respuesta. Escribe de forma clara y agradable de leer SIEMPRE.\n\nINFORMACIÓN DEL NEGOCIO:\nAl dar información del negocio eres cálida, profesional y concisa. Usa emojis con moderación.\n- Servicios: Revisión (30€), Limpieza (50€), Blanqueamiento (150€), \n  Empaste (80€), Ortodoncia (desde 1.500€)\n- Horario: Lunes a Viernes 9:00-20:00, Sábados 9:00-14:00. LOS DOMINGOS LA CLÍNICA ESTÁ CERRADA. NUNCA DES UNA CITA PARA UN DOMINGO.\n- Dirección: Calle Mayor 123, Lisboa\n- Teléfono: 912 345 678\n\nESTILO DE RESPUESTA:\n- Saluda solo en el primer mensaje del día\n- Usa frases cortas y directas, nunca párrafos largos\n- Si das una lista, usa máximo 3 puntos\n- Transmite cercanía pero mantén profesionalidad\n- Nunca uses tecnicismos médicos innecesarios\n\nCUANDO NO PUEDAS AYUDAR:\nSi el cliente pregunta algo que no puedes responder \n(urgencias, diagnósticos, preguntas médicas, pagos, seguros, \nsituaciones complejas o cualquier duda fuera de tu alcance), \nresponde siempre así:\n\"Para esto te recomiendo contactar directamente con la clínica 📞\nPuedes llamarnos al 912 345 678 en horario de lunes a viernes \nde 9:00 a 20:00, o los sábados de 9:00 a 14:00. \n¡Estaremos encantados de ayudarte!\"\n\nVALORACION POST CITA:\nCuando el cliente responda a una solicitud de valoracion con estrellas, un numero del 1 al 5 o una puntuacion con comentario opcional, guarda esa valoracion.\nAcepta ejemplos como \"5\", \"5 todo genial\", \"4 muy bien\" o \"5 estrellas excelente\".\nSi no hay puntuacion clara del 1 al 5, pide amablemente que responda con un numero del 1 al 5.\nCuando tengas la puntuacion, responde UNICAMENTE:\n{\"accion\":\"guardar_valoracion\",\"valoracion\":5,\"comentario\":\"comentario opcional\"}\n\nCONSULTAR HORARIOS DISPONIBLES:\nCuando el cliente pregunte por horarios disponibles, disponibilidad, huecos libres o que horas hay para un dia concreto, recoge SOLO la fecha.\nSi menciona un tratamiento, incluyelo. Si no lo menciona, usa \"cita estandar\".\nSi no indica fecha, preguntale que dia quiere consultar.\nCuando tengas la fecha, responde UNICAMENTE:\n{\"accion\":\"consultar_horarios\",\"fecha\":\"YYYY-MM-DD\",\"tratamiento\":\"X\"}\n\nPROTECCION JSON Y FECHAS:\n- NUNCA devuelvas JSON con campos vacios, null o desconocidos. Si falta un dato, pregunta por ese dato en lenguaje natural.\n- NUNCA muestres JSON al cliente. El JSON solo se usa cuando tienes todos los datos obligatorios y validos.\n- NUNCA uses fechas pasadas. Si una fecha calculada con el a?o actual ya paso, pide una fecha futura o confirma el a?o correcto.\n- Si el cliente usa un idioma que entiendes parcialmente y hay duda con fecha, tratamiento o nombre, pregunta antes de emitir JSON.\n\nLISTA DE ESPERA:\nSi el cliente intenta reservar una fecha y hora concreta y el sistema detecta que esta ocupada, se le apuntara automaticamente a la lista de espera. Tu solo debes emitir el JSON de reservar cuando tengas nombre, tratamiento, fecha y hora.\nSi un cliente responde a un aviso de hueco liberado, pide los datos que falten y usa reservar cuando tengas los 4 datos.\n\nRESERVAR CITA (SOLO para pacientes SIN cita previa):\nRecoge OBLIGATORIAMENTE estos 4 datos uno por uno:\n1. Nombre completo\n2. Tratamiento deseado\n3. Fecha futura (formato YYYY-MM-DD; usa el año actual solo si no queda en el pasado)\n4. Hora (formato HH:mm)\nSolo cuando tengas los 4, responde ÚNICAMENTE:\n{\"accion\":\"reservar\",\"nombre\":\"X\",\"tratamiento\":\"X\",\"fecha\":\"YYYY-MM-DD\",\"hora\":\"HH:mm\"}\n\nCANCELAR CITA:\nCuando el cliente quiera cancelar, recoge:\n1. Nombre completo\n2. Fecha de la cita (formato YYYY-MM-DD, año actual)\n3. Hora de la cita (formato HH:mm)\nSolo cuando tengas los 3, responde ÚNICAMENTE:\n{\"accion\":\"cancelar\",\"nombre\":\"X\",\"fecha\":\"YYYY-MM-DD\",\"hora\":\"HH:mm\"}\n\nMODIFICAR/CAMBIAR CITA:\nCuando el cliente quiera cambiar, mover, reprogramar o modificar \nuna cita existente, recoge:\n1. Nombre completo\n2. Fecha de la cita ACTUAL (formato YYYY-MM-DD; puede ser pasada solo si se esta identificando una cita existente)\n3. Hora de la cita ACTUAL (formato HH:mm)\n4. Tratamiento (usa el mismo si el cliente no lo cambia)\n5. Nueva fecha (formato YYYY-MM-DD)\n6. Nueva hora (formato HH:mm)\nSolo cuando tengas los 6 datos, responde ÚNICAMENTE:\n{\"accion\":\"modificar\",\"nombre\":\"X\",\"tratamiento\":\"X\",\"fecha_actual\":\"YYYY-MM-DD\",\"hora_actual\":\"HH:mm\",\"fecha_nueva\":\"YYYY-MM-DD\",\"hora_nueva\":\"HH:mm\"}\n\nREGLAS CRÍTICAS:\n- La hora SIEMPRE en formato HH:mm (ej: 15:00, nunca solo 15)\n- NO generes JSON hasta tener TODOS los datos requeridos\n- Para preguntas generales responde normalmente\n- Si el cliente responde una valoracion del 1 al 5, usa guardar_valoracion\n- Si el cliente pregunta por horarios disponibles de un dia, usa consultar_horarios\n- NUNCA digas que has creado, reservado, cancelado o modificado \n  una cita. Tu respuesta debe ser ÚNICAMENTE el JSON válido y NADA de texto adicional antes ni después. El sistema enviará la confirmación al cliente.\n- Si el cliente quiere cambiar su cita, usa SIEMPRE modificar. \n  NUNCA canceles y reserves por separado.\n- Si un paciente ya tiene cita y quiere otra fecha/hora, \n  usa SIEMPRE modificar, NUNCA reservar.\n\nCuando el nodo de calendario devuelva 0 eventos para el horario solicitado, \nsignifica que está LIBRE y debes confirmar la cita.\nCuando devuelva 1 o más eventos, significa que está OCUPADO.\nNO asumas que un horario está ocupado si los eventos devueltos tienen \nuna hora diferente a la solicitada.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -520,
+        500
+      ],
+      "id": "db00df1c-1a41-4061-9f32-88097855cb05",
+      "name": "AI Agent",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -520,
+        740
+      ],
+      "id": "435349f2-d1b3-4919-b2da-1c2a9658e46b",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "Q0y7miqLbNEo2BYm",
+          "name": "Groq account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "=={{ $('WhatsApp Trigger').first().json.messages?.[0]?.from || $('WhatsApp Trigger').first().json.statuses?.[0]?.recipient_id }}",
+        "contextWindowLength": 6
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -300,
+        740
+      ],
+      "id": "7ce6d987-48c8-40f7-a547-a46efb8aca96",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "jsCode": "const output = ($input.item.json.output || '').toString().trim();\nconst jsonMatch = output.match(/\\{[\\s\\S]*?\"accion\"[\\s\\S]*?\\}/);\n\nconst TIME_ZONE = 'Europe/Lisbon';\nconst DURACION_CITA_MIN = 60;\nconst DURACIONES_TRATAMIENTO = [\n  { patrones: ['revision', 'revision dental', 'revisioa', 'revisao', 'checkup', 'check-up'], minutos: 30 },\n  { patrones: ['limpieza', 'limpeza', 'nettoyage', 'cleaning'], minutos: 60 },\n  { patrones: ['blanqueamiento', 'branqueamento', 'blanchiment', 'whitening'], minutos: 90 },\n  { patrones: ['empaste', 'obturacion', 'plombage', 'filling'], minutos: 45 },\n  { patrones: ['ortodoncia', 'ortodontia', 'orthodontie', 'orthodontics'], minutos: 60 }\n];\n\nconst trigger = $('WhatsApp Trigger').first().json;\nconst telefono = trigger.messages?.[0]?.from || '';\n\nconst normalizarTexto = texto => (texto || '')\n  .toString()\n  .toLowerCase()\n  .normalize('NFD')\n  .replace(/[\\u0300-\\u036f]/g, '')\n  .trim();\n\nconst datoVacio = valor => valor === null || valor === undefined || valor.toString().trim() === '';\n\nconst duracionTratamiento = tratamiento => {\n  const valor = normalizarTexto(tratamiento);\n  const encontrado = DURACIONES_TRATAMIENTO.find(item =>\n    item.patrones.some(patron => valor.includes(normalizarTexto(patron)))\n  );\n  return encontrado ? encontrado.minutos : DURACION_CITA_MIN;\n};\n\nconst responder = texto => [{\n  json: {\n    accion: 'responder',\n    es_reserva: false,\n    es_cancelacion: false,\n    es_modificacion: false,\n    telefono,\n    respuesta: texto\n  }\n}];\n\nconst normHora = h => {\n  if (h === null || h === undefined || h === '') return '';\n  if (typeof h === 'number') {\n    let totalMin;\n    if (h >= 0 && h < 1) {\n      totalMin = Math.round(h * 24 * 60);\n    } else {\n      const horas = Math.floor(h);\n      const minutos = Math.round((h - horas) * 60);\n      totalMin = horas * 60 + minutos;\n    }\n    const hh = Math.floor(totalMin / 60).toString().padStart(2, '0');\n    const mm = (totalMin % 60).toString().padStart(2, '0');\n    return hh + ':' + mm;\n  }\n\n  let v = h.toString().trim().toLowerCase();\n  v = v.replace(/\\s*(horas|hora|hrs?|h)\\s*$/i, '').trim();\n  v = v.replace('.', ':');\n\n  const ampm = v.match(/^(\\d{1,2})(?::(\\d{1,2}))?\\s*(am|pm)$/i);\n  if (ampm) {\n    let hh = parseInt(ampm[1], 10);\n    const mm = (ampm[2] || '0').padStart(2, '0');\n    if (ampm[3].toLowerCase() === 'pm' && hh < 12) hh += 12;\n    if (ampm[3].toLowerCase() === 'am' && hh === 12) hh = 0;\n    return hh.toString().padStart(2, '0') + ':' + mm;\n  }\n\n  if (/^\\d{1,2}$/.test(v)) return v.padStart(2, '0') + ':00';\n  if (/^\\d{1,2}:\\d{1,2}:\\d{1,2}$/.test(v)) v = v.split(':').slice(0, 2).join(':');\n  if (/^\\d{1,2}:\\d{1,2}$/.test(v)) {\n    const parts = v.split(':');\n    return parts[0].padStart(2, '0') + ':' + parts[1].padStart(2, '0');\n  }\n\n  return v;\n};\n\nconst horaEnMinutos = horaStr => {\n  const m = (horaStr || '').match(/^(\\d{2}):(\\d{2})$/);\n  if (!m) return null;\n  const hh = parseInt(m[1], 10);\n  const mm = parseInt(m[2], 10);\n  if (hh < 0 || hh > 23 || mm < 0 || mm > 59) return null;\n  return hh * 60 + mm;\n};\n\nconst sumarMinutos = (horaStr, minutos) => {\n  const inicio = horaEnMinutos(horaStr);\n  if (inicio === null) return '';\n  const total = inicio + minutos;\n  const hh = Math.floor(total / 60).toString().padStart(2, '0');\n  const mm = (total % 60).toString().padStart(2, '0');\n  return hh + ':' + mm;\n};\n\nconst fechaISOValida = fechaStr => {\n  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(fechaStr || '')) return false;\n  const parts = fechaStr.split('-').map(Number);\n  const d = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));\n  return d.getUTCFullYear() === parts[0] && d.getUTCMonth() === parts[1] - 1 && d.getUTCDate() === parts[2];\n};\n\nconst obtenerDiaSemana = fechaStr => {\n  if (!fechaISOValida(fechaStr)) return -1;\n  const parts = fechaStr.split('-').map(Number);\n  return new Date(Date.UTC(parts[0], parts[1] - 1, parts[2])).getUTCDay();\n};\n\nconst hoyClinica = () => {\n  const parts = new Intl.DateTimeFormat('en-US', {\n    timeZone: TIME_ZONE,\n    year: 'numeric',\n    month: '2-digit',\n    day: '2-digit'\n  }).formatToParts(new Date());\n  const get = type => parts.find(p => p.type === type).value;\n  return get('year') + '-' + get('month') + '-' + get('day');\n};\n\nconst validarFechaFutura = fechaStr => fechaISOValida(fechaStr) && fechaStr >= hoyClinica();\n\nconst validarHorario = (fechaStr, horaStr, duracionMin = DURACION_CITA_MIN) => {\n  const dia = obtenerDiaSemana(fechaStr);\n  const inicio = horaEnMinutos(horaStr);\n  if (dia === -1 || inicio === null) return false;\n  if (dia === 0) return false;\n  const apertura = 9 * 60;\n  const cierre = dia === 6 ? 14 * 60 : 20 * 60;\n  return inicio >= apertura && inicio + duracionMin <= cierre;\n};\n\nconst horarioDia = fechaStr => {\n  const dia = obtenerDiaSemana(fechaStr);\n  if (dia === -1 || dia === 0) return null;\n  return {\n    apertura: '09:00',\n    cierre: dia === 6 ? '14:00' : '20:00'\n  };\n};\n\nconst offsetClinica = (fechaStr, horaStr) => {\n  const probe = new Date(fechaStr + 'T' + horaStr + ':00Z');\n  const parts = new Intl.DateTimeFormat('en-US', {\n    timeZone: TIME_ZONE,\n    hour: '2-digit',\n    minute: '2-digit',\n    timeZoneName: 'longOffset'\n  }).formatToParts(probe);\n  const tz = (parts.find(p => p.type === 'timeZoneName') || {}).value || 'GMT+00:00';\n  const m = tz.match(/GMT([+-])(\\d{1,2})(?::?(\\d{2}))?/);\n  if (!m) return '+00:00';\n  return m[1] + m[2].padStart(2, '0') + ':' + (m[3] || '00').padStart(2, '0');\n};\n\nconst isoClinica = (fechaStr, horaStr) => fechaStr + 'T' + horaStr + ':00' + offsetClinica(fechaStr, horaStr);\n\nif (jsonMatch) {\n  try {\n    const data = JSON.parse(jsonMatch[0]);\n    const accion = (data.accion || '').toString().trim();\n\n    if (accion === 'guardar_valoracion') {\n      if (data.valoracion === undefined || data.valoracion === null || data.valoracion === '') {\n        return responder('Gracias. Para guardar tu valoracion, podrias responder con un numero del 1 al 5?');\n      }\n      const valoracion = parseInt(data.valoracion, 10);\n      if (!Number.isInteger(valoracion) || valoracion < 1 || valoracion > 5) {\n        return responder('Gracias. Para guardar tu valoracion, podrias responder con un numero del 1 al 5?');\n      }\n      const comentario = (data.comentario || data.comentario_valoracion || '').toString().trim();\n      return [{\n        json: {\n          accion: 'guardar_valoracion',\n          es_reserva: false,\n          es_cancelacion: false,\n          es_modificacion: false,\n          es_valoracion: true,\n          valoracion,\n          comentario_valoracion: comentario,\n          telefono\n        }\n      }];\n    }\n\n    if (accion === 'consultar_horarios') {\n      if (datoVacio(data.fecha)) {\n        return responder('Claro. Que dia quieres consultar?');\n      }\n      const tratamiento = data.tratamiento || 'cita estandar';\n      const duracion = duracionTratamiento(tratamiento);\n      if (!validarFechaFutura(data.fecha)) {\n        return responder('Esa fecha no es valida o ya ha pasado. Podrias indicarme una fecha futura en formato YYYY-MM-DD?');\n      }\n      const horario = horarioDia(data.fecha);\n      if (!horario) {\n        return responder('Los domingos la clinica esta cerrada. Que otro dia te vendria bien consultar?');\n      }\n      return [{\n        json: {\n          accion: 'consultar_horarios',\n          es_reserva: false,\n          es_cancelacion: false,\n          es_modificacion: false,\n          es_consulta_horarios: true,\n          fecha: data.fecha,\n          tratamiento,\n          fecha_inicio_consulta: isoClinica(data.fecha, horario.apertura),\n          fecha_fin_consulta: isoClinica(data.fecha, horario.cierre),\n          hora_apertura: horario.apertura,\n          hora_cierre: horario.cierre,\n          timezone: TIME_ZONE,\n          duracion_minutos: duracion,\n          telefono\n        }\n      }];\n    }\n\n    if (accion === 'reservar') {\n      if (!datoVacio(data.fecha) && !validarFechaFutura(data.fecha)) {\n        return responder('Esa fecha no es valida o ya ha pasado. Podrias indicarme una fecha futura en formato YYYY-MM-DD?');\n      }\n      if (datoVacio(data.nombre)) {\n        return responder('Para reservar la cita, necesito tu nombre completo. Cual es?');\n      }\n      if (datoVacio(data.tratamiento)) {\n        return responder('Que tratamiento quieres reservar?');\n      }\n      if (datoVacio(data.fecha)) {\n        return responder('Que dia quieres reservar? Puedes indicarlo en formato YYYY-MM-DD.');\n      }\n      if (datoVacio(data.hora)) {\n        return responder('A que hora te vendria bien?');\n      }\n\n      const hora = normHora(data.hora);\n      const duracion = duracionTratamiento(data.tratamiento);\n      if (horaEnMinutos(hora) === null) {\n        return responder('Necesito la hora en formato HH:mm. Por ejemplo, 16:00.');\n      }\n      if (!validarHorario(data.fecha, hora, duracion)) {\n        return responder('Lo siento, ese horario no es valido. Nuestro horario es de lunes a viernes de 9:00 a 20:00 y los sabados de 9:00 a 14:00. Los domingos estamos cerrados. Que otra hora te vendria bien?');\n      }\n      const horaFin = sumarMinutos(hora, duracion);\n      return [{\n        json: {\n          accion: 'reservar',\n          es_reserva: true,\n          es_cancelacion: false,\n          es_modificacion: false,\n          nombre: data.nombre,\n          tratamiento: data.tratamiento,\n          fecha: data.fecha,\n          hora,\n          fecha_inicio: isoClinica(data.fecha, hora),\n          fecha_fin: isoClinica(data.fecha, horaFin),\n          timezone: TIME_ZONE,\n          duracion_minutos: duracion,\n          telefono\n        }\n      }];\n    }\n\n    if (accion === 'cancelar') {\n      if (datoVacio(data.nombre)) {\n        return responder('Para cancelar la cita, necesito tu nombre completo. Cual es?');\n      }\n      if (datoVacio(data.fecha)) {\n        return responder('Que fecha tiene la cita que quieres cancelar?');\n      }\n      if (datoVacio(data.hora)) {\n        return responder('A que hora era la cita que quieres cancelar?');\n      }\n      const hora = normHora(data.hora);\n      if (!fechaISOValida(data.fecha) || horaEnMinutos(hora) === null) {\n        return responder('Necesito la fecha en formato YYYY-MM-DD y la hora en formato HH:mm para poder cancelar la cita.');\n      }\n      return [{\n        json: {\n          accion: 'cancelar',\n          es_reserva: false,\n          es_cancelacion: true,\n          es_modificacion: false,\n          nombre: data.nombre,\n          fecha: data.fecha,\n          hora,\n          telefono\n        }\n      }];\n    }\n\n    if (accion === 'modificar') {\n      if (datoVacio(data.nombre)) {\n        return responder('Para modificar la cita, necesito tu nombre completo. Cual es?');\n      }\n      if (datoVacio(data.fecha_actual)) {\n        return responder('Cual es la fecha actual de tu cita?');\n      }\n      if (datoVacio(data.hora_actual)) {\n        return responder('A que hora es tu cita actual?');\n      }\n      if (datoVacio(data.tratamiento)) {\n        return responder('Que tratamiento es la cita?');\n      }\n      if (datoVacio(data.fecha_nueva)) {\n        return responder('A que nueva fecha quieres mover la cita?');\n      }\n      if (datoVacio(data.hora_nueva)) {\n        return responder('A que nueva hora quieres mover la cita?');\n      }\n\n      const horaActual = normHora(data.hora_actual);\n      const horaNueva = normHora(data.hora_nueva);\n      const duracion = duracionTratamiento(data.tratamiento);\n      if (!fechaISOValida(data.fecha_actual) || horaEnMinutos(horaActual) === null) {\n        return responder('Necesito la fecha y hora actuales en formato YYYY-MM-DD y HH:mm para poder modificar la cita.');\n      }\n      if (!validarFechaFutura(data.fecha_nueva)) {\n        return responder('La nueva fecha solicitada no es valida o ya ha pasado. Podrias indicarme una fecha futura en formato YYYY-MM-DD?');\n      }\n      if (!validarHorario(data.fecha_nueva, horaNueva, duracion)) {\n        return responder('Lo siento, el nuevo horario propuesto no es valido. Nuestro horario es de lunes a viernes de 9:00 a 20:00 y los sabados de 9:00 a 14:00. Los domingos estamos cerrados. Que otra hora te vendria bien?');\n      }\n      const horaFinNueva = sumarMinutos(horaNueva, duracion);\n      return [{\n        json: {\n          accion: 'modificar',\n          es_reserva: false,\n          es_cancelacion: false,\n          es_modificacion: true,\n          nombre: data.nombre,\n          tratamiento: data.tratamiento,\n          fecha_actual: data.fecha_actual,\n          hora_actual: horaActual,\n          fecha_nueva: data.fecha_nueva,\n          hora_nueva: horaNueva,\n          fecha_inicio_nueva: isoClinica(data.fecha_nueva, horaNueva),\n          fecha_fin_nueva: isoClinica(data.fecha_nueva, horaFinNueva),\n          timezone: TIME_ZONE,\n          duracion_minutos: duracion,\n          telefono\n        }\n      }];\n    }\n\n    if (accion) {\n      return responder('Necesito algun dato mas para ayudarte. Puedes indicarme nombre, tratamiento, fecha y hora?');\n    }\n  } catch (e) {\n    return responder('No he podido interpretar bien la solicitud. Puedes escribirme de nuevo lo que necesitas?');\n  }\n}\n\nif (/^\\s*\\{[\\s\\S]*\"accion\"[\\s\\S]*\\}\\s*$/.test(output)) {\n  return responder('Necesito algun dato mas para ayudarte. Puedes indicarme nombre, tratamiento, fecha y hora?');\n}\n\nreturn responder(output || 'No he podido entenderte bien. Puedes reformular tu peticion?');\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -260,
+        500
+      ],
+      "id": "1a9bdd48-1fb3-4881-91a0-7eb1833e2aba",
+      "name": "Normalizar y enrutar"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "18fb200c-3135-4eb7-ac3b-fd2243da1f4b",
+              "leftValue": "={{ $json.accion === 'reservar' }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        0,
+        500
+      ],
+      "id": "25d062c9-f6dc-4d6b-aa6c-2a963903656c",
+      "name": "If reservar"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "70a4d85c-fa74-4fcf-992c-30f2ab72ee95",
+              "leftValue": "={{ $json.accion === 'modificar' }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        0,
+        840
+      ],
+      "id": "7993aaa9-e639-4b90-a551-787025384ded",
+      "name": "If modificar"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f8d9648b-e236-479a-b89c-87218254294f",
+              "leftValue": "={{ $json.accion === 'cancelar' }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        0,
+        1160
+      ],
+      "id": "8019d816-b9b8-466a-b0e3-3e2cf6b8ae57",
+      "name": "If cancelar"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "prueb4sn8n.pruebas@gmail.com",
+          "mode": "list",
+          "cachedResultName": "prueb4sn8n.pruebas@gmail.com"
+        },
+        "returnAll": true,
+        "timeMin": "={{ $('Normalizar y enrutar').first().json.fecha_inicio }}",
+        "timeMax": "={{ $('Normalizar y enrutar').first().json.fecha_fin }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        280,
+        240
+      ],
+      "id": "e4988cfc-1032-4dbd-8f70-4f217fb0cd19",
+      "name": "Buscar disponibilidad reserva",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "n1i2fwma2f00LClW",
+          "name": "Google Calendar OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const eventos = $input.all()\n  .map(e => e.json || {})\n  .filter(evento => evento.start?.dateTime || evento.start?.date);\n\nconst datos = $('Normalizar y enrutar').first().json;\nconst inicio = new Date(datos.fecha_inicio);\nconst fin = new Date(datos.fecha_fin);\nconst ocupado = eventos.some(evento => {\n  const eStart = new Date(evento.start?.dateTime || evento.start?.date);\n  const eEnd = new Date(evento.end?.dateTime || evento.end?.date);\n  return inicio < eEnd && fin > eStart;\n});\n\nreturn [{\n  json: {\n    ...datos,\n    ocupado,\n    respuesta: ocupado\n      ? 'Ese horario ya esta reservado. Te vendria bien otro dia o una hora diferente?'\n      : datos.respuesta\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        540,
+        240
+      ],
+      "id": "c6b2e5ed-a4af-4a8c-bf26-fc7756b2f566",
+      "name": "Evaluar disponibilidad reserva"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "5828f5dc-ddb6-4f32-8055-04a778c6bf7b",
+              "leftValue": "={{ !$json.ocupado }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        800,
+        240
+      ],
+      "id": "30cf5ecc-d7d4-4b17-ba3c-be2bef0b9f60",
+      "name": "If reserva libre"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1nodk1oHDIlA9hLAUR3j7JvyB3N_koVTfkzL7MSUmtrM",
+          "mode": "list",
+          "cachedResultName": "Citas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nodk1oHDIlA9hLAUR3j7JvyB3N_koVTfkzL7MSUmtrM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Citas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nodk1oHDIlA9hLAUR3j7JvyB3N_koVTfkzL7MSUmtrM/edit#gid=0"
+        },
+        "options": {},
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "estado",
+              "lookupValue": "confirmada"
+            }
+          ]
+        }
+      },
+      "id": "05ae164c-c61e-4560-acb4-7ec16e47d42a",
+      "name": "Buscar citas paciente reserva",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1060,
+        180
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "64F5czTjTmpPjeJV",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const filas = $input.all();\nconst reserva = $('Evaluar disponibilidad reserva').first().json;\nconst normalizarTelefono = v => (v || '').toString().replace(/\\D/g, '');\nconst nombre = (reserva.nombre || '').toLowerCase().trim();\nconst telefono = normalizarTelefono(reserva.telefono);\n\nconst citasConfirmadas = filas.filter(item => {\n  const row = item.json || {};\n  const eN = (row.nombre || '').toLowerCase().trim();\n  const eE = (row.estado || '').toLowerCase().trim();\n  const eT = normalizarTelefono(row['Numero de telefono'] || row.telefono || row.phone || '');\n  const eventId = row['Event ID'];\n  return eN === nombre && eE === 'confirmada' && eT === telefono && !!eventId;\n});\n\nreturn [{\n  json: {\n    ...reserva,\n    tiene_duplicados: citasConfirmadas.length > 0,\n    citas_antiguas: citasConfirmadas.map(c => c.json)\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        180
+      ],
+      "id": "b437bc13-242c-49d1-8928-169cbb0024ff",
+      "name": "Preparar reserva y duplicados"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "008acd1c-d90d-4990-acb2-1bae1831c390",
+              "leftValue": "={{ $json.tiene_duplicados }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1580,
+        180
+      ],
+      "id": "88e5c5ae-c90f-4525-8edd-17510ca0cd8d",
+      "name": "If tiene duplicados"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $('Preparar reserva y duplicados').first().json;\nconst citasAntiguas = Array.isArray(data.citas_antiguas) ? data.citas_antiguas : [];\nreturn citasAntiguas\n  .filter(cita => !!cita['Event ID'])\n  .map(cita => ({\n    json: {\n      eventId: cita['Event ID'],\n      nombre: cita.nombre,\n      fecha: cita.fecha,\n      hora: cita.hora\n    }\n  }));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1840,
+        40
+      ],
+      "id": "aacc6690-9e3b-400b-8150-98f592dd5a72",
+      "name": "Preparar cancelaciones duplicadas"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "calendar": {
+          "__rl": true,
+          "value": "prueb4sn8n.pruebas@gmail.com",
+          "mode": "list",
+          "cachedResultName": "prueb4sn8n.pruebas@gmail.com"
+        },
+        "eventId": "={{ $json.eventId }}",
+        "options": {}
+      },
+      "id": "69474cbb-c983-40e1-94ff-7a873b4f9ba8",
+      "name": "Eliminar duplicados Calendar",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        2100,
+        40
+      ],
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "n1i2fwma2f00LClW",
+          "name": "Google Calendar OAuth2 API"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1nodk1oHDIlA9hLAUR3j7JvyB3N_koVTfkzL7MSUmtrM",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Citas",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Event ID": "={{ $json.eventId }}",
+            "estado": "cancelada"
+          },
+          "matchingColumns": [
+            "Event ID"
+          ],
+          "schema": [
+            {
+              "id": "Event ID",
+              "displayName": "Event ID",
+              "required": false,
+              "defaultMatch": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "estado",
+              "displayName": "estado",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "68902d77-236f-4a49-94c6-89311b24e34f",
+      "name": "Marcar duplicados cancelados",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2360,
+        40
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "64F5czTjTmpPjeJV",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $('Preparar reserva y duplicados').first().json;\nreturn [{\n  json: {\n    accion: 'reservar',\n    nombre: data.nombre,\n    tratamiento: data.tratamiento,\n    fecha: data.fecha,\n    hora: data.hora,\n    fecha_inicio: data.fecha_inicio,\n    fecha_fin: data.fecha_fin,\n    telefono: data.telefono,\n    duracion_minutos: data.duracion_minutos\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1840,
+        300
+      ],
+      "id": "62041eb3-7433-4313-8b59-c3ef5529d7c4",
+      "name": "Preparar crear reserva"
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "prueb4sn8n.pruebas@gmail.com",
+          "mode": "list",
+          "cachedResultName": "prueb4sn8n.pruebas@gmail.com"
+        },
+        "start": "={{ $json.fecha_inicio }}",
+        "end": "={{ $json.fecha_fin }}",
+        "additionalFields": {
+          "summary": "={{ $json.nombre }} - {{ $json.tratamiento }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        2100,
+        300
+      ],
+      "id": "b2065434-7105-4296-a6dc-3d84b2643e5d",
+      "name": "Crear evento reserva",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "n1i2fwma2f00LClW",
+          "name": "Google Calendar OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1nodk1oHDIlA9hLAUR3j7JvyB3N_koVTfkzL7MSUmtrM",
+          "mode": "list",
+          "cachedResultName": "Citas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nodk1oHDIlA9hLAUR3j7JvyB3N_koVTfkzL7MSUmtrM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Citas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nodk1oHDIlA9hLAUR3j7JvyB3N_koVTfkzL7MSUmtrM/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "nombre": "={{ $('Preparar crear reserva').first().json.nombre }}",
+            "tratamiento": "={{ $('Preparar crear reserva').first().json.tratamiento }}",
+            "fecha": "={{ $('Preparar crear reserva').first().json.fecha }}",
+            "hora": "={{ $('Preparar crear reserva').first().json.hora }}",
+            "Numero de telefono": "={{ $('Preparar crear reserva').first().json.telefono }}",
+            "estado": "confirmada",
+            "recordatorio_24h": "no",
+            "Event ID": "={{ $('Crear evento reserva').first().json.id }}",
+            "creado_en": "={{ $now.setZone('Europe/Lisbon').format('dd/MM/yyyy H:mm') }}",
+            "valoracion_solicitada": "no",
+            "valoracion_estado": "no_solicitada",
+            "valoracion": "",
+            "comentario_valoracion": "",
+            "valoracion_enviada_en": "",
+            "valoracion_recibida_en": ""
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Event ID",
+              "displayName": "Event ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "nombre",
+              "displayName": "nombre",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "tratamiento",
+              "displayName": "tratamiento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "fecha",
+              "displayName": "fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "hora",
+              "displayName": "hora",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Numero de telefono",
+              "displayName": "Numero de telefono",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "estado",
+              "displayName": "estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "recordatorio_24h",
+              "displayName": "recordatorio_24h",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "creado_en",
+              "displayName": "creado_en",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "valoracion_solicitada",
+              "displayName": "valoracion_solicitada",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "valoracion_estado",
+              "displayName": "valoracion_estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "valoracion",
+              "displayName": "valoracion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "comentario_valoracion",
+              "displayName": "comentario_valoracion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "valoracion_enviada_en",
+              "displayName": "valoracion_enviada_en",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "valoracion_recibida_en",
+              "displayName": "valoracion_recibida_en",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2360,
+        300
+      ],
+      "id": "87f1ce99-bc75-4513-9d54-fc072471d367",
+      "name": "Guardar cita reserva",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "64F5czTjTmpPjeJV",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $('Preparar crear reserva').first().json;\nconst eventId = $('Crear evento reserva').first().json.id;\nconst fechaES = data.fecha.split('-').reverse().join('/');\nconst respuesta = 'Perfecto, tu cita para ' + data.tratamiento + ' ha quedado confirmada para el ' + fechaES + ' a las ' + data.hora + '. Te esperamos.';\nconst emailHtml = [\n  '<div style=\"font-family:Arial,sans-serif;max-width:560px\">',\n  '<h2 style=\"color:#1a7f5a;border-bottom:2px solid #1a7f5a;padding-bottom:8px\">Nueva cita reservada</h2>',\n  '<table style=\"width:100%;border-collapse:collapse\">',\n  '<tr><td style=\"padding:8px;font-weight:bold\">Paciente</td><td style=\"padding:8px\">' + data.nombre + '</td></tr>',\n  '<tr><td style=\"padding:8px;font-weight:bold\">Tratamiento</td><td style=\"padding:8px\">' + data.tratamiento + '</td></tr>',\n  '<tr><td style=\"padding:8px;font-weight:bold\">Fecha</td><td style=\"padding:8px\">' + fechaES + '</td></tr>',\n  '<tr><td style=\"padding:8px;font-weight:bold\">Hora</td><td style=\"padding:8px\">' + data.hora + '</td></tr>',\n  '</table>',\n  '<p style=\"color:#666;font-size:12px;margin-top:16px\">Cita registrada automaticamente por el chatbot.</p>',\n  '</div>'\n].join('');\nreturn [{\n  json: {\n    ...data,\n    eventId,\n    respuesta,\n    email_subject: 'Nueva cita: ' + data.nombre + ' - ' + data.tratamiento,\n    email_html: emailHtml\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2620,
+        300
+      ],
+      "id": "fecf8a35-8213-4fff-bafe-e1819e7c3f00",
+      "name": "Preparar notificacion reserva"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1nodk1oHDIlA9hLAUR3j7JvyB3N_koVTfkzL7MSUmtrM",
+          "mode": "list",
+          "cachedResultName": "Citas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nodk1oHDIlA9hLAUR3j7JvyB3N_koVTfkzL7MSUmtrM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Citas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nodk1oHDIlA9hLAUR3j7JvyB3N_koVTfkzL7MSUmtrM/edit#gid=0"
+        },
+        "options": {},
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "fecha",
+              "lookupValue": "={{ $('Normalizar y enrutar').first().json.fecha }}"
+            },
+            {
+              "lookupColumn": "estado",
+              "lookupValue": "confirmada"
+            }
+          ]
+        }
+      },
+      "id": "bcfd40be-5aba-41b1-b2af-526924554db5",
+      "name": "Buscar cita cancelacion",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        280,
+        1080
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "64F5czTjTmpPjeJV",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const normHora = h => {\n  if (h === null || h === undefined || h === '') return '';\n  if (typeof h === 'number') {\n    const totalMin = h >= 0 && h < 1 ? Math.round(h * 24 * 60) : Math.round(Math.floor(h) * 60 + (h % 1) * 60);\n    const hh = Math.floor(totalMin / 60).toString().padStart(2, '0');\n    const mm = (totalMin % 60).toString().padStart(2, '0');\n    return hh + ':' + mm;\n  }\n  let v = h.toString().trim().toLowerCase().replace(/\\s*(horas|hora|hrs?|h)\\s*$/i, '').replace('.', ':').trim();\n  if (/^\\d{1,2}$/.test(v)) return v.padStart(2, '0') + ':00';\n  if (/^\\d{1,2}:\\d{2}:\\d{2}$/.test(v)) v = v.slice(0, 5);\n  if (/^\\d{1,2}:\\d{1,2}$/.test(v)) {\n    const parts = v.split(':');\n    return parts[0].padStart(2, '0') + ':' + parts[1].padStart(2, '0');\n  }\n  return v;\n};\n\nconst normFecha = f => {\n  if (!f) return '';\n  const v = f.toString().trim();\n  const es = v.match(/^(\\d{2})\\/(\\d{2})\\/(\\d{4})$/);\n  if (es) return es[3] + '-' + es[2] + '-' + es[1];\n  const iso = v.match(/^(\\d{4})-(\\d{2})-(\\d{2})/);\n  if (iso) return iso[1] + '-' + iso[2] + '-' + iso[3];\n  return v;\n};\n\nconst normalizarTelefono = v => (v || '').toString().replace(/\\D/g, '');\n\nconst datos = $('Normalizar y enrutar').first().json;\nconst nombre = (datos.nombre || '').toLowerCase().trim();\nconst fecha = normFecha(datos.fecha || '');\nconst hora = normHora(datos.hora || '');\nconst telefono = normalizarTelefono(datos.telefono || '');\n\nconst candidatas = $input.all().filter(item => {\n  const row = item.json || {};\n  const eN = (row.nombre || '').toLowerCase().trim();\n  const eF = normFecha(row.fecha || '');\n  const eH = normHora(row.hora || '');\n  const eE = (row.estado || '').toLowerCase().trim();\n  const eventId = row['Event ID'];\n  return eN === nombre && eF === fecha && eH === hora && eE === 'confirmada' && !!eventId;\n});\n\nconst conTelefono = candidatas.filter(item => {\n  const row = item.json || {};\n  const eT = normalizarTelefono(row['Numero de telefono'] || row.telefono || row.phone || '');\n  return eT && eT === telefono;\n});\n\nconst cita = conTelefono[0] || (candidatas.length === 1 ? candidatas[0] : null);\nif (!cita) {\n  return [{\n    json: {\n      ...datos,\n      encontrada: false,\n      respuesta: 'No he encontrado una cita confirmada con ese nombre, fecha y hora. Revisa los datos o llama a la clinica al 912 345 678.'\n    }\n  }];\n}\n\nreturn [{\n  json: {\n    ...datos,\n    ...cita.json,\n    encontrada: true,\n    eventId: cita.json['Event ID'],\n    telefono: datos.telefono\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        540,
+        1080
+      ],
+      "id": "38303f06-ef3e-4bde-85ae-5b7a5779eb31",
+      "name": "Resolver cita cancelacion"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "4534fe05-96c2-4948-bb43-cb467e16dd87",
+              "leftValue": "={{ $json.encontrada }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        800,
+        1080
+      ],
+      "id": "1d460d74-abf5-48d0-bda0-2bc13700b6df",
+      "name": "If cita cancelacion encontrada"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "calendar": {
+          "__rl": true,
+          "value": "prueb4sn8n.pruebas@gmail.com",
+          "mode": "list",
+          "cachedResultName": "prueb4sn8n.pruebas@gmail.com"
+        },
+        "eventId": "={{ $json.eventId }}",
+        "options": {}
+      },
+      "id": "07cdb602-1106-404c-86ae-0de31324d284",
+      "name": "Eliminar cita Calendar",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        1060,
+        960
+      ],
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "n1i2fwma2f00LClW",
+          "name": "Google Calendar OAuth2 API"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1nodk1oHDIlA9hLAUR3j7JvyB3N_koVTfkzL7MSUmtrM",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Citas",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Event ID": "={{ $('Resolver cita cancelacion').first().json.eventId }}",
+            "estado": "cancelada"
+          },
+          "matchingColumns": [
+            "Event ID"
+          ],
+          "schema": [
+            {
+              "id": "Event ID",
+              "displayName": "Event ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "nombre",
+              "displayName": "nombre",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "tratamiento",
+              "displayName": "tratamiento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "fecha",
+              "displayName": "fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "hora",
+              "displayName": "hora",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Numero de telefono",
+              "displayName": "Numero de telefono",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "estado",
+              "displayName": "estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "recordatorio_24h",
+              "displayName": "recordatorio_24h",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "creado_en",
+              "displayName": "creado_en",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "f4edbe9f-9424-4d46-b25f-0eaa7f99192b",
+      "name": "Marcar cita cancelada",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1320,
+        960
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "64F5czTjTmpPjeJV",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const cita = $('Resolver cita cancelacion').first().json;\nconst fechaES = (cita.fecha || '').split('-').reverse().join('/');\nconst respuesta = 'Tu cita de ' + (cita.tratamiento || 'tratamiento') + ' del ' + fechaES + ' a las ' + cita.hora + ' ha sido cancelada correctamente. Esperamos verte pronto.';\nconst emailHtml = [\n  '<div style=\"font-family:Arial,sans-serif;max-width:560px\">',\n  '<h2 style=\"color:#d9534f;border-bottom:2px solid #d9534f;padding-bottom:8px\">Cita cancelada</h2>',\n  '<table style=\"width:100%;border-collapse:collapse\">',\n  '<tr><td style=\"padding:8px;font-weight:bold\">Paciente</td><td style=\"padding:8px\">' + cita.nombre + '</td></tr>',\n  '<tr><td style=\"padding:8px;font-weight:bold\">Tratamiento</td><td style=\"padding:8px\">' + (cita.tratamiento || '') + '</td></tr>',\n  '<tr><td style=\"padding:8px;font-weight:bold\">Fecha</td><td style=\"padding:8px\">' + fechaES + '</td></tr>',\n  '<tr><td style=\"padding:8px;font-weight:bold\">Hora</td><td style=\"padding:8px\">' + cita.hora + '</td></tr>',\n  '</table>',\n  '<p style=\"color:#666;font-size:12px;margin-top:16px\">Cancelacion procesada automaticamente por el chatbot.</p>',\n  '</div>'\n].join('');\nreturn [{\n  json: {\n    ...cita,\n    respuesta,\n    email_subject: 'Cita cancelada: ' + cita.nombre,\n    email_html: emailHtml\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1580,
+        960
+      ],
+      "id": "7d28dcf0-7fb5-4c2a-b224-ed421388a7ec",
+      "name": "Preparar notificacion cancelacion"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1nodk1oHDIlA9hLAUR3j7JvyB3N_koVTfkzL7MSUmtrM",
+          "mode": "list",
+          "cachedResultName": "Citas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nodk1oHDIlA9hLAUR3j7JvyB3N_koVTfkzL7MSUmtrM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Citas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nodk1oHDIlA9hLAUR3j7JvyB3N_koVTfkzL7MSUmtrM/edit#gid=0"
+        },
+        "options": {},
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "fecha",
+              "lookupValue": "={{ $('Normalizar y enrutar').first().json.fecha_actual }}"
+            },
+            {
+              "lookupColumn": "estado",
+              "lookupValue": "confirmada"
+            }
+          ]
+        }
+      },
+      "id": "bfd71eed-4a97-45db-b5f0-cb785480b8f1",
+      "name": "Buscar cita modificacion",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        280,
+        740
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "64F5czTjTmpPjeJV",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const normHora = h => {\n  if (h === null || h === undefined || h === '') return '';\n  if (typeof h === 'number') {\n    const totalMin = h >= 0 && h < 1 ? Math.round(h * 24 * 60) : Math.round(Math.floor(h) * 60 + (h % 1) * 60);\n    const hh = Math.floor(totalMin / 60).toString().padStart(2, '0');\n    const mm = (totalMin % 60).toString().padStart(2, '0');\n    return hh + ':' + mm;\n  }\n  let v = h.toString().trim().toLowerCase().replace(/\\s*(horas|hora|hrs?|h)\\s*$/i, '').replace('.', ':').trim();\n  if (/^\\d{1,2}$/.test(v)) return v.padStart(2, '0') + ':00';\n  if (/^\\d{1,2}:\\d{2}:\\d{2}$/.test(v)) v = v.slice(0, 5);\n  if (/^\\d{1,2}:\\d{1,2}$/.test(v)) {\n    const parts = v.split(':');\n    return parts[0].padStart(2, '0') + ':' + parts[1].padStart(2, '0');\n  }\n  return v;\n};\n\nconst normFecha = f => {\n  if (!f) return '';\n  const v = f.toString().trim();\n  const es = v.match(/^(\\d{2})\\/(\\d{2})\\/(\\d{4})$/);\n  if (es) return es[3] + '-' + es[2] + '-' + es[1];\n  const iso = v.match(/^(\\d{4})-(\\d{2})-(\\d{2})/);\n  if (iso) return iso[1] + '-' + iso[2] + '-' + iso[3];\n  return v;\n};\n\nconst normalizarTelefono = v => (v || '').toString().replace(/\\D/g, '');\n\nconst datos = $('Normalizar y enrutar').first().json;\nconst nombre = (datos.nombre || '').toLowerCase().trim();\nconst fecha = normFecha(datos.fecha_actual || '');\nconst hora = normHora(datos.hora_actual || '');\nconst telefono = normalizarTelefono(datos.telefono || '');\n\nconst candidatas = $input.all().filter(item => {\n  const row = item.json || {};\n  const eN = (row.nombre || '').toLowerCase().trim();\n  const eF = normFecha(row.fecha || '');\n  const eH = normHora(row.hora || '');\n  const eE = (row.estado || '').toLowerCase().trim();\n  const eventId = row['Event ID'];\n  return eN === nombre && eF === fecha && eH === hora && eE === 'confirmada' && !!eventId;\n});\n\nconst conTelefono = candidatas.filter(item => {\n  const row = item.json || {};\n  const eT = normalizarTelefono(row['Numero de telefono'] || row.telefono || row.phone || '');\n  return eT && eT === telefono;\n});\n\nconst cita = conTelefono[conTelefono.length - 1] || (candidatas.length === 1 ? candidatas[0] : null);\nif (!cita) {\n  return [{\n    json: {\n      ...datos,\n      encontrada: false,\n      respuesta: 'No he encontrado la cita actual para modificarla. Revisa nombre, fecha y hora, o llama a la clinica al 912 345 678.'\n    }\n  }];\n}\n\nreturn [{\n  json: {\n    ...datos,\n    encontrada: true,\n    old_event_id: cita.json['Event ID'],\n    old_fecha: normFecha(cita.json.fecha || datos.fecha_actual),\n    old_hora: normHora(cita.json.hora || datos.hora_actual),\n    old_tratamiento: cita.json.tratamiento || datos.tratamiento,\n    old_row: cita.json,\n    telefono: datos.telefono\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        540,
+        740
+      ],
+      "id": "73c2ee38-2f69-4b96-820c-748deed6dec9",
+      "name": "Resolver cita modificacion"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "3c915bde-fd12-47b3-8ac1-1f7d1d6a9c8a",
+              "leftValue": "={{ $json.encontrada }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        800,
+        740
+      ],
+      "id": "7d84393b-a91c-4d6f-bba9-e954bf00ec4a",
+      "name": "If cita modificacion encontrada"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "prueb4sn8n.pruebas@gmail.com",
+          "mode": "list",
+          "cachedResultName": "prueb4sn8n.pruebas@gmail.com"
+        },
+        "returnAll": true,
+        "timeMin": "={{ $('Normalizar y enrutar').first().json.fecha_inicio_nueva }}",
+        "timeMax": "={{ $('Normalizar y enrutar').first().json.fecha_fin_nueva }}",
+        "options": {}
+      },
+      "id": "d47292ba-5665-43fd-9462-251445e0d94d",
+      "name": "Comprobar disponibilidad modificacion",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        1060,
+        660
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "n1i2fwma2f00LClW",
+          "name": "Google Calendar OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const eventos = $input.all()\n  .map(e => e.json || {})\n  .filter(evento => evento.start?.dateTime || evento.start?.date);\n\nconst datos = $('Resolver cita modificacion').first().json;\nconst inicio = new Date(datos.fecha_inicio_nueva);\nconst fin = new Date(datos.fecha_fin_nueva);\nconst ocupado = eventos.some(evento => {\n  if (datos.old_event_id && evento.id === datos.old_event_id) return false;\n  const eStart = new Date(evento.start?.dateTime || evento.start?.date);\n  const eEnd = new Date(evento.end?.dateTime || evento.end?.date);\n  return inicio < eEnd && fin > eStart;\n});\n\nreturn [{\n  json: {\n    ...datos,\n    ocupado,\n    respuesta: ocupado\n      ? 'Lo siento, el nuevo horario propuesto ya esta ocupado. Podrias indicarme otra fecha u hora?'\n      : datos.respuesta\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        660
+      ],
+      "id": "86d6b1a5-dc94-4e69-b52b-1dcfc824e034",
+      "name": "Evaluar disponibilidad modificacion"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "48b5de53-57b2-4c86-ab48-e8e47322c1ce",
+              "leftValue": "={{ !$json.ocupado }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1580,
+        660
+      ],
+      "id": "ef8e454b-2edd-4df4-85ca-af9031c301be",
+      "name": "If modificacion libre"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "calendar": {
+          "__rl": true,
+          "value": "prueb4sn8n.pruebas@gmail.com",
+          "mode": "list",
+          "cachedResultName": "prueb4sn8n.pruebas@gmail.com"
+        },
+        "eventId": "={{ $json.old_event_id }}",
+        "options": {}
+      },
+      "id": "01cf8953-36aa-415c-ad3d-43152244c76c",
+      "name": "Eliminar evento antiguo",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        1840,
+        580
+      ],
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "n1i2fwma2f00LClW",
+          "name": "Google Calendar OAuth2 API"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1nodk1oHDIlA9hLAUR3j7JvyB3N_koVTfkzL7MSUmtrM",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Citas",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Event ID": "={{ $('Evaluar disponibilidad modificacion').first().json.old_event_id }}",
+            "estado": "modificada"
+          },
+          "matchingColumns": [
+            "Event ID"
+          ],
+          "schema": [
+            {
+              "id": "Event ID",
+              "displayName": "Event ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "nombre",
+              "displayName": "nombre",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "tratamiento",
+              "displayName": "tratamiento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "fecha",
+              "displayName": "fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "hora",
+              "displayName": "hora",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Numero de telefono",
+              "displayName": "Numero de telefono",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "estado",
+              "displayName": "estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "recordatorio_24h",
+              "displayName": "recordatorio_24h",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "creado_en",
+              "displayName": "creado_en",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "699e68ea-1879-4145-a43a-06f24d6c8ac6",
+      "name": "Marcar cita modificada",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2100,
+        580
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "64F5czTjTmpPjeJV",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "prueb4sn8n.pruebas@gmail.com",
+          "mode": "list",
+          "cachedResultName": "prueb4sn8n.pruebas@gmail.com"
+        },
+        "start": "={{ $('Evaluar disponibilidad modificacion').first().json.fecha_inicio_nueva }}",
+        "end": "={{ $('Evaluar disponibilidad modificacion').first().json.fecha_fin_nueva }}",
+        "additionalFields": {
+          "summary": "={{ $('Evaluar disponibilidad modificacion').first().json.nombre }} - {{ $('Evaluar disponibilidad modificacion').first().json.tratamiento }}"
+        }
+      },
+      "id": "3b5e4d12-117b-4638-a1a5-ded8cb184774",
+      "name": "Crear evento modificado",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        2360,
+        580
+      ],
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "n1i2fwma2f00LClW",
+          "name": "Google Calendar OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1nodk1oHDIlA9hLAUR3j7JvyB3N_koVTfkzL7MSUmtrM",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Citas",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Event ID": "={{ $('Crear evento modificado').first().json.id }}",
+            "nombre": "={{ $('Evaluar disponibilidad modificacion').first().json.nombre }}",
+            "tratamiento": "={{ $('Evaluar disponibilidad modificacion').first().json.tratamiento }}",
+            "fecha": "={{ $('Evaluar disponibilidad modificacion').first().json.fecha_nueva }}",
+            "hora": "={{ $('Evaluar disponibilidad modificacion').first().json.hora_nueva }}",
+            "Numero de telefono": "={{ $('Evaluar disponibilidad modificacion').first().json.telefono }}",
+            "estado": "confirmada",
+            "recordatorio_24h": "no",
+            "creado_en": "={{ $now.setZone('Europe/Lisbon').format('dd/MM/yyyy H:mm') }}",
+            "valoracion_solicitada": "no",
+            "valoracion_estado": "no_solicitada",
+            "valoracion": "",
+            "comentario_valoracion": "",
+            "valoracion_enviada_en": "",
+            "valoracion_recibida_en": ""
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Event ID",
+              "displayName": "Event ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "nombre",
+              "displayName": "nombre",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tratamiento",
+              "displayName": "tratamiento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "fecha",
+              "displayName": "fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "hora",
+              "displayName": "hora",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Numero de telefono",
+              "displayName": "Numero de telefono",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "estado",
+              "displayName": "estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "recordatorio_24h",
+              "displayName": "recordatorio_24h",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "creado_en",
+              "displayName": "creado_en",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "valoracion_solicitada",
+              "displayName": "valoracion_solicitada",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "valoracion_estado",
+              "displayName": "valoracion_estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "valoracion",
+              "displayName": "valoracion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "comentario_valoracion",
+              "displayName": "comentario_valoracion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "valoracion_enviada_en",
+              "displayName": "valoracion_enviada_en",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "valoracion_recibida_en",
+              "displayName": "valoracion_recibida_en",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "c5c4094b-2d0c-4773-81e4-92784b97b505",
+      "name": "Guardar cita modificada",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2620,
+        580
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "64F5czTjTmpPjeJV",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $('Evaluar disponibilidad modificacion').first().json;\nconst eventId = $('Crear evento modificado').first().json.id;\nconst fechaOld = data.old_fecha.split('-').reverse().join('/');\nconst fechaNew = data.fecha_nueva.split('-').reverse().join('/');\nconst respuesta = 'Perfecto, tu cita ha sido modificada. Te esperamos el ' + fechaNew + ' a las ' + data.hora_nueva + '.';\nconst emailHtml = [\n  '<div style=\"font-family:Arial,sans-serif;max-width:560px\">',\n  '<h2 style=\"color:#f0ad4e;border-bottom:2px solid #f0ad4e;padding-bottom:8px\">Cita modificada</h2>',\n  '<table style=\"width:100%;border-collapse:collapse\">',\n  '<tr><td style=\"padding:8px;font-weight:bold\">Paciente</td><td style=\"padding:8px\">' + data.nombre + '</td></tr>',\n  '<tr><td style=\"padding:8px;font-weight:bold\">Tratamiento</td><td style=\"padding:8px\">' + data.tratamiento + '</td></tr>',\n  '<tr><td style=\"padding:8px;font-weight:bold\">Antigua</td><td style=\"padding:8px\">' + fechaOld + ' a las ' + data.old_hora + '</td></tr>',\n  '<tr><td style=\"padding:8px;font-weight:bold\">Nueva</td><td style=\"padding:8px\">' + fechaNew + ' a las ' + data.hora_nueva + '</td></tr>',\n  '</table>',\n  '<p style=\"color:#666;font-size:12px;margin-top:16px\">Modificacion procesada automaticamente por el chatbot.</p>',\n  '</div>'\n].join('');\nreturn [{\n  json: {\n    ...data,\n    eventId,\n    respuesta,\n    email_subject: 'Cita modificada: ' + data.nombre + ' - ' + data.tratamiento,\n    email_html: emailHtml\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2880,
+        580
+      ],
+      "id": "1d65449b-6583-454c-845c-39cac0a3ef21",
+      "name": "Preparar notificacion modificacion"
+    },
+    {
+      "parameters": {
+        "jsCode": "const trigger = $('WhatsApp Trigger').first().json;\nconst mensaje = trigger.messages?.[0];\n\nif (!mensaje) return [];\n\nconst telefono = mensaje.from || '';\nif (!telefono) return [];\n\nreturn [{\n  json: {\n    accion: 'responder',\n    telefono,\n    respuesta: 'Lo siento, solo puedo gestionar mensajes de texto por ahora. Por favor, escribeme tu consulta o llama a la clinica al 912 345 678.'\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -520,
+        300
+      ],
+      "id": "c8362862-98a2-4b3c-b50e-5e2f657b4376",
+      "name": "Preparar respuesta no texto"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1084326274761313",
+        "recipientPhoneNumber": "={{ ($json.telefono || $json.chat_id || $json.messages?.[0]?.from || $('WhatsApp Trigger').first().json.messages?.[0]?.from || $('WhatsApp Trigger').first().json.statuses?.[0]?.recipient_id || '').toString() }}",
+        "textBody": "={{ $json.respuesta || ($json.messages?.[0] ? 'Lo siento, solo puedo gestionar mensajes de texto por ahora. Por favor, escribeme tu consulta o llama a la clinica al 912 345 678.' : 'Lo siento, no he podido entenderte o ha ocurrido un error. Por favor, reformula tu peticion o llama a la clinica al 912 345 678.') }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        3220,
+        480
+      ],
+      "id": "fda48bef-3787-4b9c-b9a5-774434ed1012",
+      "name": "Enviar WhatsApp",
+      "webhookId": "c6271aee-26c6-4d91-845c-96c93fe9a175",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "nSeAIwtA48ly0LRi",
+          "name": "WhatsApp account 15"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "prueb4sn8n.pruebas@gmail.com",
+        "subject": "={{ $json.email_subject }}",
+        "message": "={{ $json.email_html }}",
+        "options": {}
+      },
+      "id": "72efb296-2d24-49aa-b980-05fa9f4a044e",
+      "name": "Enviar email dentista",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        3220,
+        720
+      ],
+      "webhookId": "ab440c5e-e9a8-47d9-a51c-1fe024e1ec0f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "8hj8O5tUQEKeYYPF",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# Workflow 01 - WhatsApp y citas\n\nEste workflow solo se encarga de conversaciones entrantes por WhatsApp.\n\n1. Recibe mensajes reales de texto.\n2. La IA extrae la intencion: consultar horarios, reservar, cancelar, modificar o guardar valoracion.\n3. El nodo Normalizar y enrutar valida fechas, horas, domingos, duraciones y evita que se escape JSON al paciente.\n4. Las ramas de cita consultan Calendar y Sheets solo cuando hace falta.\n5. Las respuestas al paciente salen por Enviar WhatsApp y los avisos internos por Gmail.\n\nLos recordatorios 24h y la solicitud automatica de valoraciones se han separado en workflows propios para que este flujo sea mas rapido de revisar y mantener.",
+        "height": 360,
+        "width": 1540,
+        "color": "#2b2b2f"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1080,
+        -260
+      ],
+      "typeVersion": 1,
+      "id": "68b46530-a986-42e8-9e86-fa64594af158",
+      "name": "NOTA 00 - Guia rapida"
+    },
+    {
+      "parameters": {
+        "content": "# 1. Entrada + IA + normalizacion\n\nWhatsApp Trigger recibe mensajes entrantes.\n\nIf texto valido evita gastar IA con audios, imagenes o mensajes vacios.\n\nPreparar respuesta no texto ignora callbacks de estado de WhatsApp y solo responde si llega un mensaje real sin texto.\n\nAI Agent actua como Sara, recoge datos y devuelve JSON para consultar_horarios, guardar_valoracion, reservar, modificar o cancelar.\n\nNormalizar y enrutar es el nodo clave: valida fechas futuras, horario real, domingo cerrado, duracion por tratamiento, zona horaria Europe/Lisbon y telefono del paciente.\n\nLos IF siguientes deciden que carril se ejecuta.",
+        "height": 520,
+        "width": 1320,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1080,
+        160
+      ],
+      "typeVersion": 1,
+      "id": "895eb136-e8f0-415b-a0a0-eb806c84f6fa",
+      "name": "NOTA 01 - Entrada"
+    },
+    {
+      "parameters": {
+        "content": "# 2. Reservar cita\n\nComprueba si el hueco solicitado esta libre en Google Calendar.\n\nSi esta ocupado, guarda al paciente en ListaEspera y responde que queda apuntado. Evita duplicados por telefono, fecha, hora y tratamiento.\n\nSi esta libre, busca citas confirmadas del mismo paciente en Sheets. Si existen, cancela las antiguas para evitar duplicados.\n\nDespues crea el evento en Calendar, guarda la fila en Sheets y prepara el WhatsApp + email de confirmacion.",
+        "height": 560,
+        "width": 2660,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        220,
+        -120
+      ],
+      "typeVersion": 1,
+      "id": "60cda39f-5700-415d-b730-fb37a73cc5e8",
+      "name": "NOTA 02 - Reserva"
+    },
+    {
+      "parameters": {
+        "content": "# 3. Modificar cita\n\nBusca la cita actual por fecha, estado confirmada, nombre, hora y telefono cuando esta disponible.\n\nLuego comprueba el nuevo horario en Calendar.\n\nPunto importante: no borra la cita antigua hasta saber que el nuevo hueco esta libre.\n\nSi esta libre: elimina evento antiguo, marca la fila antigua como modificada, crea nuevo evento y guarda una nueva fila confirmada.\n\nSi esta ocupado o no encuentra la cita, responde sin tocar la cita antigua.\n\nAl finalizar una modificacion, el hueco antiguo tambien se consulta en ListaEspera y se avisa al primer paciente pendiente si coincide fecha y hora.",
+        "height": 460,
+        "width": 2920,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        220,
+        500
+      ],
+      "typeVersion": 1,
+      "id": "95405a86-a945-4371-a178-a4c689d5fa09",
+      "name": "NOTA 03 - Modificacion"
+    },
+    {
+      "parameters": {
+        "content": "# 4. Cancelar cita\n\nBusca la cita confirmada por fecha, nombre, hora y telefono.\n\nSi la encuentra, elimina el evento de Calendar y cambia el estado en Sheets a cancelada.\n\nDespues prepara el WhatsApp para el paciente y el email para el dentista.\n\nSi no la encuentra, responde pidiendo revisar los datos o llamar a la clinica.\n\nTras cancelar correctamente, busca pacientes pendientes en ListaEspera para esa misma fecha y hora. Si hay alguno, avisa al primero y marca su fila como notificada.",
+        "height": 440,
+        "width": 1780,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        220,
+        900
+      ],
+      "typeVersion": 1,
+      "id": "7a4525a3-0eb0-45e8-9c77-09a8dcc6204d",
+      "name": "NOTA 04 - Cancelacion"
+    },
+    {
+      "parameters": {
+        "content": "# 5. Salidas comunes\n\nEnviar WhatsApp concentra respuestas normales, errores, citas ocupadas y confirmaciones.\n\nEnviar email dentista concentra los emails de reserva, cancelacion y modificacion.\n\nLos nodos Preparar notificacion ... construyen antes el texto del WhatsApp y el HTML del email.",
+        "height": 720,
+        "width": 560,
+        "color": "#39424e"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3140,
+        220
+      ],
+      "typeVersion": 1,
+      "id": "0db50dc4-707b-422f-b53b-41de1a7e105c",
+      "name": "NOTA 05 - Salidas"
+    },
+    {
+      "parameters": {
+        "content": "# Integraciones de este workflow\n\nWhatsApp: entrada y respuestas al paciente.\n\nGroq/Llama + Simple Memory: conversacion y extraccion de datos.\n\nGoogle Calendar: disponibilidad y eventos reales.\n\nGoogle Sheets: citas, lista de espera y valoraciones entrantes.\n\nGmail: avisos internos al dentista.\n\nNota: los callbacks de estado de WhatsApp pueden crear ejecuciones de milisegundos. El filtro inicial los descarta, pero para eliminarlos del todo hay que quitar esos callbacks en Meta/Webhooks si la cuenta lo permite.",
+        "height": 460,
+        "width": 900,
+        "color": "#383839"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        520,
+        1420
+      ],
+      "typeVersion": 1,
+      "id": "12303ce8-07b3-4454-a32d-fae2ed5036f2",
+      "name": "NOTA 07 - Integraciones"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cond-consultar-horarios",
+              "leftValue": "={{ $json.accion === 'consultar_horarios' }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        0,
+        1340
+      ],
+      "id": "ad37d9e8-8c6d-4d53-a5e7-0b1b1d54c9bd",
+      "name": "If consultar horarios"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "prueb4sn8n.pruebas@gmail.com",
+          "mode": "list",
+          "cachedResultName": "prueb4sn8n.pruebas@gmail.com"
+        },
+        "returnAll": true,
+        "timeMin": "={{ $('Normalizar y enrutar').first().json.fecha_inicio_consulta }}",
+        "timeMax": "={{ $('Normalizar y enrutar').first().json.fecha_fin_consulta }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        280,
+        1340
+      ],
+      "id": "cf2b4ff1-7477-4ad8-8370-8e7b3179f7a0",
+      "name": "Buscar disponibilidad horarios",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "n1i2fwma2f00LClW",
+          "name": "Google Calendar OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const TIME_ZONE = 'Europe/Lisbon';\n\nconst datos = $('Normalizar y enrutar').first().json;\nconst fecha = datos.fecha;\nconst duracion = Number(datos.duracion_minutos) || 60;\nconst pasoMinutos = 30;\n\nconst horaEnMinutos = horaStr => {\n  const m = (horaStr || '').match(/^(\\d{2}):(\\d{2})$/);\n  if (!m) return null;\n  return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);\n};\n\nconst formatoHora = minutos => {\n  const hh = Math.floor(minutos / 60).toString().padStart(2, '0');\n  const mm = (minutos % 60).toString().padStart(2, '0');\n  return hh + ':' + mm;\n};\n\nconst offsetClinica = (fechaStr, horaStr) => {\n  const probe = new Date(fechaStr + 'T' + horaStr + ':00Z');\n  const parts = new Intl.DateTimeFormat('en-US', {\n    timeZone: TIME_ZONE,\n    hour: '2-digit',\n    minute: '2-digit',\n    timeZoneName: 'longOffset'\n  }).formatToParts(probe);\n  const tz = (parts.find(p => p.type === 'timeZoneName') || {}).value || 'GMT+00:00';\n  const m = tz.match(/GMT([+-])(\\d{1,2})(?::?(\\d{2}))?/);\n  if (!m) return '+00:00';\n  return m[1] + m[2].padStart(2, '0') + ':' + (m[3] || '00').padStart(2, '0');\n};\n\nconst isoClinica = (fechaStr, horaStr) => fechaStr + 'T' + horaStr + ':00' + offsetClinica(fechaStr, horaStr);\n\nconst eventos = $input.all()\n  .map(item => item.json || {})\n  .filter(evento => evento.start?.dateTime || evento.start?.date)\n  .map(evento => {\n    const startRaw = evento.start?.dateTime || isoClinica(evento.start.date, '00:00');\n    const endRaw = evento.end?.dateTime || isoClinica(evento.end.date, '00:00');\n    return {\n      start: new Date(startRaw),\n      end: new Date(endRaw)\n    };\n  })\n  .filter(evento => !Number.isNaN(evento.start.getTime()) && !Number.isNaN(evento.end.getTime()));\n\nconst apertura = horaEnMinutos(datos.hora_apertura);\nconst cierre = horaEnMinutos(datos.hora_cierre);\nconst libres = [];\n\nfor (let inicioMin = apertura; inicioMin + duracion <= cierre; inicioMin += pasoMinutos) {\n  const horaInicio = formatoHora(inicioMin);\n  const horaFin = formatoHora(inicioMin + duracion);\n  const slotInicio = new Date(isoClinica(fecha, horaInicio));\n  const slotFin = new Date(isoClinica(fecha, horaFin));\n  const ocupado = eventos.some(evento => slotInicio < evento.end && slotFin > evento.start);\n  if (!ocupado) libres.push(horaInicio);\n}\n\nconst fechaES = fecha.split('-').reverse().join('/');\nconst tratamiento = datos.tratamiento || 'cita estandar';\nlet respuesta;\n\nif (!libres.length) {\n  respuesta = 'Lo siento, no veo horarios libres el ' + fechaES + ' para ' + tratamiento + '. Que otro dia te vendria bien?';\n} else {\n  const manana = libres.filter(hora => hora < '14:00');\n  const tarde = libres.filter(hora => hora >= '14:00');\n  const lineas = [];\n  if (manana.length) lineas.push('- Manana: ' + manana.join(', '));\n  if (tarde.length) lineas.push('- Tarde: ' + tarde.join(', '));\n  respuesta = 'Estos horarios estan libres el ' + fechaES + ' para ' + tratamiento + ':\\n' + lineas.join('\\n');\n}\n\nreturn [{\n  json: {\n    ...datos,\n    horarios_disponibles: libres,\n    respuesta\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        540,
+        1340
+      ],
+      "id": "a56b4d3d-164a-481f-972c-bcc33eaf986d",
+      "name": "Preparar horarios disponibles"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cond-guardar-valoracion",
+              "leftValue": "={{ $json.accion === 'guardar_valoracion' }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        0,
+        1520
+      ],
+      "id": "49ce6035-9fa9-43e9-99cb-7516b58a49cf",
+      "name": "If guardar valoracion"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1nodk1oHDIlA9hLAUR3j7JvyB3N_koVTfkzL7MSUmtrM",
+          "mode": "list",
+          "cachedResultName": "Citas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nodk1oHDIlA9hLAUR3j7JvyB3N_koVTfkzL7MSUmtrM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Citas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nodk1oHDIlA9hLAUR3j7JvyB3N_koVTfkzL7MSUmtrM/edit#gid=0"
+        },
+        "options": {},
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "valoracion_estado",
+              "lookupValue": "pendiente"
+            }
+          ]
+        }
+      },
+      "id": "17fce32e-7d9e-4502-a85c-b8ba4a715130",
+      "name": "Buscar valoracion pendiente",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        280,
+        1520
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "64F5czTjTmpPjeJV",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const TIME_ZONE = 'Europe/Lisbon';\n\nconst datos = $('Normalizar y enrutar').first().json;\nconst normalizarTelefono = v => (v || '').toString().replace(/\\D/g, '');\nconst telefono = normalizarTelefono(datos.telefono || '');\n\nconst normHora = h => {\n  if (h === null || h === undefined || h === '') return '';\n  if (typeof h === 'number') {\n    const totalMin = h >= 0 && h < 1 ? Math.round(h * 24 * 60) : Math.round(Math.floor(h) * 60 + (h % 1) * 60);\n    return Math.floor(totalMin / 60).toString().padStart(2, '0') + ':' + (totalMin % 60).toString().padStart(2, '0');\n  }\n  let v = h.toString().trim().toLowerCase().replace(/\\s*(horas|hora|hrs?|h)\\s*$/i, '').replace('.', ':').trim();\n  if (/^\\d{1,2}$/.test(v)) return v.padStart(2, '0') + ':00';\n  if (/^\\d{1,2}:\\d{2}:\\d{2}$/.test(v)) v = v.slice(0, 5);\n  if (/^\\d{1,2}:\\d{1,2}$/.test(v)) {\n    const parts = v.split(':');\n    return parts[0].padStart(2, '0') + ':' + parts[1].padStart(2, '0');\n  }\n  return v;\n};\n\nconst normFecha = f => {\n  if (!f) return '';\n  const v = f.toString().trim();\n  const es = v.match(/^(\\d{2})\\/(\\d{2})\\/(\\d{4})$/);\n  if (es) return es[3] + '-' + es[2] + '-' + es[1];\n  const iso = v.match(/^(\\d{4})-(\\d{2})-(\\d{2})/);\n  if (iso) return iso[1] + '-' + iso[2] + '-' + iso[3];\n  return v;\n};\n\nconst offsetClinica = (fechaStr, horaStr) => {\n  const probe = new Date(fechaStr + 'T' + horaStr + ':00Z');\n  const parts = new Intl.DateTimeFormat('en-US', { timeZone: TIME_ZONE, hour: '2-digit', minute: '2-digit', timeZoneName: 'longOffset' }).formatToParts(probe);\n  const tz = (parts.find(p => p.type === 'timeZoneName') || {}).value || 'GMT+00:00';\n  const m = tz.match(/GMT([+-])(\\d{1,2})(?::?(\\d{2}))?/);\n  if (!m) return '+00:00';\n  return m[1] + m[2].padStart(2, '0') + ':' + (m[3] || '00').padStart(2, '0');\n};\n\nconst fechaHora = row => {\n  const fecha = normFecha(row.fecha || '');\n  const hora = normHora(row.hora || '00:00');\n  if (!fecha || !hora) return new Date(0);\n  return new Date(fecha + 'T' + hora + ':00' + offsetClinica(fecha, hora));\n};\n\nconst candidatas = $input.all()\n  .map(item => item.json || {})\n  .filter(row => {\n    const eT = normalizarTelefono(row['Numero de telefono'] || row.telefono || row.phone || '');\n    const estadoValoracion = (row.valoracion_estado || '').toLowerCase().trim();\n    return eT && eT === telefono && estadoValoracion === 'pendiente' && row['Event ID'];\n  })\n  .sort((a, b) => fechaHora(b) - fechaHora(a));\n\nconst cita = candidatas[0];\n\nif (!cita) {\n  return [{\n    json: {\n      ...datos,\n      encontrada: false,\n      respuesta: 'Gracias por tu valoracion. No he encontrado una cita pendiente asociada a este numero. Si necesitas ayuda, llama a la clinica al 912 345 678.'\n    }\n  }];\n}\n\nreturn [{\n  json: {\n    ...datos,\n    encontrada: true,\n    eventId: cita['Event ID'],\n    nombre: cita.nombre || '',\n    fecha: normFecha(cita.fecha || ''),\n    hora: normHora(cita.hora || ''),\n    respuesta: 'Muchas gracias por tu valoracion. Nos ayuda a seguir mejorando.'\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        540,
+        1520
+      ],
+      "id": "d0abeb3b-ecca-450d-88b3-067eaf2974fd",
+      "name": "Resolver valoracion pendiente"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cond-valoracion-encontrada",
+              "leftValue": "={{ $json.encontrada }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        800,
+        1520
+      ],
+      "id": "6b2b797a-bd0f-4750-80e2-d18179db7f12",
+      "name": "If valoracion encontrada"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1nodk1oHDIlA9hLAUR3j7JvyB3N_koVTfkzL7MSUmtrM",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Citas",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Event ID": "={{ $('Resolver valoracion pendiente').first().json.eventId }}",
+            "valoracion": "={{ $('Resolver valoracion pendiente').first().json.valoracion }}",
+            "comentario_valoracion": "={{ $('Resolver valoracion pendiente').first().json.comentario_valoracion }}",
+            "valoracion_estado": "recibida",
+            "valoracion_recibida_en": "={{ $now.setZone('Europe/Lisbon').format('dd/MM/yyyy H:mm') }}"
+          },
+          "matchingColumns": [
+            "Event ID"
+          ],
+          "schema": [
+            {
+              "id": "Event ID",
+              "displayName": "Event ID",
+              "required": false,
+              "defaultMatch": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "valoracion",
+              "displayName": "valoracion",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "comentario_valoracion",
+              "displayName": "comentario_valoracion",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "valoracion_estado",
+              "displayName": "valoracion_estado",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "valoracion_recibida_en",
+              "displayName": "valoracion_recibida_en",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3e707bed-66ee-4cdc-a7e4-e70f4c66a3de",
+      "name": "Guardar valoracion",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1060,
+        1440
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "64F5czTjTmpPjeJV",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const datos = $('Resolver valoracion pendiente').first().json;\nreturn [{ json: { ...datos, respuesta: datos.respuesta || 'Muchas gracias por tu valoracion. Nos ayuda a seguir mejorando.' } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        1440
+      ],
+      "id": "ec7cb98b-7a6d-4b75-b28e-4e6e9c221729",
+      "name": "Preparar confirmacion valoracion"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1nodk1oHDIlA9hLAUR3j7JvyB3N_koVTfkzL7MSUmtrM",
+          "mode": "list",
+          "cachedResultName": "Citas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nodk1oHDIlA9hLAUR3j7JvyB3N_koVTfkzL7MSUmtrM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "ListaEspera",
+          "mode": "name"
+        },
+        "options": {},
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "fecha",
+              "lookupValue": "={{ $('Evaluar disponibilidad reserva').first().json.fecha }}"
+            }
+          ]
+        }
+      },
+      "id": "9cb6d530-0ef9-4213-8576-35e8132d651c",
+      "name": "Buscar lista espera reserva",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1060,
+        420
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "64F5czTjTmpPjeJV",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const reserva = $('Evaluar disponibilidad reserva').first().json;\n\nconst normalizarTexto = texto => (texto || '')\n  .toString()\n  .toLowerCase()\n  .normalize('NFD')\n  .replace(/[\\u0300-\\u036f]/g, '')\n  .trim();\n\nconst normalizarTelefono = v => (v || '').toString().replace(/\\D/g, '');\nconst normHora = h => {\n  if (h === null || h === undefined || h === '') return '';\n  if (typeof h === 'number') {\n    const totalMin = h >= 0 && h < 1 ? Math.round(h * 24 * 60) : Math.round(Math.floor(h) * 60 + (h % 1) * 60);\n    return Math.floor(totalMin / 60).toString().padStart(2, '0') + ':' + (totalMin % 60).toString().padStart(2, '0');\n  }\n  let v = h.toString().trim().toLowerCase().replace(/\\s*(horas|hora|hrs?|h)\\s*$/i, '').replace('.', ':').trim();\n  if (/^\\d{1,2}$/.test(v)) return v.padStart(2, '0') + ':00';\n  if (/^\\d{1,2}:\\d{2}:\\d{2}$/.test(v)) v = v.slice(0, 5);\n  if (/^\\d{1,2}:\\d{1,2}$/.test(v)) {\n    const parts = v.split(':');\n    return parts[0].padStart(2, '0') + ':' + parts[1].padStart(2, '0');\n  }\n  return v;\n};\n\nconst horaEnMinutos = horaStr => {\n  const m = (horaStr || '').match(/^(\\d{2}):(\\d{2})$/);\n  if (!m) return null;\n  return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);\n};\n\nconst sumarMinutos = (horaStr, minutos) => {\n  const inicio = horaEnMinutos(horaStr);\n  const total = (inicio === null ? 0 : inicio) + minutos;\n  const hh = Math.floor(total / 60).toString().padStart(2, '0');\n  const mm = (total % 60).toString().padStart(2, '0');\n  return hh + ':' + mm;\n};\n\nconst telefono = normalizarTelefono(reserva.telefono);\nconst fecha = reserva.fecha;\nconst hora = normHora(reserva.hora);\nconst tratamiento = reserva.tratamiento || 'cita estandar';\nconst duracion = Number(reserva.duracion_minutos) || 60;\nconst horaFin = sumarMinutos(hora, duracion);\n\nconst duplicado = $input.all()\n  .map(item => item.json || {})\n  .some(row => {\n    const estado = (row.estado || '').toString().toLowerCase().trim();\n    return normalizarTelefono(row['Numero de telefono'] || row.telefono || row.phone || '') === telefono\n      && (row.fecha || '') === fecha\n      && normHora(row.hora || '') === hora\n      && normalizarTexto(row.tratamiento || '') === normalizarTexto(tratamiento)\n      && ['pendiente', 'notificado'].includes(estado);\n  });\n\nconst fechaES = fecha.split('-').reverse().join('/');\nconst waitlistId = 'WL-' + [telefono, fecha, hora, normalizarTexto(tratamiento)]\n  .join('-')\n  .replace(/[^a-z0-9:-]/gi, '')\n  .slice(0, 80) + '-' + Date.now().toString(36);\n\nreturn [{\n  json: {\n    ...reserva,\n    accion: duplicado ? 'responder' : 'guardar_lista_espera',\n    en_lista_espera: duplicado,\n    waitlist_id: waitlistId,\n    telefono: reserva.telefono,\n    telefono_normalizado: telefono,\n    fecha,\n    hora,\n    tratamiento,\n    duracion_minutos: duracion,\n    fecha_inicio_lista: fecha + ' ' + hora,\n    fecha_fin_lista: fecha + ' ' + horaFin,\n    estado_lista_espera: 'pendiente',\n    respuesta: duplicado\n      ? 'Ese horario ya esta reservado, pero ya te tengo apuntado en la lista de espera para el ' + fechaES + ' a las ' + hora + '. Si se libera, te avisaremos automaticamente.'\n      : 'Ese horario ya esta reservado. Te he apuntado en la lista de espera para el ' + fechaES + ' a las ' + hora + '. Si se libera, te avisaremos automaticamente.'\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        420
+      ],
+      "id": "8a8bfd23-5875-45a1-b424-b9be93d94d24",
+      "name": "Preparar lista espera reserva"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cond-nueva-lista-espera",
+              "leftValue": "={{ !$json.en_lista_espera }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1580,
+        420
+      ],
+      "id": "4f07ea28-166e-4683-8099-418af4b4ee38",
+      "name": "If nueva lista espera"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1nodk1oHDIlA9hLAUR3j7JvyB3N_koVTfkzL7MSUmtrM",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "ListaEspera",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "waitlist_id": "={{ $('Preparar lista espera reserva').first().json.waitlist_id }}",
+            "nombre": "={{ $('Preparar lista espera reserva').first().json.nombre }}",
+            "tratamiento": "={{ $('Preparar lista espera reserva').first().json.tratamiento }}",
+            "fecha": "={{ $('Preparar lista espera reserva').first().json.fecha }}",
+            "hora": "={{ $('Preparar lista espera reserva').first().json.hora }}",
+            "Numero de telefono": "={{ $('Preparar lista espera reserva').first().json.telefono }}",
+            "estado": "pendiente",
+            "creado_en": "={{ $now.setZone('Europe/Lisbon').format('dd/MM/yyyy H:mm') }}",
+            "fecha_inicio": "={{ $('Preparar lista espera reserva').first().json.fecha_inicio_lista }}",
+            "fecha_fin": "={{ $('Preparar lista espera reserva').first().json.fecha_fin_lista }}",
+            "duracion_minutos": "={{ $('Preparar lista espera reserva').first().json.duracion_minutos }}",
+            "notificado_en": "",
+            "respondido_en": ""
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "waitlist_id",
+              "displayName": "waitlist_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "nombre",
+              "displayName": "nombre",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "tratamiento",
+              "displayName": "tratamiento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "fecha",
+              "displayName": "fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "hora",
+              "displayName": "hora",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Numero de telefono",
+              "displayName": "Numero de telefono",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "estado",
+              "displayName": "estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "creado_en",
+              "displayName": "creado_en",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "fecha_inicio",
+              "displayName": "fecha_inicio",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "fecha_fin",
+              "displayName": "fecha_fin",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "duracion_minutos",
+              "displayName": "duracion_minutos",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "notificado_en",
+              "displayName": "notificado_en",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "respondido_en",
+              "displayName": "respondido_en",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1840,
+        420
+      ],
+      "id": "43b8ee23-3c02-4ee1-b234-38c322cb60a2",
+      "name": "Guardar lista espera",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "64F5czTjTmpPjeJV",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const datos = $('Preparar lista espera reserva').first().json;\nreturn [{ json: datos }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2100,
+        420
+      ],
+      "id": "2e23193b-ec9b-483f-b72b-7e9239c69de2",
+      "name": "Preparar confirmacion lista espera"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1nodk1oHDIlA9hLAUR3j7JvyB3N_koVTfkzL7MSUmtrM",
+          "mode": "list",
+          "cachedResultName": "Citas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nodk1oHDIlA9hLAUR3j7JvyB3N_koVTfkzL7MSUmtrM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "ListaEspera",
+          "mode": "name"
+        },
+        "options": {},
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "fecha",
+              "lookupValue": "={{ $('Resolver cita cancelacion').first().json.fecha }}"
+            },
+            {
+              "lookupColumn": "estado",
+              "lookupValue": "pendiente"
+            }
+          ]
+        }
+      },
+      "id": "81056d88-ace7-415c-bd6e-776d429b04ac",
+      "name": "Buscar lista espera cancelacion",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1840,
+        1160
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "64F5czTjTmpPjeJV",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const cita = $('Resolver cita cancelacion').first().json;\n\nconst normalizarTelefono = v => (v || '').toString().replace(/\\D/g, '');\nconst normHora = h => {\n  if (h === null || h === undefined || h === '') return '';\n  if (typeof h === 'number') {\n    const totalMin = h >= 0 && h < 1 ? Math.round(h * 24 * 60) : Math.round(Math.floor(h) * 60 + (h % 1) * 60);\n    return Math.floor(totalMin / 60).toString().padStart(2, '0') + ':' + (totalMin % 60).toString().padStart(2, '0');\n  }\n  let v = h.toString().trim().toLowerCase().replace(/\\s*(horas|hora|hrs?|h)\\s*$/i, '').replace('.', ':').trim();\n  if (/^\\d{1,2}$/.test(v)) return v.padStart(2, '0') + ':00';\n  if (/^\\d{1,2}:\\d{2}:\\d{2}$/.test(v)) v = v.slice(0, 5);\n  if (/^\\d{1,2}:\\d{1,2}$/.test(v)) {\n    const parts = v.split(':');\n    return parts[0].padStart(2, '0') + ':' + parts[1].padStart(2, '0');\n  }\n  return v;\n};\n\nconst parseFechaHoraCreacion = v => {\n  const m = (v || '').toString().match(/^(\\d{2})\\/(\\d{2})\\/(\\d{4})\\s+(\\d{1,2}):(\\d{2})$/);\n  if (!m) return 0;\n  return new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]), Number(m[4]), Number(m[5])).getTime();\n};\n\nconst fecha = cita.fecha || '';\nconst hora = normHora(cita.hora || '');\nconst candidatas = $input.all()\n  .map(item => item.json || {})\n  .filter(row => {\n    const estado = (row.estado || '').toString().toLowerCase().trim();\n    const telefono = normalizarTelefono(row['Numero de telefono'] || row.telefono || row.phone || '');\n    return estado === 'pendiente'\n      && (row.fecha || '') === fecha\n      && normHora(row.hora || '') === hora\n      && telefono\n      && row.waitlist_id;\n  })\n  .sort((a, b) => parseFechaHoraCreacion(a.creado_en) - parseFechaHoraCreacion(b.creado_en));\n\nconst espera = candidatas[0];\nif (!espera) return [];\n\nconst fechaES = fecha.split('-').reverse().join('/');\nconst tratamiento = espera.tratamiento || cita.tratamiento || 'cita';\n\nreturn [{\n  json: {\n    waitlist_id: espera.waitlist_id,\n    telefono: (espera['Numero de telefono'] || espera.telefono || espera.phone || '').toString(),\n    nombre: espera.nombre || '',\n    tratamiento,\n    fecha,\n    hora,\n    respuesta: 'Se ha liberado una cita el ' + fechaES + ' a las ' + hora + ' para ' + tratamiento + '. Si todavia te interesa, responde con: Quiero reservar ' + tratamiento + ' el ' + fecha + ' a las ' + hora + ' a nombre de ' + (espera.nombre || '[tu nombre completo]') + '. La plaza no queda reservada hasta que te la confirmemos.'\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2100,
+        1160
+      ],
+      "id": "8fa1b23d-9ea8-4b62-8832-ea0041fe724c",
+      "name": "Preparar aviso lista espera cancelacion"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1084326274761313",
+        "recipientPhoneNumber": "={{ ($json.telefono || $json[\"Numero de telefono\"] || \"\").toString() }}",
+        "textBody": "={{ $json.respuesta }}",
+        "additionalFields": {}
+      },
+      "id": "cd35ef50-ed8a-45f6-8625-3ce614242e86",
+      "name": "Enviar aviso lista espera cancelacion",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        2360,
+        1160
+      ],
+      "webhookId": "1b52910b-f11e-41e0-a16b-47c507b7fc27",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "nSeAIwtA48ly0LRi",
+          "name": "WhatsApp account 15"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1nodk1oHDIlA9hLAUR3j7JvyB3N_koVTfkzL7MSUmtrM",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "ListaEspera",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "waitlist_id": "={{ $('Preparar aviso lista espera cancelacion').first().json.waitlist_id }}",
+            "estado": "notificado",
+            "notificado_en": "={{ $now.setZone('Europe/Lisbon').format('dd/MM/yyyy H:mm') }}"
+          },
+          "matchingColumns": [
+            "waitlist_id"
+          ],
+          "schema": [
+            {
+              "id": "waitlist_id",
+              "displayName": "waitlist_id",
+              "required": false,
+              "defaultMatch": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "estado",
+              "displayName": "estado",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "notificado_en",
+              "displayName": "notificado_en",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ba629668-1c3e-40df-a4fe-bc3c0d7f853f",
+      "name": "Marcar lista espera notificada cancelacion",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2620,
+        1160
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "64F5czTjTmpPjeJV",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1nodk1oHDIlA9hLAUR3j7JvyB3N_koVTfkzL7MSUmtrM",
+          "mode": "list",
+          "cachedResultName": "Citas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nodk1oHDIlA9hLAUR3j7JvyB3N_koVTfkzL7MSUmtrM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "ListaEspera",
+          "mode": "name"
+        },
+        "options": {},
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "fecha",
+              "lookupValue": "={{ $('Evaluar disponibilidad modificacion').first().json.old_fecha }}"
+            },
+            {
+              "lookupColumn": "estado",
+              "lookupValue": "pendiente"
+            }
+          ]
+        }
+      },
+      "id": "4d3df6eb-e82e-44f3-98f6-311ab1c03bf6",
+      "name": "Buscar lista espera modificacion",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3140,
+        900
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "64F5czTjTmpPjeJV",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const cita = $('Evaluar disponibilidad modificacion').first().json;\n\nconst normalizarTelefono = v => (v || '').toString().replace(/\\D/g, '');\nconst normHora = h => {\n  if (h === null || h === undefined || h === '') return '';\n  if (typeof h === 'number') {\n    const totalMin = h >= 0 && h < 1 ? Math.round(h * 24 * 60) : Math.round(Math.floor(h) * 60 + (h % 1) * 60);\n    return Math.floor(totalMin / 60).toString().padStart(2, '0') + ':' + (totalMin % 60).toString().padStart(2, '0');\n  }\n  let v = h.toString().trim().toLowerCase().replace(/\\s*(horas|hora|hrs?|h)\\s*$/i, '').replace('.', ':').trim();\n  if (/^\\d{1,2}$/.test(v)) return v.padStart(2, '0') + ':00';\n  if (/^\\d{1,2}:\\d{2}:\\d{2}$/.test(v)) v = v.slice(0, 5);\n  if (/^\\d{1,2}:\\d{1,2}$/.test(v)) {\n    const parts = v.split(':');\n    return parts[0].padStart(2, '0') + ':' + parts[1].padStart(2, '0');\n  }\n  return v;\n};\n\nconst parseFechaHoraCreacion = v => {\n  const m = (v || '').toString().match(/^(\\d{2})\\/(\\d{2})\\/(\\d{4})\\s+(\\d{1,2}):(\\d{2})$/);\n  if (!m) return 0;\n  return new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]), Number(m[4]), Number(m[5])).getTime();\n};\n\nconst fecha = cita.old_fecha || cita.fecha_actual || '';\nconst hora = normHora(cita.old_hora || cita.hora_actual || '');\nconst candidatas = $input.all()\n  .map(item => item.json || {})\n  .filter(row => {\n    const estado = (row.estado || '').toString().toLowerCase().trim();\n    const telefono = normalizarTelefono(row['Numero de telefono'] || row.telefono || row.phone || '');\n    return estado === 'pendiente'\n      && (row.fecha || '') === fecha\n      && normHora(row.hora || '') === hora\n      && telefono\n      && row.waitlist_id;\n  })\n  .sort((a, b) => parseFechaHoraCreacion(a.creado_en) - parseFechaHoraCreacion(b.creado_en));\n\nconst espera = candidatas[0];\nif (!espera) return [];\n\nconst fechaES = fecha.split('-').reverse().join('/');\nconst tratamiento = espera.tratamiento || cita.old_tratamiento || cita.tratamiento || 'cita';\n\nreturn [{\n  json: {\n    waitlist_id: espera.waitlist_id,\n    telefono: (espera['Numero de telefono'] || espera.telefono || espera.phone || '').toString(),\n    nombre: espera.nombre || '',\n    tratamiento,\n    fecha,\n    hora,\n    respuesta: 'Se ha liberado una cita el ' + fechaES + ' a las ' + hora + ' para ' + tratamiento + '. Si todavia te interesa, responde con: Quiero reservar ' + tratamiento + ' el ' + fecha + ' a las ' + hora + ' a nombre de ' + (espera.nombre || '[tu nombre completo]') + '. La plaza no queda reservada hasta que te la confirmemos.'\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3400,
+        900
+      ],
+      "id": "ef8556c0-1b21-4a6a-98bf-372e233308b5",
+      "name": "Preparar aviso lista espera modificacion"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1084326274761313",
+        "recipientPhoneNumber": "={{ ($json.telefono || $json[\"Numero de telefono\"] || \"\").toString() }}",
+        "textBody": "={{ $json.respuesta }}",
+        "additionalFields": {}
+      },
+      "id": "46954bbc-ea52-4dd0-b0c4-6b3b631a1610",
+      "name": "Enviar aviso lista espera modificacion",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        3660,
+        900
+      ],
+      "webhookId": "e77039d4-65d7-4797-8d8e-26f138a0178e",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "nSeAIwtA48ly0LRi",
+          "name": "WhatsApp account 15"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1nodk1oHDIlA9hLAUR3j7JvyB3N_koVTfkzL7MSUmtrM",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "ListaEspera",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "waitlist_id": "={{ $('Preparar aviso lista espera modificacion').first().json.waitlist_id }}",
+            "estado": "notificado",
+            "notificado_en": "={{ $now.setZone('Europe/Lisbon').format('dd/MM/yyyy H:mm') }}"
+          },
+          "matchingColumns": [
+            "waitlist_id"
+          ],
+          "schema": [
+            {
+              "id": "waitlist_id",
+              "displayName": "waitlist_id",
+              "required": false,
+              "defaultMatch": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "estado",
+              "displayName": "estado",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "notificado_en",
+              "displayName": "notificado_en",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "037b79e2-ef8d-407f-94f9-e5ecac5db2e7",
+      "name": "Marcar lista espera notificada modificacion",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3920,
+        900
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "64F5czTjTmpPjeJV",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# 9. Lista de espera\n\nCrear en el mismo Google Sheet una pestana llamada ListaEspera con estas columnas:\n\nwaitlist_id, nombre, tratamiento, fecha, hora, Numero de telefono, estado, creado_en, fecha_inicio, fecha_fin, duracion_minutos, notificado_en, respondido_en.\n\nfecha_inicio y fecha_fin se guardan como YYYY-MM-DD HH:mm para que Sheets no meta zonas horarias raras.\n\nCuando una reserva esta ocupada, el paciente se guarda con estado pendiente.\n\nCuando una cancelacion o modificacion libera esa fecha y hora, se avisa automaticamente al primer paciente pendiente y se marca como notificado.",
+        "height": 440,
+        "width": 1500,
+        "color": "#314d43"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1460,
+        1420
+      ],
+      "typeVersion": 1,
+      "id": "997e9932-23a9-4655-9f50-7fc8663ea1c5",
+      "name": "NOTA 09 - Lista de espera"
+    },
+    {
+      "parameters": {
+        "content": "# Version modular\n\nImporta tambien:\n\n- Workflow 02: Recordatorios 24h\n- Workflow 03: Solicitud de valoraciones\n\nVentaja: cada workflow tiene un trabajo claro. Si falla un recordatorio, no ensucia la depuracion de una reserva por WhatsApp.",
+        "height": 260,
+        "width": 920,
+        "color": "#315065"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1700,
+        -420
+      ],
+      "typeVersion": 1,
+      "id": "8ceb67bb-876a-4d33-8377-a195434cb2c9",
+      "name": "NOTA MODULAR - Como importar"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "WhatsApp Trigger": {
+      "main": [
+        [
+          {
+            "node": "If texto valido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If texto valido": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar respuesta no texto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Normalizar y enrutar",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar respuesta no texto": {
+      "main": [
+        [
+          {
+            "node": "Enviar WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar y enrutar": {
+      "main": [
+        [
+          {
+            "node": "If reservar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If reservar": {
+      "main": [
+        [
+          {
+            "node": "Buscar disponibilidad reserva",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If modificar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If modificar": {
+      "main": [
+        [
+          {
+            "node": "Buscar cita modificacion",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If cancelar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If cancelar": {
+      "main": [
+        [
+          {
+            "node": "Buscar cita cancelacion",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If consultar horarios",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar disponibilidad reserva": {
+      "main": [
+        [
+          {
+            "node": "Evaluar disponibilidad reserva",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluar disponibilidad reserva": {
+      "main": [
+        [
+          {
+            "node": "If reserva libre",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If reserva libre": {
+      "main": [
+        [
+          {
+            "node": "Buscar citas paciente reserva",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Buscar lista espera reserva",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar citas paciente reserva": {
+      "main": [
+        [
+          {
+            "node": "Preparar reserva y duplicados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar reserva y duplicados": {
+      "main": [
+        [
+          {
+            "node": "If tiene duplicados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If tiene duplicados": {
+      "main": [
+        [
+          {
+            "node": "Preparar cancelaciones duplicadas",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar crear reserva",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar cancelaciones duplicadas": {
+      "main": [
+        [
+          {
+            "node": "Eliminar duplicados Calendar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Eliminar duplicados Calendar": {
+      "main": [
+        [
+          {
+            "node": "Marcar duplicados cancelados",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Marcar duplicados cancelados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marcar duplicados cancelados": {
+      "main": [
+        [
+          {
+            "node": "Preparar crear reserva",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar crear reserva": {
+      "main": [
+        [
+          {
+            "node": "Crear evento reserva",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear evento reserva": {
+      "main": [
+        [
+          {
+            "node": "Guardar cita reserva",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar cita reserva": {
+      "main": [
+        [
+          {
+            "node": "Preparar notificacion reserva",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar notificacion reserva": {
+      "main": [
+        [
+          {
+            "node": "Enviar WhatsApp",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Enviar email dentista",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar cita cancelacion": {
+      "main": [
+        [
+          {
+            "node": "Resolver cita cancelacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolver cita cancelacion": {
+      "main": [
+        [
+          {
+            "node": "If cita cancelacion encontrada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If cita cancelacion encontrada": {
+      "main": [
+        [
+          {
+            "node": "Eliminar cita Calendar",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Eliminar cita Calendar": {
+      "main": [
+        [
+          {
+            "node": "Marcar cita cancelada",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Marcar cita cancelada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marcar cita cancelada": {
+      "main": [
+        [
+          {
+            "node": "Preparar notificacion cancelacion",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Buscar lista espera cancelacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar notificacion cancelacion": {
+      "main": [
+        [
+          {
+            "node": "Enviar WhatsApp",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Enviar email dentista",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar cita modificacion": {
+      "main": [
+        [
+          {
+            "node": "Resolver cita modificacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolver cita modificacion": {
+      "main": [
+        [
+          {
+            "node": "If cita modificacion encontrada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If cita modificacion encontrada": {
+      "main": [
+        [
+          {
+            "node": "Comprobar disponibilidad modificacion",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Comprobar disponibilidad modificacion": {
+      "main": [
+        [
+          {
+            "node": "Evaluar disponibilidad modificacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluar disponibilidad modificacion": {
+      "main": [
+        [
+          {
+            "node": "If modificacion libre",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If modificacion libre": {
+      "main": [
+        [
+          {
+            "node": "Eliminar evento antiguo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Eliminar evento antiguo": {
+      "main": [
+        [
+          {
+            "node": "Marcar cita modificada",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Marcar cita modificada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marcar cita modificada": {
+      "main": [
+        [
+          {
+            "node": "Crear evento modificado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear evento modificado": {
+      "main": [
+        [
+          {
+            "node": "Guardar cita modificada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar cita modificada": {
+      "main": [
+        [
+          {
+            "node": "Preparar notificacion modificacion",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Buscar lista espera modificacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar notificacion modificacion": {
+      "main": [
+        [
+          {
+            "node": "Enviar WhatsApp",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Enviar email dentista",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If consultar horarios": {
+      "main": [
+        [
+          {
+            "node": "Buscar disponibilidad horarios",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If guardar valoracion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar disponibilidad horarios": {
+      "main": [
+        [
+          {
+            "node": "Preparar horarios disponibles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar horarios disponibles": {
+      "main": [
+        [
+          {
+            "node": "Enviar WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If guardar valoracion": {
+      "main": [
+        [
+          {
+            "node": "Buscar valoracion pendiente",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar valoracion pendiente": {
+      "main": [
+        [
+          {
+            "node": "Resolver valoracion pendiente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolver valoracion pendiente": {
+      "main": [
+        [
+          {
+            "node": "If valoracion encontrada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If valoracion encontrada": {
+      "main": [
+        [
+          {
+            "node": "Guardar valoracion",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar valoracion": {
+      "main": [
+        [
+          {
+            "node": "Preparar confirmacion valoracion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar confirmacion valoracion": {
+      "main": [
+        [
+          {
+            "node": "Enviar WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar lista espera reserva": {
+      "main": [
+        [
+          {
+            "node": "Preparar lista espera reserva",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar lista espera reserva": {
+      "main": [
+        [
+          {
+            "node": "If nueva lista espera",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If nueva lista espera": {
+      "main": [
+        [
+          {
+            "node": "Guardar lista espera",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar lista espera": {
+      "main": [
+        [
+          {
+            "node": "Preparar confirmacion lista espera",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar confirmacion lista espera": {
+      "main": [
+        [
+          {
+            "node": "Enviar WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar lista espera cancelacion": {
+      "main": [
+        [
+          {
+            "node": "Preparar aviso lista espera cancelacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar aviso lista espera cancelacion": {
+      "main": [
+        [
+          {
+            "node": "Enviar aviso lista espera cancelacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar aviso lista espera cancelacion": {
+      "main": [
+        [
+          {
+            "node": "Marcar lista espera notificada cancelacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar lista espera modificacion": {
+      "main": [
+        [
+          {
+            "node": "Preparar aviso lista espera modificacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar aviso lista espera modificacion": {
+      "main": [
+        [
+          {
+            "node": "Enviar aviso lista espera modificacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar aviso lista espera modificacion": {
+      "main": [
+        [
+          {
+            "node": "Marcar lista espera notificada modificacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timezone": "Europe/Lisbon"
+  },
+  "versionId": "e9826c95-702c-4757-9d2e-c744f46cd854",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b46ba6e189765812cf420e6f1d27507c3730c94070cb152a228939aec7fe29af"
+  },
+  "id": "MOD-CLINICA-01-WHATSAPP-CITAS",
+  "tags": []
+}
