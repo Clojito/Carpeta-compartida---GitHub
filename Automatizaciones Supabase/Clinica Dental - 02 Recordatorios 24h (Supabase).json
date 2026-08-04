@@ -1,0 +1,221 @@
+{
+  "name": "Clinica Dental - 02 Recordatorios 24h (Supabase)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * *"
+            }
+          ]
+        }
+      },
+      "id": "47516f1f-92d3-46b9-aac8-a10ad6d564bc",
+      "name": "Schedule Trigger Recordatorio",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1000,
+        1580
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "citas",
+        "returnAll": true,
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "fecha",
+              "condition": "eq",
+              "keyValue": "={{ $now.plus({days:1}).setZone('Europe/Lisbon').toFormat('yyyy-MM-dd') }}"
+            },
+            {
+              "keyName": "estado",
+              "condition": "eq",
+              "keyValue": "confirmada"
+            },
+            {
+              "keyName": "recordatorio_24h",
+              "condition": "eq",
+              "keyValue": "false"
+            }
+          ]
+        }
+      },
+      "id": "77788e7a-68bd-4fcb-ad91-68e287cd696c",
+      "name": "Buscar recordatorios manana",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -760,
+        1580
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "SUPABASE_CRED",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const TIME_ZONE = 'Europe/Lisbon';\nconst parts = new Intl.DateTimeFormat('en-US', {\n  timeZone: TIME_ZONE,\n  year: 'numeric',\n  month: '2-digit',\n  day: '2-digit'\n}).formatToParts(new Date(Date.now() + 24 * 60 * 60 * 1000));\nconst get = type => parts.find(p => p.type === type).value;\nconst mananaStr = get('year') + '-' + get('month') + '-' + get('day');\n\n// Supabase devuelve booleanos reales. Aceptamos tambien los textos 'no'/'false'\n// que venian de Google Sheets, por si queda alguna fila migrada a mano.\nconst pendienteDeEnviar = v => v === false\n  || v === null\n  || v === undefined\n  || ['no', 'false', ''].includes(v.toString().toLowerCase().trim());\n\n// La columna fecha es de tipo date: Supabase la devuelve como 'YYYY-MM-DD'.\nconst normFecha = f => {\n  if (!f) return '';\n  const v = f.toString().trim();\n  const iso = v.match(/^(\\d{4})-(\\d{2})-(\\d{2})/);\n  return iso ? iso[1] + '-' + iso[2] + '-' + iso[3] : v;\n};\n\nreturn $input.all()\n  .map(item => item.json || {})\n  .filter(row => {\n    const fecha = normFecha(row.fecha);\n    const estado = (row.estado || '').toString().toLowerCase().trim();\n    const telefono = (row.telefono || '').toString().trim();\n    return fecha === mananaStr\n      && estado === 'confirmada'\n      && pendienteDeEnviar(row.recordatorio_24h)\n      && telefono !== ''\n      && row.event_id;\n  })\n  .map(row => ({\n    json: {\n      ...row,\n      eventId: row.event_id,\n      telefono: row.telefono.toString(),\n      respuesta: 'Hola ' + row.nombre + ', te recordamos que tienes una cita de ' + row.tratamiento + ' manana a las ' + row.hora + '. Si no puedes asistir, puedes cancelar o cambiar la cita.'\n    }\n  }));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -520,
+        1580
+      ],
+      "id": "4b125750-f649-499a-9a4d-ab56801ac709",
+      "name": "Preparar recordatorios"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1084326274761313",
+        "recipientPhoneNumber": "={{ $json.telefono }}",
+        "textBody": "={{ $json.respuesta }}",
+        "additionalFields": {}
+      },
+      "id": "67bfdcca-2014-4282-bf61-73d26e5c640f",
+      "name": "Enviar recordatorio",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        -260,
+        1580
+      ],
+      "webhookId": "bc948d24-0378-4259-bed5-3a44bde8140f",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "nSeAIwtA48ly0LRi",
+          "name": "WhatsApp account 15"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "citas",
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "event_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Preparar recordatorios').item.json.eventId }}"
+            }
+          ]
+        },
+        "dataToSend": "defineBelow",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "recordatorio_24h",
+              "fieldValue": "={{ true }}"
+            }
+          ]
+        }
+      },
+      "id": "04213219-da73-408b-b882-d7b34be2565c",
+      "name": "Marcar recordatorio enviado",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        0,
+        1580
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "SUPABASE_CRED",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# Workflow 02 - Recordatorios 24h (Supabase)\n\nEste workflow se ejecuta una vez al dia a las 09:00.\n\n1. Busca en la tabla citas las citas de manana con estado confirmada y recordatorio_24h = false.\n2. Prepara un mensaje para cada paciente.\n3. Envia WhatsApp.\n4. Marca recordatorio_24h = true para no repetirlo.\n\nEs independiente del workflow 01: si lo apagas, las reservas siguen funcionando; solo se paran los recordatorios.\n\nDIFERENCIAS respecto a la version con Google Sheets:\n- La columna 'Numero de telefono' ahora se llama telefono.\n- La columna 'Event ID' ahora se llama event_id.\n- recordatorio_24h ya no es el texto 'si'/'no', es un booleano true/false.\n  El codigo acepta ambos formatos por si migras filas a mano.",
+        "height": 480,
+        "width": 1320,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1080,
+        1400
+      ],
+      "typeVersion": 1,
+      "id": "c4fb47ae-3da9-4c83-a357-bd7db61f2505",
+      "name": "NOTA 06 - Recordatorios"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger Recordatorio": {
+      "main": [
+        [
+          {
+            "node": "Buscar recordatorios manana",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar recordatorios manana": {
+      "main": [
+        [
+          {
+            "node": "Preparar recordatorios",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar recordatorios": {
+      "main": [
+        [
+          {
+            "node": "Enviar recordatorio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar recordatorio": {
+      "main": [
+        [
+          {
+            "node": "Marcar recordatorio enviado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timezone": "Europe/Lisbon"
+  },
+  "versionId": "b537aa9b-dd4f-4de9-a588-253e04f02174",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b46ba6e189765812cf420e6f1d27507c3730c94070cb152a228939aec7fe29af"
+  },
+  "id": "SUPA-CLINICA-02-RECORDATORIOS-24H",
+  "tags": []
+}
