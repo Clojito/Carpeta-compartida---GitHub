@@ -1,0 +1,107 @@
+{
+  "name": "Clinica Dental - 04 Avisos de error",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "e0000001-0000-4000-8000-000000000001",
+      "name": "Cuando falla un workflow",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        -900,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// El Error Trigger recibe el detalle de la ejecucion que ha fallado.\nconst d = $input.first().json || {};\nconst wf = d.workflow || {};\nconst ex = d.execution || {};\nconst err = ex.error || {};\n\nconst TZ = 'Europe/Madrid';\nconst ahora = new Intl.DateTimeFormat('es-ES', {\n  timeZone: TZ,\n  day: '2-digit', month: '2-digit', year: 'numeric',\n  hour: '2-digit', minute: '2-digit', hour12: false\n}).format(new Date()).replace(',', '');\n\nconst corta = (v, max) => {\n  const s = (v === null || v === undefined) ? '' : v.toString().replace(/\\s+/g, ' ').trim();\n  return s.length > max ? s.slice(0, max - 3) + '...' : s;\n};\n\nconst mensajeError = corta(err.message || err.description || 'Error sin mensaje', 400);\nconst nodoFallo = ex.lastNodeExecuted || 'desconocido';\n\nconst lineas = [\n  '🚨 FALLO EN UNA AUTOMATIZACION',\n  '',\n  'Workflow: ' + (wf.name || wf.id || 'desconocido'),\n  'Nodo: ' + nodoFallo,\n  'Cuando: ' + ahora,\n  '',\n  'Error: ' + mensajeError\n];\n\nif (ex.url) {\n  lineas.push('');\n  lineas.push('Ver ejecucion: ' + ex.url);\n}\n\nreturn [{\n  json: {\n    telefono_aviso: '34640575291',\n    workflow_nombre: wf.name || '',\n    nodo: nodoFallo,\n    error: mensajeError,\n    respuesta: lineas.join('\\n')\n  }\n}];\n"
+      },
+      "id": "e0000001-0000-4000-8000-000000000002",
+      "name": "Preparar aviso de error",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -660,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1084326274761313",
+        "recipientPhoneNumber": "={{ $json.telefono_aviso }}",
+        "textBody": "={{ $json.respuesta }}",
+        "additionalFields": {}
+      },
+      "id": "e0000001-0000-4000-8000-000000000003",
+      "name": "Avisar por WhatsApp",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        -420,
+        400
+      ],
+      "webhookId": "e1a2b3c4-0000-4000-8000-000000000003",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "nSeAIwtA48ly0LRi",
+          "name": "WhatsApp account 15"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "content": "# Workflow 04 - Avisos de error\n\nSalta automaticamente cuando CUALQUIER otro workflow falla y te manda un WhatsApp al +34 640575291 con:\nque workflow ha fallado, en que nodo, el mensaje de error y el enlace a la ejecucion.\n\n## COMO ACTIVARLO (importante, si no, no hace nada)\n\nEste workflow no se activa solo. Hay que decirle a cada uno de los otros que lo use:\n\n1. Abre el workflow 01.\n2. Menu de los tres puntos (arriba a la derecha) -> Settings.\n3. En **Error Workflow**, elige \"Clinica Dental - 04 Avisos de error\".\n4. Guarda.\n5. Repite en los workflows 02, 03 y 05.\n\nNo hace falta activar (Active) este workflow: los Error Trigger funcionan igual.\n\n## AVISO IMPORTANTE sobre WhatsApp\n\nLa API de WhatsApp Business solo deja mandar mensajes libres a un numero\ndurante las 24h siguientes a que ESE numero te escriba. Es una norma de Meta,\nno es un fallo del workflow.\n\nEn la practica: si hace mas de 24h que no escribes al numero del bot desde tu\nmovil, este aviso NO te llegara y el nodo dara error (esta puesto para que no\nrompa nada si pasa).\n\nDos formas de solucionarlo:\n- La rapida: escribe \"hola\" al numero del bot desde tu movil cada dia. Poco fiable.\n- La buena: crear una plantilla (template) aprobada en Meta para alertas, o\n  cambiar este nodo por Telegram o por email, que no tienen esa limitacion.\n  Telegram es gratis y tarda 5 minutos en configurarse.",
+        "height": 700,
+        "width": 720,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -900,
+        560
+      ],
+      "typeVersion": 1,
+      "id": "e0000001-0000-4000-8000-000000000004",
+      "name": "NOTA - Como usar los avisos"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Cuando falla un workflow": {
+      "main": [
+        [
+          {
+            "node": "Preparar aviso de error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar aviso de error": {
+      "main": [
+        [
+          {
+            "node": "Avisar por WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Madrid"
+  },
+  "versionId": "e4000000-0000-4000-8000-000000000001",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b46ba6e189765812cf420e6f1d27507c3730c94070cb152a228939aec7fe29af"
+  },
+  "id": "SUPA-CLINICA-04-AVISOS-ERROR",
+  "tags": []
+}
