@@ -86,6 +86,11 @@ update clinicas set
   direccion         = 'Calle Mayor 123, Lisboa',
   telefono_publico  = '912 345 678',
   zona_horaria      = 'Europe/Madrid',
+  -- OJO: pon aqui el Google Calendar real que hayas compartido con tu
+  -- credencial de n8n. Si esta vacio, los nodos de Google Calendar del
+  -- workflow 01 fallan con "Please enter a valid mode" porque reciben un
+  -- calendario vacio.
+  calendar_id       = 'prueb4sn8n.pruebas@gmail.com',
   duracion_por_defecto = 60,
   horarios = '{
     "0": null,
