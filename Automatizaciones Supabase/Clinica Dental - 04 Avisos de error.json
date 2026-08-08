@@ -8,16 +8,55 @@
       "type": "n8n-nodes-base.errorTrigger",
       "typeVersion": 1,
       "position": [
-        -900,
+        -1120,
         400
       ]
     },
     {
       "parameters": {
-        "jsCode": "// El Error Trigger recibe el detalle de la ejecucion que ha fallado.\nconst d = $input.first().json || {};\nconst wf = d.workflow || {};\nconst ex = d.execution || {};\nconst err = ex.error || {};\n\nconst TZ = 'Europe/Madrid';\nconst ahora = new Intl.DateTimeFormat('es-ES', {\n  timeZone: TZ,\n  day: '2-digit', month: '2-digit', year: 'numeric',\n  hour: '2-digit', minute: '2-digit', hour12: false\n}).format(new Date()).replace(',', '');\n\nconst corta = (v, max) => {\n  const s = (v === null || v === undefined) ? '' : v.toString().replace(/\\s+/g, ' ').trim();\n  return s.length > max ? s.slice(0, max - 3) + '...' : s;\n};\n\nconst mensajeError = corta(err.message || err.description || 'Error sin mensaje', 400);\nconst nodoFallo = ex.lastNodeExecuted || 'desconocido';\n\nconst lineas = [\n  '🚨 FALLO EN UNA AUTOMATIZACION',\n  '',\n  'Workflow: ' + (wf.name || wf.id || 'desconocido'),\n  'Nodo: ' + nodoFallo,\n  'Cuando: ' + ahora,\n  '',\n  'Error: ' + mensajeError\n];\n\nif (ex.url) {\n  lineas.push('');\n  lineas.push('Ver ejecucion: ' + ex.url);\n}\n\nreturn [{\n  json: {\n    telefono_aviso: '34640575291',\n    workflow_nombre: wf.name || '',\n    nodo: nodoFallo,\n    error: mensajeError,\n    respuesta: lineas.join('\\n')\n  }\n}];\n"
+        "operation": "getAll",
+        "tableId": "avisos_error",
+        "returnAll": true,
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "enviado",
+              "condition": "eq",
+              "keyValue": "true"
+            },
+            {
+              "keyName": "creado_en",
+              "condition": "gte",
+              "keyValue": "={{ $now.minus({minutes:15}).toISO() }}"
+            }
+          ]
+        }
+      },
+      "id": "e0000001-0000-4000-8000-000000000005",
+      "name": "Cargar avisos recientes",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -890,
+        400
+      ],
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "supabaseApi": {
+          "id": "SUPABASE_CRED",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// CORTAFUEGOS ANTI-AVALANCHA\n// Como maximo MAX_AVISOS mensajes cada VENTANA_MIN minutos, y nunca dos veces\n// el mismo error dentro de esa ventana. Todo queda registrado en Supabase\n// aunque no se envie, asi que no se pierde informacion.\nconst VENTANA_MIN = 15;\nconst MAX_AVISOS  = 5;\nconst TELEFONO_AVISO = '34640575291';\n\nconst d  = $input.first().json || {};\nconst wf = d.workflow || {};\nconst ex = d.execution || {};\nconst err = ex.error || {};\n\nconst nombreWf = wf.name || wf.id || 'desconocido';\n\n// Nunca avisar de un fallo del propio workflow de avisos: seria un bucle.\nif (/Avisos de error/i.test(nombreWf)) return [];\n\nconst corta = (v, max) => {\n  const s = (v === null || v === undefined) ? '' : v.toString().replace(/\\s+/g, ' ').trim();\n  return s.length > max ? s.slice(0, max - 3) + '...' : s;\n};\n\nconst mensajeError = corta(err.message || err.description || 'Error sin mensaje', 400);\nconst nodoFallo = ex.lastNodeExecuted || 'desconocido';\nconst huella = corta([nombreWf, nodoFallo, mensajeError].join('|'), 200);\n\n// Cuantos avisos se han enviado ya en la ventana\nconst recientes = $('Cargar avisos recientes').all()\n  .map(i => i.json || {})\n  .filter(r => r && r.id);\n\nconst yaAvisadoIgual = recientes.some(r => r.huella === huella);\nconst topeAlcanzado  = recientes.length >= MAX_AVISOS;\nconst debeAvisar     = !yaAvisadoIgual && !topeAlcanzado;\nconst esElUltimo     = debeAvisar && recientes.length === MAX_AVISOS - 1;\n\nconst TZ = 'Europe/Madrid';\nconst ahora = new Intl.DateTimeFormat('es-ES', {\n  timeZone: TZ,\n  day: '2-digit', month: '2-digit', year: 'numeric',\n  hour: '2-digit', minute: '2-digit', hour12: false\n}).format(new Date()).replace(',', '');\n\nconst lineas = [\n  '🚨 FALLO EN UNA AUTOMATIZACION',\n  '',\n  'Workflow: ' + nombreWf,\n  'Nodo: ' + nodoFallo,\n  'Cuando: ' + ahora,\n  '',\n  'Error: ' + mensajeError\n];\n\nif (ex.url) {\n  lineas.push('');\n  lineas.push('Ver ejecucion: ' + ex.url);\n}\n\nif (esElUltimo) {\n  lineas.push('');\n  lineas.push('⚠️ Este es el aviso ' + MAX_AVISOS + ' de ' + MAX_AVISOS + ' en ' + VENTANA_MIN + ' minutos.');\n  lineas.push('Silencio los siguientes para no inundarte. Se siguen guardando');\n  lineas.push('en la tabla avisos_error de Supabase.');\n}\n\nreturn [{\n  json: {\n    telefono_aviso: TELEFONO_AVISO,\n    workflow_nombre: nombreWf,\n    nodo: nodoFallo,\n    error: mensajeError,\n    huella,\n    debe_avisar: debeAvisar,\n    motivo_silencio: yaAvisadoIgual ? 'error repetido' : (topeAlcanzado ? 'tope alcanzado' : ''),\n    respuesta: lineas.join('\\n')\n  }\n}];\n"
       },
       "id": "e0000001-0000-4000-8000-000000000002",
-      "name": "Preparar aviso de error",
+      "name": "Decidir si avisar",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
@@ -27,10 +66,89 @@
     },
     {
       "parameters": {
+        "operation": "create",
+        "tableId": "avisos_error",
+        "dataToSend": "defineBelow",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "workflow_nombre",
+              "fieldValue": "={{ $json.workflow_nombre }}"
+            },
+            {
+              "fieldId": "nodo",
+              "fieldValue": "={{ $json.nodo }}"
+            },
+            {
+              "fieldId": "error",
+              "fieldValue": "={{ $json.error }}"
+            },
+            {
+              "fieldId": "huella",
+              "fieldValue": "={{ $json.huella }}"
+            },
+            {
+              "fieldId": "enviado",
+              "fieldValue": "={{ $json.debe_avisar }}"
+            }
+          ]
+        }
+      },
+      "id": "e0000001-0000-4000-8000-000000000006",
+      "name": "Registrar aviso",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -430,
+        400
+      ],
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "supabaseApi": {
+          "id": "SUPABASE_CRED",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cond-debe-avisar",
+              "leftValue": "={{ $('Decidir si avisar').first().json.debe_avisar }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "e0000001-0000-4000-8000-000000000007",
+      "name": "Si toca avisar",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -200,
+        400
+      ]
+    },
+    {
+      "parameters": {
         "operation": "send",
         "phoneNumberId": "1084326274761313",
-        "recipientPhoneNumber": "={{ $json.telefono_aviso }}",
-        "textBody": "={{ $json.respuesta }}",
+        "recipientPhoneNumber": "={{ $('Decidir si avisar').first().json.telefono_aviso }}",
+        "textBody": "={{ $('Decidir si avisar').first().json.respuesta }}",
         "additionalFields": {}
       },
       "id": "e0000001-0000-4000-8000-000000000003",
@@ -38,8 +156,8 @@
       "type": "n8n-nodes-base.whatsApp",
       "typeVersion": 1.1,
       "position": [
-        -420,
-        400
+        30,
+        320
       ],
       "webhookId": "e1a2b3c4-0000-4000-8000-000000000003",
       "credentials": {
@@ -52,14 +170,14 @@
     },
     {
       "parameters": {
-        "content": "# Workflow 04 - Avisos de error\n\nSalta automaticamente cuando CUALQUIER otro workflow falla y te manda un WhatsApp al +34 640575291 con:\nque workflow ha fallado, en que nodo, el mensaje de error y el enlace a la ejecucion.\n\n## COMO ACTIVARLO (importante, si no, no hace nada)\n\nEste workflow no se activa solo. Hay que decirle a cada uno de los otros que lo use:\n\n1. Abre el workflow 01.\n2. Menu de los tres puntos (arriba a la derecha) -> Settings.\n3. En **Error Workflow**, elige \"Clinica Dental - 04 Avisos de error\".\n4. Guarda.\n5. Repite en los workflows 02, 03 y 05.\n\nNo hace falta activar (Active) este workflow: los Error Trigger funcionan igual.\n\n## AVISO IMPORTANTE sobre WhatsApp\n\nLa API de WhatsApp Business solo deja mandar mensajes libres a un numero\ndurante las 24h siguientes a que ESE numero te escriba. Es una norma de Meta,\nno es un fallo del workflow.\n\nEn la practica: si hace mas de 24h que no escribes al numero del bot desde tu\nmovil, este aviso NO te llegara y el nodo dara error (esta puesto para que no\nrompa nada si pasa).\n\nDos formas de solucionarlo:\n- La rapida: escribe \"hola\" al numero del bot desde tu movil cada dia. Poco fiable.\n- La buena: crear una plantilla (template) aprobada en Meta para alertas, o\n  cambiar este nodo por Telegram o por email, que no tienen esa limitacion.\n  Telegram es gratis y tarda 5 minutos en configurarse.",
-        "height": 700,
-        "width": 720,
+        "content": "# Workflow 04 - Avisos de error\n\nSalta cuando CUALQUIER otro workflow falla y te manda un WhatsApp al\n+34 640575291 con: que workflow, que nodo, el error y el enlace a la ejecucion.\n\n## COMO ACTIVARLO (si no, no hace nada)\n\nEn cada workflow (01, 02, 03 y 05):\nmenu de los tres puntos -> Settings -> **Error Workflow** -> elegir este -> Guardar.\n\nNo hace falta poner este workflow en Active: los Error Trigger funcionan igual.\n\nNECESITA la tabla avisos_error: ejecuta antes \"04 - avisos-error.sql\".\n\n## CORTAFUEGOS ANTI-AVALANCHA\n\nMaximo **5 avisos cada 15 minutos**, y nunca dos veces el mismo error dentro\nde esa ventana. Los silenciados SI se guardan en la tabla avisos_error, asi\nque no se pierde nada: solo dejan de sonar en el movil.\n\nEsto existe por lo que paso el 08/08/2026: un fallo en el workflow 01 mandaba\nun aviso, el aviso generaba callbacks de estado de WhatsApp, esos callbacks\nvolvian a entrar en el workflow 01, que volvia a fallar... bucle infinito y\ndecenas de mensajes seguidos.\n\nLa causa concreta ya esta corregida en el workflow 01. Esto es la red por si\nvuelve a pasar algo parecido por otro motivo.\n\n## Para revisar que ha fallado\n\nEn Supabase, tabla avisos_error. Al final de \"04 - avisos-error.sql\" tienes\nlas consultas utiles preparadas (ultimas 24h, fallos mas repetidos, limpieza).\n\n## AVISO sobre WhatsApp como canal de alertas\n\nMeta solo permite mensajes libres durante las 24h siguientes a que TU escribas\nal numero del bot. Si llevas mas de un dia sin escribirle, el aviso NO llega.\n\nAdemas, el token de prueba de Meta caduca cada 24h. Para que esto deje de\ndarte guerra: Meta Business Suite -> Usuarios del sistema -> generar un token\npermanente con el permiso whatsapp_business_messaging.\n\nPara alertas de verdad, Telegram o email son mejores: no tienen ventana de\n24h ni tokens que caduquen.",
+        "height": 900,
+        "width": 780,
         "color": 3
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        -900,
+        -1120,
         560
       ],
       "typeVersion": 1,
@@ -73,14 +191,47 @@
       "main": [
         [
           {
-            "node": "Preparar aviso de error",
+            "node": "Cargar avisos recientes",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Preparar aviso de error": {
+    "Cargar avisos recientes": {
+      "main": [
+        [
+          {
+            "node": "Decidir si avisar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decidir si avisar": {
+      "main": [
+        [
+          {
+            "node": "Registrar aviso",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar aviso": {
+      "main": [
+        [
+          {
+            "node": "Si toca avisar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Si toca avisar": {
       "main": [
         [
           {
@@ -88,7 +239,8 @@
             "type": "main",
             "index": 0
           }
-        ]
+        ],
+        []
       ]
     }
   },
@@ -97,7 +249,7 @@
     "executionOrder": "v1",
     "timezone": "Europe/Madrid"
   },
-  "versionId": "e4000000-0000-4000-8000-000000000001",
+  "versionId": "e4000000-0000-4000-8000-000000000002",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "b46ba6e189765812cf420e6f1d27507c3730c94070cb152a228939aec7fe29af"

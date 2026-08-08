@@ -10,6 +10,7 @@ preparado para **varias clínicas con un solo workflow**.
 | `01 - esquema.sql` | Tablas base. Se ejecuta primero. |
 | `02 - multi-clinica.sql` | Configuración por clínica + tratamientos. Se ejecuta segundo. |
 | `03 - optimizaciones.sql` | Vista e índice de rendimiento. Se ejecuta tercero. |
+| `04 - avisos-error.sql` | Registro de errores y cortafuegos. Se ejecuta cuarto. |
 | `Clinica Dental - 01 WhatsApp citas (Supabase).json` | El bot principal (94 nodos). |
 | `Clinica Dental - 02 Recordatorios 24h (Supabase).json` | Recordatorio el día antes. |
 | `Clinica Dental - 03 Solicitud valoraciones post cita (Supabase).json` | Pide valoración al terminar. |
@@ -35,6 +36,7 @@ En **SQL Editor** → **New query**, pega y ejecuta **en este orden**:
 1. `01 - esquema.sql` → crea `clinicas`, `citas`, `lista_espera`, `leads`, `derivaciones`
 2. `02 - multi-clinica.sql` → añade la configuración de cada clínica y la tabla `tratamientos`
 3. `03 - optimizaciones.sql` → crea la vista `clinicas_config` y un índice
+4. `04 - avisos-error.sql` → crea la tabla `avisos_error` (el workflow 04 no funciona sin ella)
 
 Los tres se pueden ejecutar varias veces sin romper nada. El último te devuelve una fila de comprobación: debe decir `num_tratamientos = 5`.
 
@@ -173,6 +175,34 @@ La única palanca que mueve la aguja es la IA:
 - **Prompt caching** — tu prompt de sistema son ~14.000 caracteres iguales en cada mensaje. OpenAI y Anthropic lo cachean y cobran ~90% menos por esa parte; también reduce latencia.
 - **Un modelo más rápido** para los mensajes fáciles.
 - **Saltarse la IA** en mensajes obvios ("hola", un número del 1 al 5 para valorar). El nodo `Normalizar y enrutar` ya sabe resolver varios de esos casos: adelantar esa comprobación antes del agente ahorraría la llamada entera. Es la optimización con más recorrido, y la dejo apuntada porque toca el flujo principal y merece hacerse con calma y con pruebas.
+
+---
+
+# Incidente del 08/08/2026 — la avalancha de avisos
+
+Merece la pena entenderlo porque explica dos arreglos del código.
+
+**Qué pasó.** Caducó el token de Meta, el bot no pudo enviar un mensaje y empezaron a llegar decenas de avisos de error seguidos, solos, sin que nadie tocara nada.
+
+**Por qué.** El token no fue la causa, solo la chispa. Había un bucle:
+
+1. WhatsApp manda un *callback de estado* (enviado / entregado / leído) por **cada** mensaje que sale. Esos callbacks entran en el workflow 01 igual que un mensaje normal.
+2. `If texto valido` los manda por la rama FALSE, a `Preparar respuesta no texto`.
+3. Ese nodo había quedado con `$('Construir contexto')` en su primera línea. Pero `Construir contexto` está en la **otra** rama del IF, así que nunca se había ejecutado → el nodo reventaba con *"Node 'Construir contexto' hasn't been executed"*.
+4. Al fallar el workflow 01 → saltaba el workflow 04 → mandaba un aviso por WhatsApp.
+5. **Ese aviso generaba sus propios callbacks de estado** → volvían al paso 1.
+
+Cada aviso producía más avisos. Por eso se disparó solo y por eso paró solo (cuando Meta cortó por límites).
+
+**De quién fue el fallo: mío.** Al hacer el refactor multi-clínica añadí la línea de configuración a todos los nodos que mencionaban el teléfono de la clínica, sin comprobar que uno de ellos vivía en la rama que no pasa por la configuración. El código original tenía ahí un `return []` que ignoraba los callbacks en silencio — y era justo lo que cortaba el bucle. Mi línea se ejecutaba antes de ese `return` y lo dejó inútil.
+
+**Qué se ha arreglado**
+
+1. `Preparar respuesta no texto` ya no depende de la configuración, y su primer acto vuelve a ser ignorar los callbacks en silencio. Lleva un comentario explicando por qué no se puede tocar.
+2. `Enviar WhatsApp` tenía el mismo problema: sacaba el número emisor de la configuración, así que también reventaba en esa rama. Ahora lo saca de `metadata.phone_number_id` del propio webhook, que viene siempre, en las dos ramas. Aplicado a los 3 nodos de WhatsApp.
+3. El workflow 04 tiene ahora un **cortafuegos**: máximo 5 avisos cada 15 minutos y nunca el mismo error repetido. Aunque vuelva a aparecer un bucle por otro motivo, no puede inundarte.
+
+**Cómo comprobar que está resuelto:** manda un audio o una foto al bot. Debe contestarte que solo gestiona texto, **una sola vez**, y no debe llegarte ningún aviso de error.
 
 ---
 
