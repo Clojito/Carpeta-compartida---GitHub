@@ -184,6 +184,14 @@ Se documentan porque son trampas fáciles de volver a pisar:
 - **Última cita del día.** Una limpieza de 45 min no cabe a las 20:00 si se
   cierra a las 20:00. El bot lo rechaza bien, pero ahora además lo explica y
   dice a qué hora es la última cita posible.
+- **El bot no se callaba al derivar.** Tras mandar una consulta al equipo,
+  seguía respondiendo a la IA mientras el paciente esperaba la llamada. Ahora
+  se pausa 3 h (configurable) y no llega a llamar al modelo. Ver Parte 6 del
+  README de las automatizaciones.
+- **`Europe/Lisbon` en los workflows 02 y 03.** Al corregir la zona horaria
+  solo se arregló el workflow 01. Los otros dos se quedaron con Lisboa escrito
+  a mano. Ya están en `Europe/Madrid`, pero **no son multi-clínica**: cuando
+  llegue la segunda clínica hay que sacarlo de la configuración como en el 01.
 
 ---
 
@@ -207,6 +215,40 @@ mensajes con datos de salud ("me duele una muela y me sangra"). Para datos de
 categoría especial conviene revisarlo. Opciones: un proveedor con alojamiento
 en la UE, o documentar bien la transferencia en el contrato. Decidirlo antes
 de firmar con una clínica, no después.
+
+### Decisión pendiente: sincronizar con la agenda real de la clínica
+
+**No todas las citas entran por WhatsApp.** Muchas llegan por teléfono o en
+persona, y las apunta la recepcionista.
+
+**Lo que ya funciona:** el bot consulta Google Calendar antes de reservar. Si
+la recepcionista apunta las citas de teléfono **en ese mismo calendario**, el
+bot las ve y no puede pisarlas. El fallo grave (dos pacientes a la misma hora)
+está cubierto.
+
+**Lo que falta:** Supabase no se entera de esas citas. Consecuencias:
+- No se manda recordatorio a los pacientes que reservaron por teléfono, que
+  probablemente son la mayoría.
+- No se les pide valoración.
+- Si uno escribe luego por WhatsApp "quiero cancelar mi cita", el bot no la
+  encuentra.
+- Y al revés: si la recepcionista borra en Calendar una cita creada por el bot,
+  Supabase no se entera y el recordatorio se manda igual.
+
+**Solución:** un workflow 06 que sincronice Google Calendar → Supabase.
+**Requisito imprescindible:** que el teléfono del paciente esté en el evento
+del calendario, con un formato acordado (`Ana García - 600111222 - Limpieza`).
+Sin teléfono no hay recordatorio posible; no es una limitación técnica.
+
+**Antes de construirlo hay que preguntar a la clínica:**
+1. ¿Qué usáis hoy para la agenda? ¿Papel, Google Calendar, software dental
+   (Gesden, Clinic Cloud, Odontonet...)?
+2. ¿Quién apunta las citas de teléfono y dónde?
+3. ¿Cuántas citas al día entran por teléfono frente a otras vías?
+
+La respuesta cambia bastante el trabajo, así que no conviene construirlo a
+ciegas. Si usan software dental propio, hay que mirar si tiene API — muchos
+en España no la tienen o es de pago.
 
 ### Mejoras del producto (no bloqueantes)
 

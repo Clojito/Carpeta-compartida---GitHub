@@ -11,6 +11,7 @@ preparado para **varias clínicas con un solo workflow**.
 | `02 - multi-clinica.sql` | Configuración por clínica + tratamientos. Se ejecuta segundo. |
 | `03 - optimizaciones.sql` | Vista e índice de rendimiento. Se ejecuta tercero. |
 | `04 - avisos-error.sql` | Registro de errores y cortafuegos. Se ejecuta cuarto. |
+| `05 - pausa-derivacion.sql` | El bot se calla tras derivar a una persona. Se ejecuta quinto. |
 | `Clinica Dental - 01 WhatsApp citas (Supabase).json` | El bot principal (94 nodos). |
 | `Clinica Dental - 02 Recordatorios 24h (Supabase).json` | Recordatorio el día antes. |
 | `Clinica Dental - 03 Solicitud valoraciones post cita (Supabase).json` | Pide valoración al terminar. |
@@ -37,8 +38,9 @@ En **SQL Editor** → **New query**, pega y ejecuta **en este orden**:
 2. `02 - multi-clinica.sql` → añade la configuración de cada clínica y la tabla `tratamientos`
 3. `03 - optimizaciones.sql` → crea la vista `clinicas_config` y un índice
 4. `04 - avisos-error.sql` → crea la tabla `avisos_error` (el workflow 04 no funciona sin ella)
+5. `05 - pausa-derivacion.sql` → añade la pausa del bot tras derivar a una persona
 
-Los tres se pueden ejecutar varias veces sin romper nada. El último te devuelve una fila de comprobación: debe decir `num_tratamientos = 5`.
+Todos se pueden ejecutar varias veces sin romper nada. El último te devuelve una fila de comprobación: debe decir `num_tratamientos = 5` y `pausa_derivacion_minutos = 180`.
 
 ## Paso 3 — Claves de conexión
 
@@ -216,7 +218,46 @@ Salta cuando **cualquier** workflow falla y manda un WhatsApp al **+34 640575291
 
 ---
 
-# Parte 6 — Resumen semanal (workflow 05)
+# Parte 6 — El bot se calla al derivar a una persona
+
+Antes, cuando el bot derivaba una consulta al equipo ("me duele una muela y me
+sangra" → email al dentista), **seguía contestando** al paciente mientras este
+esperaba la llamada. Era justo el peor momento para que respondiera una máquina:
+el paciente está describiendo un problema de salud y espera ayuda de verdad.
+
+**Cómo funciona ahora.** Antes de llamar a la IA, el bot mira si ese teléfono
+tiene una derivación pendiente reciente. Si la tiene:
+
+- **No llama a la IA.** No hay forma de que se le escape una respuesta clínica.
+- Le recuerda al paciente que le van a llamar y le da el teléfono de urgencias
+  y el 112.
+- Si la derivación acaba de crearse (menos de 2 minutos), se calla del todo:
+  el paciente ya ha recibido el mensaje de "te llamamos" y no hace falta
+  repetírselo.
+
+**El paciente no se queda atrapado.** Si escribe algo relacionado con su cita
+("cita", "cancelar", "cambiar", "hora"...), el bot le atiende con normalidad.
+Solo se silencian las consultas.
+
+**Cuánto dura.** Lo marca la columna `pausa_derivacion_minutos` de cada clínica.
+Por defecto **180 minutos (3 horas)**. Pasado ese tiempo el bot vuelve solo.
+
+**Para reactivarlo antes**, marca la derivación como atendida en Supabase:
+
+```sql
+update derivaciones
+set estado = 'atendida', cerrado_en = now()::text
+where telefono = '34600111222' and estado = 'pendiente';
+```
+
+> **Cómo probarlo:** escribe "me duele mucho una muela y me sangra" → recibes
+> el mensaje de derivación. Escribe después "¿me tomo un ibuprofeno?" → el bot
+> **no** debe responder con la IA, sino con el aviso de espera. Escribe "quiero
+> cambiar mi cita" → debe atenderte con normalidad.
+
+---
+
+# Parte 7 — Resumen semanal (workflow 05)
 
 Cada lunes a las 8:00 manda un email a cada clínica activa:
 

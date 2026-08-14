@@ -2745,6 +2745,111 @@
                                    ],
                       "id":  "aa000001-0000-4000-8000-000000000003",
                       "name":  "Construir contexto"
+                  },
+                  {
+                      "parameters":  {
+                                         "operation":  "getAll",
+                                         "tableId":  "derivaciones",
+                                         "returnAll":  true,
+                                         "filterType":  "manual",
+                                         "matchType":  "allFilters",
+                                         "filters":  {
+                                                         "conditions":  [
+                                                                            {
+                                                                                "keyName":  "clinica_id",
+                                                                                "condition":  "eq",
+                                                                                "keyValue":  "={{ $json.config.clinica_id }}"
+                                                                            },
+                                                                            {
+                                                                                "keyName":  "estado",
+                                                                                "condition":  "eq",
+                                                                                "keyValue":  "pendiente"
+                                                                            },
+                                                                            {
+                                                                                "keyName":  "creado_en",
+                                                                                "condition":  "gte",
+                                                                                "keyValue":  "={{ $now.minus({minutes: Number($json.config.pausa_derivacion_minutos) || 180}).toISO() }}"
+                                                                            }
+                                                                        ]
+                                                     }
+                                     },
+                      "id":  "p0000001-0000-4000-8000-000000000001",
+                      "name":  "Buscar derivacion pendiente",
+                      "type":  "n8n-nodes-base.supabase",
+                      "typeVersion":  1,
+                      "position":  [
+                                       -2020,
+                                       560
+                                   ],
+                      "alwaysOutputData":  true,
+                      "onError":  "continueRegularOutput",
+                      "credentials":  {
+                                          "supabaseApi":  {
+                                                              "id":  "SUPABASE_CRED",
+                                                              "name":  "Supabase account"
+                                                          }
+                                      }
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "// El bot se calla cuando ya hay una consulta derivada al equipo de la clinica.\n// Sin esto, el paciente seguia hablando con la IA mientras esperaba la llamada,\n// que es justo el momento en el que mas dano puede hacer una respuesta\n// automatica: esta describiendo un problema de salud y espera ayuda.\nconst ctx = $('Construir contexto').first().json;\nconst CFG = ctx.config || {};\nconst trigger = $('WhatsApp Trigger').first().json;\nconst mensaje = (trigger.messages?.[0]?.text?.body || '').toString();\nconst telefono = (trigger.messages?.[0]?.from || '').toString();\n\nconst soloDigitos = v => (v || '').toString().replace(/\\D/g, '');\nconst mismoTelefono = (a, b) => {\n  const x = soloDigitos(a), y = soloDigitos(b);\n  if (!x || !y) return false;\n  return x === y || x.slice(-9) === y.slice(-9);\n};\n\nconst minutosPausa = Number(CFG.pausa_derivacion_minutos) > 0\n  ? Number(CFG.pausa_derivacion_minutos)\n  : 180;\n\nconst ahora = Date.now();\nconst pendientes = $('Buscar derivacion pendiente').all()\n  .map(i => i.json || {})\n  .filter(r => r && r.id && mismoTelefono(r.telefono, telefono))\n  .map(r => ({ ms: Date.parse(r.creado_en) }))\n  .filter(r => Number.isFinite(r.ms) && (ahora - r.ms) < minutosPausa * 60000)\n  .sort((a, b) => b.ms - a.ms);\n\nconst derivacion = pendientes[0] || null;\n\n// Puerta de escape: si el paciente quiere gestionar una cita no lo dejamos\n// atrapado esperando. Solo se silencian las consultas.\nconst quiereCita = /\\b(cita|citas|reservar|reserva|anular|cancelar|cambiar|aplazar|hora|horario|agenda)\\b/\n  .test(mensaje.toLowerCase());\n\nconst pausada = !!derivacion && !quiereCita;\n\n// Si la derivacion acaba de crearse, el paciente ya ha recibido el mensaje de\n// \"te llamamos\". No hace falta repetirselo al momento.\nconst reciente = derivacion ? (ahora - derivacion.ms) < 2 * 60000 : false;\n\n// Se devuelve TODO el contexto tal cual, porque el AI Agent lee de aqui su\n// system_prompt. Si se pierde, el agente se queda sin instrucciones.\nreturn [{\n  json: {\n    ...ctx,\n    pausada,\n    silenciar: pausada && reciente,\n    telefono_paciente: telefono,\n    minutos_pausa: minutosPausa\n  }\n}];"
+                                     },
+                      "id":  "p0000001-0000-4000-8000-000000000002",
+                      "name":  "Comprobar pausa",
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       -1790,
+                                       560
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "conditions":  {
+                                                            "options":  {
+                                                                            "caseSensitive":  true,
+                                                                            "leftValue":  "",
+                                                                            "typeValidation":  "strict",
+                                                                            "version":  3
+                                                                        },
+                                                            "conditions":  [
+                                                                               {
+                                                                                   "id":  "cond-pausada",
+                                                                                   "leftValue":  "={{ $json.pausada }}",
+                                                                                   "rightValue":  true,
+                                                                                   "operator":  {
+                                                                                                    "type":  "boolean",
+                                                                                                    "operation":  "equals"
+                                                                                                }
+                                                                               }
+                                                                           ],
+                                                            "combinator":  "and"
+                                                        },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "id":  "p0000001-0000-4000-8000-000000000003",
+                      "name":  "If conversacion pausada",
+                      "type":  "n8n-nodes-base.if",
+                      "typeVersion":  2.3,
+                      "position":  [
+                                       -1560,
+                                       560
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "const d = $input.first().json || {};\n\n// Acaba de recibir el mensaje de \"te llamamos\": no repetirselo.\nif (d.silenciar) return [];\n\nconst CFG = d.config || {};\nconst tel = CFG.telefono_publico || '';\n\nconst lineas = [\n  'Tu consulta ya está en manos del equipo de la clínica y te van a contactar lo antes posible 🙏',\n  '',\n  'Mientras tanto prefiero no contestarte yo, para no darte información que debe darte un profesional.'\n];\n\nif (tel) {\n  lineas.push('');\n  lineas.push('Si es urgente, llama al ' + tel + ' o al 112.');\n}\n\nlineas.push('');\nlineas.push('Si lo que necesitas es pedir o cambiar una cita, escríbeme \"cita\" y te ayudo con eso.');\n\nreturn [{\n  json: {\n    accion: 'responder',\n    telefono: d.telefono_paciente,\n    respuesta: lineas.join('\\n')\n  }\n}];"
+                                     },
+                      "id":  "p0000001-0000-4000-8000-000000000004",
+                      "name":  "Preparar aviso de espera",
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       -1330,
+                                       660
+                                   ]
                   }
               ],
     "pinData":  {
@@ -3789,13 +3894,58 @@
                                                    "main":  [
                                                                 [
                                                                     {
-                                                                        "node":  "AI Agent",
+                                                                        "node":  "Buscar derivacion pendiente",
                                                                         "type":  "main",
                                                                         "index":  0
                                                                     }
                                                                 ]
                                                             ]
-                                               }
+                                               },
+                        "Buscar derivacion pendiente":  {
+                                                            "main":  [
+                                                                         {
+                                                                             "node":  "Comprobar pausa",
+                                                                             "type":  "main",
+                                                                             "index":  0
+                                                                         }
+                                                                     ]
+                                                        },
+                        "Comprobar pausa":  {
+                                                "main":  [
+                                                             {
+                                                                 "node":  "If conversacion pausada",
+                                                                 "type":  "main",
+                                                                 "index":  0
+                                                             }
+                                                         ]
+                                            },
+                        "Preparar aviso de espera":  {
+                                                         "main":  [
+                                                                      {
+                                                                          "node":  "Enviar WhatsApp",
+                                                                          "type":  "main",
+                                                                          "index":  0
+                                                                      }
+                                                                  ]
+                                                     },
+                        "If conversacion pausada":  {
+                                                        "main":  [
+                                                                     [
+                                                                         {
+                                                                             "node":  "Preparar aviso de espera",
+                                                                             "type":  "main",
+                                                                             "index":  0
+                                                                         }
+                                                                     ],
+                                                                     [
+                                                                         {
+                                                                             "node":  "AI Agent",
+                                                                             "type":  "main",
+                                                                             "index":  0
+                                                                         }
+                                                                     ]
+                                                                 ]
+                                                    }
                     },
     "active":  false,
     "settings":  {
