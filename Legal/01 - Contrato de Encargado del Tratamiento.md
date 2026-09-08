@@ -164,11 +164,26 @@ Cada parte responde de los daños que cause por incumplimiento de sus propias
 obligaciones o de la normativa de protección de datos, conforme al artículo 82
 del RGPD.
 
-> **Negocia esto con el abogado.** Sin un límite de responsabilidad, un fallo
-> puede arruinarte. Lo habitual es limitarlo a lo facturado en los últimos 12
-> meses, pero ojo: **las sanciones del RGPD no se pueden limitar por contrato**.
-> Pregunta también por un seguro de responsabilidad civil profesional: para un
-> servicio como el tuyo suele ser barato y te deja dormir.
+Sin perjuicio de lo anterior, y salvo en los supuestos en que la ley no permita
+limitarla, **la responsabilidad económica de EL ENCARGADO frente a EL
+RESPONSABLE queda limitada al importe facturado en los doce (12) meses
+anteriores** al hecho que la origine, en los mismos términos que la cláusula de
+responsabilidad del contrato de prestación de servicios entre las partes.
+
+Queda excluida en todo caso la responsabilidad por lucro cesante y por daños
+indirectos.
+
+> **Esta es la cláusula que evita que un fallo te arruine.** Va deliberadamente
+> alineada con la cláusula 8 del documento `02` para que no se contradigan.
+>
+> Dos límites que tienes que conocer:
+> 1. **Las sanciones del RGPD no se pueden limitar por contrato.** Si la AEPD
+>    te multa a ti, esta cláusula no te protege de la multa.
+> 2. Sí te protege de que la clínica te reclame a ti daños desproporcionados.
+>
+> Lo que cubre el hueco que deja el punto 1 no es un abogado, es un **seguro de
+> responsabilidad civil profesional**. Para un servicio como el tuyo suele
+> costar bastante menos de lo que crees.
 
 ### 8. Legislación y jurisdicción
 

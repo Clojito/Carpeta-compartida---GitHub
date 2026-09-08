@@ -31,9 +31,10 @@ Marca prevista: **bitclap.es** · Mercado: España · Fundador: solo.
 | Producto funcionando | ✅ Sí, 5 workflows probados de punta a punta |
 | Base de datos | ✅ Supabase, multi-clínica desde el primer día |
 | Cliente potencial | 🟡 Una clínica dental interesada, sin contrato |
-| Alta de autónomo | ❌ No — **bloquea poder facturar** |
+| Modelo 036 (censal, gratis) | ❌ No — **bloquea la verificación de Meta** |
+| Alta en RETA (cuota) | ❌ No, y **a propósito**: no hasta la primera factura |
 | Meta Business Verification | ❌ No — **bloquea escribir a pacientes reales** |
-| Documentos legales | 🟡 Borradores listos en `Legal/`, sin revisar por abogado |
+| Documentos legales | 🟡 Listos en `Legal/`. Decisión tomada: **sin abogado**, ver `Negocio/Decisiones - autonomo y abogado.md` |
 | Precios | 🟡 Propuesta en `Negocio/Precios y planes.md`, sin validar en mercado |
 | Web | ❌ No existe |
 
@@ -190,8 +191,13 @@ Se documentan porque son trampas fáciles de volver a pisar:
   README de las automatizaciones.
 - **`Europe/Lisbon` en los workflows 02 y 03.** Al corregir la zona horaria
   solo se arregló el workflow 01. Los otros dos se quedaron con Lisboa escrito
-  a mano. Ya están en `Europe/Madrid`, pero **no son multi-clínica**: cuando
-  llegue la segunda clínica hay que sacarlo de la configuración como en el 01.
+  a mano. Corregido, y además ya no hay ninguna zona horaria escrita a mano:
+  cada cita se evalúa con la `zona_horaria` de su propia clínica.
+- **Los cinco workflows ya son multi-clínica (29/08/2026).** El 02 y el 03
+  enviaban desde un `phoneNumberId` fijo. Ahora cargan la tabla `clinicas`,
+  cruzan por `clinica_id` y envían desde el número de cada una. El único número
+  escrito a mano que queda es `PHONE_ID_AVISOS` en el workflow 04, y es a
+  propósito: es el canal por el que bitclap te avisa a ti, no un cliente.
 
 ---
 
@@ -252,9 +258,14 @@ en España no la tienen o es de pago.
 
 ### Mejoras del producto (no bloqueantes)
 
-- **Workflows 02 y 03 no son multi-clínica.** Funcionan con una, pero envían
-  desde un `phoneNumberId` fijo. Con la segunda clínica hay que agruparlos por
-  `clinica_id` como ya hace el 05.
+- 🔴 **Plantillas de WhatsApp para los workflows 02 y 03. Esto sí bloquea.**
+  Meta solo deja enviar texto libre dentro de la ventana de 24 h desde el
+  último mensaje del paciente. Un recordatorio se manda el día antes de la
+  cita, y una valoración justo después: **las dos veces la ventana está
+  cerrada**. Con pacientes reales fallarán con el error `131047`.
+  En las pruebas no se ve porque tú le escribes al bot constantemente.
+  Solución: dar de alta dos plantillas y cambiar el nodo de envío. Textos
+  exactos en `Negocio/Meta - todo lo que bloquea.md`, apartado 3.
 - **Seguimiento comercial de leads.** Las columnas están en la base de datos
   pero no hay workflow que las use. Es lo que más dinero directo genera a la
   clínica: recuperar interesados que no reservaron.

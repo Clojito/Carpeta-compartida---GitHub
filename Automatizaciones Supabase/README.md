@@ -127,10 +127,29 @@ Si metieras el prompt entero en la base de datos, cada clínica tendría su prop
 
 Para matices concretos de un cliente ("no ofrecemos urgencias", "trátales de usted") existe la columna `instrucciones_extra`, que se añade al final del prompt de esa clínica.
 
-## Verificación: cero datos de clínica en el workflow
+## Verificación: cero datos de clínica en los workflows
 
-Comprobado en el archivo final — 0 apariciones de:
+Comprobado en los cinco archivos — 0 apariciones de:
 `912 345 678` · `Salud Lisboa` · `Calle Mayor 123` · `Europe/Lisbon` · el ID del calendario de pruebas · el `phoneNumberId` fijo.
+
+La única excepción es a propósito: el workflow 04 tiene la constante `PHONE_ID_AVISOS`,
+el número desde el que **bitclap** te avisa a ti de los fallos. No es el de ninguna
+clínica, y sigue siendo uno solo tengas 1 cliente o 30.
+
+### Los cinco workflows son multi-clínica
+
+| | Cómo sabe a qué clínica pertenece cada cosa |
+|---|---|
+| 01 WhatsApp citas | Por el `phone_number_id` que trae el propio webhook de Meta |
+| 02 Recordatorios | Carga `clinicas` y cruza por `clinica_id`; usa la zona horaria de cada una |
+| 03 Valoraciones | Igual que el 02; el fin de la cita se calcula en la zona de su clínica |
+| 04 Avisos de error | No aplica: los avisos son para ti, no para el cliente |
+| 05 Resumen semanal | Agrupa por `clinica_id` y manda un correo a cada `email_avisos` |
+
+**Por qué los workflows 02 y 03 buscan citas de varios días y luego filtran en código:**
+si la consulta filtrase por «la fecha de mañana en Madrid», una clínica en otro huso
+horario recibiría el recordatorio el día equivocado. La consulta trae un margen y quien
+decide qué cita toca es el código, que sí conoce la zona de cada clínica.
 
 ## Dar de alta la clínica número 2
 
@@ -276,5 +295,5 @@ Es multi-clínica desde el primer día: hace 4 consultas en total (no 4 por clí
 - **RLS sigue desactivada.** No hace falta con una sola clínica. Instrucciones al final de `01 - esquema.sql`.
 - **`instrucciones_extra` está vacío.** Úsalo para matices de cada cliente sin tocar el prompt base.
 - **Seguimiento comercial de leads.** Las columnas `proximo_seguimiento_en`, `numero_seguimientos` y `max_seguimientos` se rellenan pero nadie las lee. Falta el workflow que recupere leads fríos: es el que más ingresos directos genera a la clínica.
-- **Los workflows 02 y 03 no son multi-clínica todavía.** Funcionan (leen todas las citas de todas las clínicas), pero envían desde un `phoneNumberId` fijo. Con la segunda clínica hay que agruparlos por `clinica_id` como hace el workflow 05.
+- **Plantillas de WhatsApp para los workflows 02 y 03.** Es el único bloqueo real que queda para producción: fuera de la ventana de 24 horas Meta solo deja enviar plantillas aprobadas, no texto libre. Hay que darlas de alta en el Administrador de WhatsApp y cambiar el nodo de envío. Detalle en `ESTADO-DEL-PROYECTO.md`.
 - **Aviso de derivación urgente por WhatsApp** al móvil del dentista, además del email.
