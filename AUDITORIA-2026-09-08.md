@@ -1,4 +1,94 @@
 # Auditoría bitclap.es — 8 de septiembre de 2026
+### · Revisada contra el código el 9 de septiembre ·
+
+> ## ⚠️ ESTADO A 9 DE SEPTIEMBRE — LEE ESTO PRIMERO
+>
+> Anoche subiste el trabajo que habías hecho en el PC de casa (commit
+> `main2`, 8-sep 23:39, con documentos fechados el 29 de agosto). He
+> revisado **el código, no los documentos**, para ver qué está arreglado de
+> verdad. Resultado:
+>
+> **✅ Arreglado y verificado en el código:**
+> - **Workflows 02 y 03 son multi-clínica de verdad.** Cargan la tabla
+>   `clinicas`, cruzan por `clinica_id`, el `phoneNumberId` sale de la
+>   configuración y cada cita se evalúa en la zona horaria de su clínica.
+>   Bien hecho, y los comentarios del código explican el porqué.
+> - **Workflow 04**: el número de avisos ya sale de configuración.
+> - **Contrato de encargado**: la cláusula 7 ya tiene límite real de
+>   responsabilidad (12 meses facturados, excluido el lucro cesante),
+>   alineada con el contrato de servicios. Era un hueco real y está cerrado.
+> - **Batería de pruebas creada** (`Pruebas/Bateria de mensajes.md`): 12
+>   bloques y 5 trampas documentadas. Cubre buena parte de lo que pedía la
+>   Fase 3 del plan. La trampa T3 que apuntaste ahí es, además, el mismo
+>   fallo que yo encontré en el detector clínico.
+>
+> **🔴 Sigue exactamente igual (verificado línea a línea):**
+> - **El modelo de IA sigue siendo `llama-3.3-70b-versatile` en `lmChatGroq`.**
+>   Es el modelo que Groq apagó el 16 de agosto. **El bot sigue muerto.**
+> - **La salida de error del `AI Agent` sigue desconectada** (solo existe
+>   `AI Agent -> [0] -> Normalizar y enrutar`). Por eso no te has enterado.
+> - **La fuga de identidad sigue ahí**: `conTelefono[0] || conNombre[0] || null`.
+> - **El detector clínico sigue comparando subcadenas** (`valor.includes(termino)`
+>   con `'dor'`, `'doi'`, `'pus'`, `'pain'`, `'tomo '` en la lista).
+> - **Las plantillas de WhatsApp siguen sin existir** (0 usos de `sendTemplate`
+>   en 02 y 03) — pero ya tienes los textos redactados y listos para darlos
+>   de alta, que era la parte que costaba decidir.
+>
+> **📌 Dos correcciones a tus documentos nuevos** — ver la sección 0.
+>
+> Efecto en el plan: **quedan 5 bloqueantes de los 8**, y el trabajo total
+> baja de 78-133 h a **unas 60-105 h**. Detalle en
+> [PLAN-DE-ARREGLOS.md](./PLAN-DE-ARREGLOS.md).
+
+---
+
+## 0. Dos cosas de tus documentos nuevos que conviene corregir
+
+### 0.1 — La verificación de Meta **no** bloquea escribir a pacientes reales
+
+Tu `ESTADO-DEL-PROYECTO.md` y `Negocio/Plan de esta semana.md` dicen que
+hasta que Meta apruebe la verificación *"el bot solo puede escribir a números
+dados de alta a mano"*. **Eso describe el número de prueba, no la
+verificación.**
+
+Verificado con varias fuentes independientes: una cuenta **sin verificar**
+puede enviar a **250 destinatarios únicos cada 24 horas** y responder sin
+límite dentro de la ventana, con un tope de 2 números de teléfono. La
+verificación sube ese tope a 2.000/24 h y a 20 números.
+
+Una clínica de 150 citas al mes son **unos 5 pacientes distintos al día**.
+Estás 50 veces por debajo del límite sin verificar.
+
+Lo que de verdad te tiene atado hoy es que usas el **número de prueba de
+Meta** (máximo 5 destinatarios). Para salir de ahí necesitas: **un número
+real + un método de pago en la cuenta**. Ninguna de las dos cosas exige la
+verificación.
+
+**Por qué importa:** tu plan de la semana da por hecho que hay que esperar
+semanas a Meta antes de tener pacientes reales, y ordena las tareas alrededor
+de esa espera. Si esto se confirma en tu cuenta, **el piloto puede arrancar
+sin esperar la verificación**. Arráncala igual (la necesitas para la clínica
+2 y para el nombre visible), pero deja de tratarla como el cuello de botella.
+
+*Confianza: alta en el límite de 250/24 h; media en si el nombre visible
+aprobado exige verificación previa. Compruébalo en tu propia cuenta antes de
+prometerle fechas al dentista.*
+
+### 0.2 — "El bot está terminado y probado" ya no es cierto
+
+La regla 2 de `Plan de esta semana.md` dice: *"El bot está terminado, probado
+y ya es multi-clínica entero. Nada de funciones nuevas."*
+
+La segunda mitad es buen consejo y la mantengo. La primera no se sostiene:
+el modelo de IA está apagado desde el 16 de agosto, y hay tres fallos serios
+sin tocar. **No son funciones nuevas — son reparaciones**, y la regla "nada
+de funciones nuevas" no debería usarse para aplazarlas.
+
+Ligado a esto, tu plan sitúa el cambio de proveedor de IA en *"Semana 2, no
+antes de la demo"*. **Ese orden ya no funciona: sin cambiar el modelo no hay
+demo que enseñar.** Es la primera tarea de ordenador, no la última.
+
+---
 
 > **Qué es esto.** Auditoría completa: 9 agentes especializados (técnica,
 > IA, datos, legal, Meta/WhatsApp, negocio, multi-dentista, operaciones) +
@@ -358,11 +448,12 @@ Mi primera pasada acertaba en el diagnóstico (01 y 05 son multi-clínica de
 verdad; 02, 03 y 04 no) pero se quedaba corta en las horas. Con lo que
 verificó esta pasada:
 
-- **Antes del piloto (obligatorio, aunque solo haya 1 clínica):** hacer 02/03
-  dinámicos por clínica + limpiar el número de pruebas cableado + unificar
-  credencial de WhatsApp + arreglar la ventana horaria de envío = **6-10 h**.
-  Se suma a esto la migración a plantillas de la sección 3.2 (que es el
-  verdadero trabajo grande, no el multi-clínica en sí).
+- ~~**Antes del piloto (obligatorio, aunque solo haya 1 clínica):** hacer 02/03
+  dinámicos por clínica + limpiar el número de pruebas cableado = **6-10 h**.~~
+  ✅ **HECHO** (verificado en el código el 9-sep). Los cinco workflows son
+  multi-clínica. Lo que queda de este bloque es la migración a plantillas de
+  la sección 3.2, que es el verdadero trabajo grande — el multi-clínica en sí
+  ya no es el problema.
 - **Durante el piloto** (según lo que diga la clínica sobre cómo lleva su
   agenda hoy): capacidad por sillón (2-4h), workflow 06 de sincronización
   Calendar→Supabase (10-16h + 4-6h de casos borde) = **18-30 h**.
