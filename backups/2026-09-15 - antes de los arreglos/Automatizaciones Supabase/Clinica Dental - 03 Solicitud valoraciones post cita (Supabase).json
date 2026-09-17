@@ -1,0 +1,273 @@
+{
+  "name": "Clinica Dental - 03 Solicitud valoraciones post cita (Supabase)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 * * * *"
+            }
+          ]
+        }
+      },
+      "id": "df949a75-3b27-4f53-881b-51b1ef2d9101",
+      "name": "Schedule Trigger Valoracion",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1000,
+        1980
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "clinicas",
+        "returnAll": true,
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "activo",
+              "condition": "eq",
+              "keyValue": "true"
+            }
+          ]
+        }
+      },
+      "id": "a3000001-0000-4000-8000-000000000001",
+      "name": "Cargar clinicas",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -760,
+        1980
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "SUPABASE_CRED",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "citas",
+        "returnAll": true,
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "estado",
+              "condition": "eq",
+              "keyValue": "confirmada"
+            },
+            {
+              "keyName": "valoracion_solicitada",
+              "condition": "eq",
+              "keyValue": "false"
+            },
+            {
+              "keyName": "fecha",
+              "condition": "lte",
+              "keyValue": "={{ $now.plus({days:1}).setZone('Europe/Madrid').toFormat('yyyy-MM-dd') }}"
+            }
+          ]
+        }
+      },
+      "id": "1f91a286-c578-4350-9a9a-d4eaf1f7eeb2",
+      "name": "Buscar citas para valoracion",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -520,
+        1980
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "SUPABASE_CRED",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================================\n//  MULTI-CLINICA\n//  Cada cita se evalua con la zona horaria de SU clinica y se envia desde el\n//  numero de WhatsApp de SU clinica. Dar de alta una clinica nueva = insertar\n//  una fila en la tabla clinicas. Este codigo NO se toca nunca mas.\n// ============================================================================\n\n// AVISO: las clinicas hay que leerlas POR EL NOMBRE del nodo.\n// $input aqui devuelve las CITAS (el nodo inmediatamente anterior).\nconst clinicas = new Map(\n  $(\u0027Cargar clinicas\u0027).all()\n    .map(item =\u003e item.json || {})\n    .filter(c =\u003e c.id)\n    .map(c =\u003e [c.id, c])\n);\n\nconst ZONA_POR_DEFECTO      = \u0027Europe/Madrid\u0027;\nconst ESPERA_POST_CITA_MIN  = 60;\n\n// Fuente de verdad: la duracion real que guardo el workflow 01 en la columna\n// duracion_minutos. La tabla de abajo es solo un respaldo por si alguna fila\n// antigua no la tiene.\nconst DURACION_POR_DEFECTO = 60;\nconst DURACIONES_TRATAMIENTO = [\n  { patrones: [\u0027revision\u0027, \u0027revision dental\u0027, \u0027revisao\u0027, \u0027checkup\u0027, \u0027check-up\u0027], minutos: 30 },\n  { patrones: [\u0027limpieza\u0027, \u0027limpeza\u0027, \u0027nettoyage\u0027, \u0027cleaning\u0027], minutos: 45 },\n  { patrones: [\u0027blanqueamiento\u0027, \u0027branqueamento\u0027, \u0027blanchiment\u0027, \u0027whitening\u0027], minutos: 90 },\n  { patrones: [\u0027empaste\u0027, \u0027obturacion\u0027, \u0027plombage\u0027, \u0027filling\u0027], minutos: 60 },\n  { patrones: [\u0027ortodoncia\u0027, \u0027ortodontia\u0027, \u0027orthodontie\u0027, \u0027orthodontics\u0027], minutos: 60 }\n];\n\nconst normalizarTexto = texto =\u003e (texto || \u0027\u0027).toString().toLowerCase()\n  .normalize(\u0027NFD\u0027).replace(/[\\u0300-\\u036f]/g, \u0027\u0027).trim();\n\nconst duracionCita = row =\u003e {\n  const guardada = Number(row.duracion_minutos);\n  if (Number.isFinite(guardada) \u0026\u0026 guardada \u003e 0) return guardada;\n  const valor = normalizarTexto(row.tratamiento);\n  const encontrado = DURACIONES_TRATAMIENTO.find(item =\u003e\n    item.patrones.some(patron =\u003e valor.includes(normalizarTexto(patron))));\n  return encontrado ? encontrado.minutos : DURACION_POR_DEFECTO;\n};\n\n// Supabase devuelve booleanos reales. Aceptamos tambien los textos \u0027no\u0027/\u0027false\u0027\n// que venian de Google Sheets, por si queda alguna fila migrada a mano.\nconst pendienteDeSolicitar = v =\u003e v === false\n  || v === null\n  || v === undefined\n  || [\u0027no\u0027, \u0027false\u0027, \u0027\u0027].includes(v.toString().toLowerCase().trim());\n\nconst normHora = h =\u003e {\n  if (h === null || h === undefined || h === \u0027\u0027) return \u0027\u0027;\n  if (typeof h === \u0027number\u0027) {\n    const totalMin = h \u003e= 0 \u0026\u0026 h \u003c 1\n      ? Math.round(h * 24 * 60)\n      : Math.round(Math.floor(h) * 60 + (h % 1) * 60);\n    return Math.floor(totalMin / 60).toString().padStart(2, \u00270\u0027) + \u0027:\u0027 + (totalMin % 60).toString().padStart(2, \u00270\u0027);\n  }\n  let v = h.toString().trim().toLowerCase()\n    .replace(/\\s*(horas|hora|hrs?|h)\\s*$/i, \u0027\u0027).replace(\u0027.\u0027, \u0027:\u0027).trim();\n  if (/^\\d{1,2}$/.test(v)) return v.padStart(2, \u00270\u0027) + \u0027:00\u0027;\n  if (/^\\d{1,2}:\\d{2}:\\d{2}$/.test(v)) v = v.slice(0, 5);\n  if (/^\\d{1,2}:\\d{1,2}$/.test(v)) {\n    const parts = v.split(\u0027:\u0027);\n    return parts[0].padStart(2, \u00270\u0027) + \u0027:\u0027 + parts[1].padStart(2, \u00270\u0027);\n  }\n  return v;\n};\n\n// La columna fecha es de tipo date: Supabase la devuelve como \u0027YYYY-MM-DD\u0027.\nconst normFecha = f =\u003e {\n  if (!f) return \u0027\u0027;\n  const v = f.toString().trim();\n  const es = v.match(/^(\\d{2})\\/(\\d{2})\\/(\\d{4})$/);\n  if (es) return es[3] + \u0027-\u0027 + es[2] + \u0027-\u0027 + es[1];\n  const iso = v.match(/^(\\d{4})-(\\d{2})-(\\d{2})/);\n  if (iso) return iso[1] + \u0027-\u0027 + iso[2] + \u0027-\u0027 + iso[3];\n  return v;\n};\n\n// El desfase horario depende de la zona de la clinica Y de la fecha (horario\n// de verano). Por eso recibe la zona como parametro y no usa una constante.\nconst offsetClinica = (zona, fechaStr, horaStr) =\u003e {\n  const probe = new Date(fechaStr + \u0027T\u0027 + horaStr + \u0027:00Z\u0027);\n  const parts = new Intl.DateTimeFormat(\u0027en-US\u0027, {\n    timeZone: zona, hour: \u00272-digit\u0027, minute: \u00272-digit\u0027, timeZoneName: \u0027longOffset\u0027\n  }).formatToParts(probe);\n  const tz = (parts.find(p =\u003e p.type === \u0027timeZoneName\u0027) || {}).value || \u0027GMT+00:00\u0027;\n  const m = tz.match(/GMT([+-])(\\d{1,2})(?::?(\\d{2}))?/);\n  if (!m) return \u0027+00:00\u0027;\n  return m[1] + m[2].padStart(2, \u00270\u0027) + \u0027:\u0027 + (m[3] || \u002700\u0027).padStart(2, \u00270\u0027);\n};\n\nconst finCita = (row, zona) =\u003e {\n  const fecha = normFecha(row.fecha || \u0027\u0027);\n  const hora  = normHora(row.hora || \u0027\u0027);\n  if (!fecha || !hora) return null;\n  const inicio = new Date(fecha + \u0027T\u0027 + hora + \u0027:00\u0027 + offsetClinica(zona, fecha, hora));\n  if (Number.isNaN(inicio.getTime())) return null;\n  return new Date(inicio.getTime() + duracionCita(row) * 60 * 1000);\n};\n\nconst ahora = new Date();\n\nreturn $input.all()\n  .map(item =\u003e item.json || {})\n  .map(row =\u003e ({ row, clinica: clinicas.get(row.clinica_id) }))\n  .filter(({ row, clinica }) =\u003e {\n    // Sin clinica, desactivada o sin numero de WhatsApp no se envia nada.\n    if (!clinica || clinica.activo === false) return false;\n    if (!clinica.telefono_whatsapp_id) return false;\n\n    const zona     = clinica.zona_horaria || ZONA_POR_DEFECTO;\n    const estado   = (row.estado || \u0027\u0027).toString().toLowerCase().trim();\n    const telefono = (row.telefono || \u0027\u0027).toString().trim();\n    const fin      = finCita(row, zona);\n    if (!fin) return false;\n\n    const yaTerminada = ahora.getTime() \u003e= fin.getTime() + ESPERA_POST_CITA_MIN * 60 * 1000;\n\n    return estado === \u0027confirmada\u0027\n      \u0026\u0026 pendienteDeSolicitar(row.valoracion_solicitada)\n      \u0026\u0026 telefono !== \u0027\u0027\n      \u0026\u0026 !!row.event_id\n      \u0026\u0026 yaTerminada;\n  })\n  .map(({ row, clinica }) =\u003e ({\n    json: {\n      ...row,\n      eventId:        row.event_id,\n      telefono:       row.telefono.toString(),\n      // Lo lee el nodo \"Enviar solicitud valoracion\".\n      phoneNumberId:  clinica.telefono_whatsapp_id,\n      clinicaNombre:  clinica.nombre,\n      respuesta: \u0027Hola \u0027 + (row.nombre || \u0027\u0027) + \u0027, esperamos que tu visita a \u0027\n        + (clinica.nombre || \u0027la clinica\u0027) + \u0027 haya ido muy bien. \u0027\n        + \u0027Podrias valorar tu experiencia del 1 al 5 estrellas? \u0027\n        + \u0027Si quieres, puedes anadir un comentario. Ej: 5 Todo genial\u0027\n    }\n  }));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -280,
+        1980
+      ],
+      "id": "40699397-e8e9-4bb8-b72c-c506aaf359df",
+      "name": "Preparar solicitudes valoracion"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "={{ $json.phoneNumberId }}",
+        "recipientPhoneNumber": "={{ $json.telefono }}",
+        "textBody": "={{ $json.respuesta }}",
+        "additionalFields": {}
+      },
+      "id": "0ab16461-538e-4f49-b9db-38618024adf2",
+      "name": "Enviar solicitud valoracion",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        -40,
+        1980
+      ],
+      "webhookId": "f30ef673-bb8b-412e-a980-6863990f656d",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "nSeAIwtA48ly0LRi",
+          "name": "WhatsApp account 15"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "citas",
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "event_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Preparar solicitudes valoracion').item.json.eventId }}"
+            }
+          ]
+        },
+        "dataToSend": "defineBelow",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "valoracion_solicitada",
+              "fieldValue": "={{ true }}"
+            },
+            {
+              "fieldId": "valoracion_estado",
+              "fieldValue": "pendiente"
+            },
+            {
+              "fieldId": "valoracion_enviada_en",
+              "fieldValue": "={{ $now.setZone('Europe/Madrid').format('dd/MM/yyyy H:mm') }}"
+            }
+          ]
+        }
+      },
+      "id": "96c66fe1-7897-4475-b950-63fa5dccbc89",
+      "name": "Marcar valoracion solicitada",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        200,
+        1980
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "SUPABASE_CRED",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# Workflow 03 - Solicitud de valoraciones (MULTI-CLINICA)\n\nSe ejecuta cada hora.\n\n1. Carga las clinicas activas (numero de WhatsApp y zona horaria de cada una).\n2. Busca las citas confirmadas sin valoracion solicitada.\n3. \"Preparar solicitudes\" calcula si la cita ya termino USANDO LA ZONA HORARIA\n   DE SU CLINICA (inicio + duracion + 60 min de cortesia).\n4. Envia el WhatsApp DESDE EL NUMERO DE ESA CLINICA.\n5. Marca valoracion_solicitada = true y valoracion_estado = pendiente.\n\nDAR DE ALTA UNA CLINICA NUEVA = una fila en la tabla clinicas. Este workflow\nno se toca. Nada aqui esta escrito a mano.\n\nLa respuesta del paciente no se procesa aqui: vuelve por el Workflow 01,\nporque entra como un mensaje normal de WhatsApp.\n\nLa duracion sale de la columna duracion_minutos que guarda el workflow 01.\nLa tabla de duraciones del codigo es solo un respaldo para filas antiguas.\n\nPENDIENTE (Meta): fuera de la ventana de 24h Meta solo deja enviar PLANTILLAS\naprobadas, no texto libre. Mientras no esten aprobadas, este envio fallara\ncon el error 131047 para pacientes que lleven mas de 24h sin escribir.",
+        "height": 600,
+        "width": 1440,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1080,
+        1720
+      ],
+      "typeVersion": 1,
+      "id": "459aef56-6c10-447c-a22a-c4cdb10e6b85",
+      "name": "NOTA 08 - Valoraciones"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger Valoracion": {
+      "main": [
+        [
+          {
+            "node": "Cargar clinicas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cargar clinicas": {
+      "main": [
+        [
+          {
+            "node": "Buscar citas para valoracion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar citas para valoracion": {
+      "main": [
+        [
+          {
+            "node": "Preparar solicitudes valoracion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar solicitudes valoracion": {
+      "main": [
+        [
+          {
+            "node": "Enviar solicitud valoracion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar solicitud valoracion": {
+      "main": [
+        [
+          {
+            "node": "Marcar valoracion solicitada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timezone": "Europe/Madrid"
+  },
+  "versionId": "8d297e47-249a-4cd4-b02c-d9e26079e5fd",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b46ba6e189765812cf420e6f1d27507c3730c94070cb152a228939aec7fe29af"
+  },
+  "id": "SUPA-CLINICA-03-SOLICITUD-VALORACIONES",
+  "tags": []
+}

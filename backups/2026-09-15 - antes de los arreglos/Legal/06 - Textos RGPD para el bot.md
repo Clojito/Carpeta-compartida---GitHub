@@ -20,13 +20,13 @@ puede ser un tocho: si es largo, nadie lo lee y encima estropea la experiencia.
 
 Te ayudo a pedir, cambiar o anular tu cita, a cualquier hora.
 
-ℹ️ Soy un sistema automático con inteligencia artificial, no una persona.
-[NOMBRE DE LA CLÍNICA] trata tus datos para gestionar tus citas. Puedes
-consultar los detalles y ejercer tus derechos aquí: [ENLACE A LA POLÍTICA DE
-PRIVACIDAD DE LA CLÍNICA]
+ℹ️ Soy un sistema automático. [NOMBRE DE LA CLÍNICA] trata tus datos para
+gestionar tus citas. Puedes consultar los detalles y ejercer tus derechos
+aquí: [ENLACE A LA POLÍTICA DE PRIVACIDAD DE LA CLÍNICA]
 
-Si prefieres hablar con una persona, llama al [TELÉFONO].
-Si no quieres recibir mensajes automáticos, como los recordatorios, escribe BAJA.
+Si prefieres hablar con una persona, escribe "persona" o llama al [TELÉFONO].
+
+¿En qué te ayudo?
 ```
 
 **Por qué está montado así:**
@@ -39,19 +39,9 @@ Si no quieres recibir mensajes automáticos, como los recordatorios, escribe BAJ
 - **Es corto.** Un mensaje de 400 palabras en WhatsApp no lo lee nadie, y un
   aviso que nadie lee no cumple su función.
 
-> **Implementado el 15-sep-2026** en el workflow 01, nodo `Comprobar primer
-> contacto`. Sale como un mensaje aparte, justo antes de la primera respuesta,
-> y la fecha queda guardada en `pacientes.informado_rgpd_en`: esa es tu prueba
-> de que se le informó. El enlace sale de la columna `clinicas.url_privacidad`;
-> si está vacía, el mensaje dice que la información se pide en la clínica.
->
-> Tres cambios respecto al primer borrador:
-> - Dice **"con inteligencia artificial, no una persona"**, porque el artículo
->   50 del Reglamento de IA pide que quede claro que se habla con una IA.
-> - Se quitó *"escribe persona"*: el bot no tenía nada que gestionara esa
->   palabra. Ahora se da directamente el teléfono.
-> - Se añadió la línea de **BAJA**, para que el paciente pueda oponerse a los
->   recordatorios desde el primer mensaje.
+> **Implementación:** hoy el bot no distingue si es la primera vez que alguien
+> escribe. Se puede resolver mirando si el teléfono ya existe en la base de
+> datos. Está apuntado en el estado del proyecto como pendiente.
 
 ## 2. Aviso al pedir datos de salud
 
@@ -70,36 +60,6 @@ Si es urgente y te encuentras mal, llama al [TELÉFONO] o al 112.
 **Esta es la frase más importante de todo el bot.** Deja claro que no hay
 diagnóstico automatizado. Sin ella, un paciente puede entender que el bot le ha
 "valorado" y esperar en casa cuando debería ir a urgencias.
-
-> **Implementado el 15-sep-2026** en `Normalizar y enrutar` (derivaciones) y en
-> la confirmación de las reservas que además traen un síntoma. Antes, el texto
-> real del bot no llevaba ni el aviso de consejo médico ni el 112.
-
-## 2 bis. Bajas y peticiones sobre los datos
-
-Implementado el 15-sep-2026. Lo que pasa según lo que escriba el paciente:
-
-| El paciente escribe | Qué hace el bot |
-|---|---|
-| `BAJA`, `stop`, `no me escribas más`, `no quiero recibir mensajes`... | Confirma la baja, marca `pacientes.opt_out = true` y deja de mandarle recordatorios y valoraciones. Si escribe él, se le sigue atendiendo |
-| `ALTA` | Vuelve a recibir recordatorios |
-| `borrad mis datos`, `qué datos tenéis de mí`, `derecho de supresión`... | Lo deriva a la clínica como **solicitud RGPD** (email distinto al clínico) y le da de baja de mensajes automáticos |
-
-Texto de la baja:
-
-```
-Hecho. No te enviaremos más mensajes automáticos, tampoco recordatorios de
-citas. Si nos escribes, te seguiremos atendiendo. Si algún día quieres volver a
-recibirlos, escribe ALTA.
-```
-
-"Baja" y "stop" solo cuentan si son el mensaje entero: *"tengo la baja médica y
-no puedo ir"* es una cancelación, no una baja.
-
-> **Por qué la solicitud de datos va a la clínica y no la resuelve el bot:** la
-> clínica es la responsable y tiene un mes para contestar (art. 12 RGPD). Tú,
-> como encargado, solo tienes que hacérsela llegar en 48 h (cláusula 3.f del
-> contrato). El email sale al momento.
 
 ## 3. Texto para la política de privacidad de la clínica
 
@@ -127,10 +87,7 @@ no pierdas tu cita.
 
 ¿Quién más accede? Un proveedor tecnológico que nos presta el servicio de
 automatización, con contrato de encargado de tratamiento firmado, y los
-servicios de mensajería y agenda necesarios para que funcione. El asistente
-usa un servicio de inteligencia artificial de un proveedor de Estados Unidos,
-con cláusulas contractuales tipo aprobadas por la Unión Europea, que no
-conserva tus mensajes ni los utiliza para entrenarse.
+servicios de mensajería y agenda necesarios para que funcione.
 
 ¿Cuánto tiempo? Mientras seas paciente y durante los plazos legales que nos
 obligan a conservar la información asistencial.
@@ -138,9 +95,6 @@ obligan a conservar la información asistencial.
 ¿Y el asistente decide algo por su cuenta? El asistente solo gestiona la
 agenda. Ninguna decisión clínica se toma de forma automatizada: toda consulta
 sanitaria la revisa una persona de nuestro equipo.
-
-Si no quieres recibir recordatorios ni otros mensajes automáticos, escribe
-BAJA al asistente en cualquier momento.
 
 Tus derechos: puedes acceder, rectificar, suprimir, oponerte, limitar el
 tratamiento y solicitar la portabilidad de tus datos escribiendo a [EMAIL].

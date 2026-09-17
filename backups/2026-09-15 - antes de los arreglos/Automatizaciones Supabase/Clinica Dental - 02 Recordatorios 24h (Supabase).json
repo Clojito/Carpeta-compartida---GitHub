@@ -1,0 +1,265 @@
+{
+  "name": "Clinica Dental - 02 Recordatorios 24h (Supabase)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * *"
+            }
+          ]
+        }
+      },
+      "id": "47516f1f-92d3-46b9-aac8-a10ad6d564bc",
+      "name": "Schedule Trigger Recordatorio",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1000,
+        1580
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "clinicas",
+        "returnAll": true,
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "activo",
+              "condition": "eq",
+              "keyValue": "true"
+            }
+          ]
+        }
+      },
+      "id": "a2000001-0000-4000-8000-000000000001",
+      "name": "Cargar clinicas",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -760,
+        1580
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "SUPABASE_CRED",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "citas",
+        "returnAll": true,
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "fecha",
+              "condition": "gte",
+              "keyValue": "={{ $now.minus({days:1}).setZone('Europe/Madrid').toFormat('yyyy-MM-dd') }}"
+            },
+            {
+              "keyName": "estado",
+              "condition": "eq",
+              "keyValue": "confirmada"
+            },
+            {
+              "keyName": "recordatorio_24h",
+              "condition": "eq",
+              "keyValue": "false"
+            }
+          ]
+        }
+      },
+      "id": "77788e7a-68bd-4fcb-ad91-68e287cd696c",
+      "name": "Buscar recordatorios manana",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -520,
+        1580
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "SUPABASE_CRED",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================================\n//  MULTI-CLINICA\n//  Este nodo ya no da por hecho que solo existe una clinica. Cruza cada cita\n//  con su clinica para saber tres cosas:\n//    - desde que numero de WhatsApp hay que enviar (telefono_whatsapp_id)\n//    - en que zona horaria vive esa clinica        (zona_horaria)\n//    - como se llama, para que el mensaje lo diga  (nombre)\n//\n//  Dar de alta una clinica nueva = insertar una fila en la tabla clinicas.\n//  Este codigo NO se toca nunca mas.\n// ============================================================================\n\n// AVISO: las clinicas hay que leerlas POR EL NOMBRE del nodo.\n// $input aqui devuelve las CITAS (el nodo inmediatamente anterior), no las\n// clinicas. Es el mismo fallo que rompio el workflow 04 en agosto.\nconst clinicas = new Map(\n  $(\u0027Cargar clinicas\u0027).all()\n    .map(item =\u003e item.json || {})\n    .filter(c =\u003e c.id)\n    .map(c =\u003e [c.id, c])\n);\n\nconst ZONA_POR_DEFECTO = \u0027Europe/Madrid\u0027;\n\n// \"Manana\" no es la misma fecha para todas las clinicas: depende de su zona.\n// Una clinica espanola y una portuguesa pueden estar en dias distintos a las\n// 00:30. Por eso se calcula una vez por zona, no una vez para todos.\nconst calcularManana = zona =\u003e {\n  const parts = new Intl.DateTimeFormat(\u0027en-US\u0027, {\n    timeZone: zona,\n    year: \u0027numeric\u0027,\n    month: \u00272-digit\u0027,\n    day: \u00272-digit\u0027\n  }).formatToParts(new Date(Date.now() + 24 * 60 * 60 * 1000));\n  const get = tipo =\u003e parts.find(p =\u003e p.type === tipo).value;\n  return get(\u0027year\u0027) + \u0027-\u0027 + get(\u0027month\u0027) + \u0027-\u0027 + get(\u0027day\u0027);\n};\n\nconst cacheManana = new Map();\nconst manana = zona =\u003e {\n  if (!cacheManana.has(zona)) cacheManana.set(zona, calcularManana(zona));\n  return cacheManana.get(zona);\n};\n\n// Supabase devuelve booleanos reales. Aceptamos tambien los textos \u0027no\u0027/\u0027false\u0027\n// que venian de Google Sheets, por si queda alguna fila migrada a mano.\nconst pendienteDeEnviar = v =\u003e v === false\n  || v === null\n  || v === undefined\n  || [\u0027no\u0027, \u0027false\u0027, \u0027\u0027].includes(v.toString().toLowerCase().trim());\n\n// La columna fecha es de tipo date: Supabase la devuelve como \u0027YYYY-MM-DD\u0027.\nconst normFecha = f =\u003e {\n  if (!f) return \u0027\u0027;\n  const v = f.toString().trim();\n  const iso = v.match(/^(\\d{4})-(\\d{2})-(\\d{2})/);\n  return iso ? iso[1] + \u0027-\u0027 + iso[2] + \u0027-\u0027 + iso[3] : v;\n};\n\n// La busqueda de Supabase trae de mas a proposito (desde ayer en adelante) y\n// quien decide que cita toca es este codigo, que si conoce la zona de cada\n// clinica. Filtrar por la fecha exacta de manana en la consulta fallaria con\n// clinicas en husos distintos.\n//\n// AVISO: el nodo de Supabase de n8n NO admite dos condiciones sobre la misma\n// columna: la segunda pisa a la primera. Por eso hay un solo filtro de fecha\n// y el limite superior lo pone este codigo, no la consulta.\nreturn $input.all()\n  .map(item =\u003e item.json || {})\n  .map(row =\u003e ({ row, clinica: clinicas.get(row.clinica_id) }))\n  .filter(({ row, clinica }) =\u003e {\n    // Sin clinica, desactivada o sin numero de WhatsApp no se envia nada.\n    if (!clinica || clinica.activo === false) return false;\n    if (!clinica.telefono_whatsapp_id) return false;\n\n    const zona     = clinica.zona_horaria || ZONA_POR_DEFECTO;\n    const estado   = (row.estado || \u0027\u0027).toString().toLowerCase().trim();\n    const telefono = (row.telefono || \u0027\u0027).toString().trim();\n\n    return normFecha(row.fecha) === manana(zona)\n      \u0026\u0026 estado === \u0027confirmada\u0027\n      \u0026\u0026 pendienteDeEnviar(row.recordatorio_24h)\n      \u0026\u0026 telefono !== \u0027\u0027\n      \u0026\u0026 !!row.event_id;\n  })\n  .map(({ row, clinica }) =\u003e ({\n    json: {\n      ...row,\n      eventId:        row.event_id,\n      telefono:       row.telefono.toString(),\n      // Lo lee el nodo \"Enviar recordatorio\". Cada clinica envia desde SU numero.\n      phoneNumberId:  clinica.telefono_whatsapp_id,\n      clinicaNombre:  clinica.nombre,\n      respuesta: \u0027Hola \u0027 + (row.nombre || \u0027\u0027) + \u0027, te recordamos que tienes una cita de \u0027\n        + (row.tratamiento || \u0027tu tratamiento\u0027) + \u0027 manana a las \u0027 + row.hora\n        + \u0027 en \u0027 + (clinica.nombre || \u0027la clinica\u0027)\n        + \u0027. Si no puedes asistir, puedes cancelar o cambiar la cita por aqui.\u0027\n    }\n  }));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -280,
+        1580
+      ],
+      "id": "4b125750-f649-499a-9a4d-ab56801ac709",
+      "name": "Preparar recordatorios"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "={{ $json.phoneNumberId }}",
+        "recipientPhoneNumber": "={{ $json.telefono }}",
+        "textBody": "={{ $json.respuesta }}",
+        "additionalFields": {}
+      },
+      "id": "67bfdcca-2014-4282-bf61-73d26e5c640f",
+      "name": "Enviar recordatorio",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        -40,
+        1580
+      ],
+      "webhookId": "bc948d24-0378-4259-bed5-3a44bde8140f",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "nSeAIwtA48ly0LRi",
+          "name": "WhatsApp account 15"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "citas",
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "event_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Preparar recordatorios').item.json.eventId }}"
+            }
+          ]
+        },
+        "dataToSend": "defineBelow",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "recordatorio_24h",
+              "fieldValue": "={{ true }}"
+            }
+          ]
+        }
+      },
+      "id": "04213219-da73-408b-b882-d7b34be2565c",
+      "name": "Marcar recordatorio enviado",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        200,
+        1580
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "SUPABASE_CRED",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# Workflow 02 - Recordatorios 24h (MULTI-CLINICA)\n\nSe ejecuta una vez al dia a las 09:00.\n\n1. Carga las clinicas activas (numero de WhatsApp y zona horaria de cada una).\n2. Busca las citas confirmadas de los proximos dias sin recordatorio enviado.\n3. \"Preparar recordatorios\" cruza cada cita con SU clinica y se queda solo con\n   las de manana SEGUN LA ZONA HORARIA DE ESA CLINICA.\n4. Envia el WhatsApp DESDE EL NUMERO DE ESA CLINICA.\n5. Marca recordatorio_24h = true para no repetirlo.\n\nDAR DE ALTA UNA CLINICA NUEVA = una fila en la tabla clinicas. Este workflow\nno se toca. Nada aqui esta escrito a mano.\n\nPOR QUE LA BUSQUEDA TRAE DE MAS: si filtrase por la fecha exacta de manana en\nMadrid, una clinica en otro huso recibiria el recordatorio el dia equivocado.\nQuien decide que cita toca es el codigo, que si conoce la zona. Ademas el nodo\nde Supabase no admite dos condiciones sobre la misma columna, asi que el limite\nsuperior tiene que ponerlo el codigo de todas formas.\n\nPENDIENTE (Meta): fuera de la ventana de 24h Meta solo deja enviar PLANTILLAS\naprobadas, no texto libre. Mientras no esten aprobadas, este envio fallara\ncon el error 131047 para pacientes que lleven mas de 24h sin escribir.",
+        "height": 520,
+        "width": 1440,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1080,
+        1360
+      ],
+      "typeVersion": 1,
+      "id": "c4fb47ae-3da9-4c83-a357-bd7db61f2505",
+      "name": "NOTA 06 - Recordatorios"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger Recordatorio": {
+      "main": [
+        [
+          {
+            "node": "Cargar clinicas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cargar clinicas": {
+      "main": [
+        [
+          {
+            "node": "Buscar recordatorios manana",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar recordatorios manana": {
+      "main": [
+        [
+          {
+            "node": "Preparar recordatorios",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar recordatorios": {
+      "main": [
+        [
+          {
+            "node": "Enviar recordatorio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar recordatorio": {
+      "main": [
+        [
+          {
+            "node": "Marcar recordatorio enviado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timezone": "Europe/Madrid"
+  },
+  "versionId": "b537aa9b-dd4f-4de9-a588-253e04f02175",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b46ba6e189765812cf420e6f1d27507c3730c94070cb152a228939aec7fe29af"
+  },
+  "id": "SUPA-CLINICA-02-RECORDATORIOS-24H",
+  "tags": []
+}

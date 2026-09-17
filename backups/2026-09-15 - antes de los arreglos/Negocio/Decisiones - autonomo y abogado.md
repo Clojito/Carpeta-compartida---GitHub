@@ -78,10 +78,9 @@ Y ya existen: los tienes en `Legal/`, del 01 al 06.
 |---|---|---|
 | Contrato de encargado (art. 28) | `Legal/01` | ✅ Redactado |
 | Registro de actividades (art. 30) | `Legal/05` | ✅ Redactado |
-| Información al paciente (art. 13) | `Legal/03` y `Legal/06` | ✅ Redactado, y el bot ya manda el aviso (15-sep) |
-| **Avisar de que es una IA (art. 50 Reglamento de IA)** | Workflow 01, aviso de primer contacto | ✅ En el código desde el 15-sep. **Esta es tuya, no de la clínica**, y está en vigor desde el 2-ago-2026 |
+| Información al paciente (art. 13) | `Legal/03` y `Legal/06` | ✅ Redactado |
 | Delegado de Protección de Datos | — | ❌ No te aplica |
-| Evaluación de impacto (art. 35) | `Legal/07` (borrador) | Le toca a la clínica, pero se la das hecha |
+| Evaluación de impacto (art. 35) | — | Le toca a la clínica, no a ti |
 
 Sobre el DPO: la ley española lo exige a los centros sanitarios obligados a
 mantener historias clínicas. **Ese es el dentista, no tú.** Tú eres el
@@ -110,17 +109,16 @@ por alguien a quien le paga otro.
 **No contrates abogado ahora.** Pero haz estas cuatro cosas, que cubren la
 mayor parte de lo que te daría:
 
-- [x] **Rellena el Anexo II del contrato de encargado con datos comprobados.**
-      ✅ *Hecho el 15-sep. Te falta guardar el DPA de cada proveedor en PDF.*
+- [ ] **Rellena el Anexo II del contrato de encargado con datos comprobados.**
       Es lo único de todo el paquete que está a medias, y es lo primero que
       mirará el asesor de la clínica. Entra en la web de cada proveedor
       (Supabase, n8n, Meta, Google, tu proveedor de IA), busca su DPA y apunta
       dónde alojan los datos.
 - [ ] **Saca el proveedor de IA de Estados Unidos antes de que haya pacientes
-      reales.** *Decidido el 15-sep: de momento se sigue con Groq (EE. UU.),
-      gratis.* Es el punto más débil de todo el paquete legal. Mínimo antes del
-      primer paciente: aceptar el DPA de Groq y activar Zero Data Retention. Si
-      el asesor de la clínica lo tumba, cambiar a Mistral (UE) es un solo nodo.
+      reales.** Ahora mismo es Groq. Estás mandando texto que puede contener
+      datos de salud a una empresa estadounidense sin haber comprobado el
+      mecanismo de transferencia. **Es el punto más débil de todo el paquete
+      legal** y el único que un asesor competente te va a tumbar.
 - [ ] **Seguro de responsabilidad civil profesional.** Para un servicio como el
       tuyo suele costar bastante menos que una consulta de abogado, y cubre
       justo lo que un abogado no puede evitar: que algo salga mal.

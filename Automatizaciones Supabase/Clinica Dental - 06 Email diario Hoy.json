@@ -1,0 +1,348 @@
+{
+  "name": "Clinica Dental - 06 Email diario Hoy",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * 1-6"
+            }
+          ]
+        }
+      },
+      "id": "74a52f7e-a1bc-4ca4-b98b-62314d4dad0e",
+      "name": "Cada dia a las 8",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1200,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "clinicas",
+        "returnAll": true,
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "activo",
+              "condition": "eq",
+              "keyValue": "true"
+            }
+          ]
+        }
+      },
+      "id": "055e7a43-6c3b-4cbe-8fcd-d8eb2a63c414",
+      "name": "Cargar clinicas",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -980,
+        400
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "SUPABASE_CRED",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "citas",
+        "returnAll": true,
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "estado",
+              "condition": "eq",
+              "keyValue": "confirmada"
+            },
+            {
+              "keyName": "fecha",
+              "condition": "gte",
+              "keyValue": "={{ $now.setZone('Europe/Madrid').minus({days: 1}).toFormat('yyyy-MM-dd') }}"
+            }
+          ]
+        }
+      },
+      "id": "0facf30c-4c89-4d8f-87b5-14c54eb01ab5",
+      "name": "Cargar citas",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -760,
+        400
+      ],
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "SUPABASE_CRED",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "derivaciones",
+        "returnAll": true,
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "estado",
+              "condition": "eq",
+              "keyValue": "pendiente"
+            }
+          ]
+        }
+      },
+      "id": "1adda561-8af3-4617-9190-c84c1fb87f1b",
+      "name": "Cargar derivaciones pendientes",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -540,
+        400
+      ],
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "SUPABASE_CRED",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "lista_espera",
+        "returnAll": true,
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "estado",
+              "condition": "eq",
+              "keyValue": "pendiente"
+            },
+            {
+              "keyName": "fecha",
+              "condition": "gte",
+              "keyValue": "={{ $now.setZone('Europe/Madrid').minus({days: 1}).toFormat('yyyy-MM-dd') }}"
+            }
+          ]
+        }
+      },
+      "id": "3759a8cf-ad0a-4445-9a65-031aaf1ac19d",
+      "name": "Cargar lista de espera",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        400
+      ],
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "SUPABASE_CRED",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "leads",
+        "returnAll": true,
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "creado_en",
+              "condition": "gte",
+              "keyValue": "={{ $now.minus({hours: 24}).toISO() }}"
+            }
+          ]
+        }
+      },
+      "id": "a56853e0-34c7-4390-9c3c-9253ac8d04a2",
+      "name": "Cargar leads",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -100,
+        400
+      ],
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "SUPABASE_CRED",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================================\n//  EMAIL DIARIO \"HOY\" (workflow 06, 15-sep-2026)\n//  Lo que la recepcion necesita ver al abrir la clinica, en un solo correo:\n//    1. Pacientes a los que hay que llamar (derivaciones pendientes), arriba y\n//       en rojo, con telefono y boton \"Marcar como atendida\".\n//    2. Las citas de hoy, en orden.\n//    3. La lista de espera pendiente.\n//    4. Los interesados (leads) de las ultimas 24 horas.\n//  Multi-clinica: una consulta por tabla y un email por clinica activa.\n//  Minimizacion de datos: aqui NO va lo que conto el paciente sobre su salud;\n//  eso solo viaja en el email de la propia derivacion.\n// ============================================================================\nconst soloFilas = arr => arr.map(i => i.json || {}).filter(r => r && r.id);\nconst clinicas     = soloFilas($('Cargar clinicas').all());\nconst citas        = soloFilas($('Cargar citas').all());\nconst derivaciones = soloFilas($('Cargar derivaciones pendientes').all());\nconst espera       = soloFilas($('Cargar lista de espera').all());\nconst leads        = soloFilas($('Cargar leads').all());\n\nif (!clinicas.length) return [];\n\n// Direccion de tu n8n para el boton \"Marcar como atendida\" (workflow 07).\n// Se saca de la propia ejecucion. Si algun dia el enlace sale mal, escribela a\n// mano, por ejemplo 'https://tuinstancia.app.n8n.cloud'.\nconst URL_N8N_MANUAL = '';\nconst baseN8n = (URL_N8N_MANUAL || ($execution.resumeUrl || '').replace(/\\/webhook-waiting\\/.*$/, '')).replace(/\\/+$/, '');\nconst enlaceCierre = d => (baseN8n && d.derivacion_id && d.token_cierre)\n  ? baseN8n + '/webhook/derivacion-atendida?id=' + encodeURIComponent(d.derivacion_id) + '&t=' + encodeURIComponent(d.token_cierre)\n  : '';\n\nconst esc = v => (v === null || v === undefined ? '' : v.toString())\n  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')\n  .replace(/\"/g, '&quot;').replace(/'/g, '&#39;');\n\nconst diaISO = (fecha, tz) => {\n  const p = new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(fecha);\n  const g = t => p.find(x => x.type === t).value;\n  return g('year') + '-' + g('month') + '-' + g('day');\n};\nconst normFecha = f => {\n  const m = (f || '').toString().trim().match(/^(\\d{4})-(\\d{2})-(\\d{2})/);\n  return m ? m[1] + '-' + m[2] + '-' + m[3] : '';\n};\nconst normHora = h => {\n  const m = (h || '').toString().trim().match(/^(\\d{1,2}):(\\d{2})/);\n  return m ? m[1].padStart(2, '0') + ':' + m[2] : (h || '').toString();\n};\nconst aES = iso => (iso || '').split('-').reverse().join('/');\nconst diaLargo = iso => new Intl.DateTimeFormat('es-ES', { timeZone: 'UTC', weekday: 'long', day: 'numeric', month: 'long' })\n  .format(new Date(iso + 'T12:00:00Z'));\nconst telVisible = t => {\n  const d = (t || '').toString().replace(/\\D/g, '');\n  return d ? '+' + d : '';\n};\nconst antiguedad = iso => {\n  const ms = Date.parse(iso);\n  if (!Number.isFinite(ms)) return '';\n  const horas = Math.floor((Date.now() - ms) / 3600000);\n  if (horas < 1) return 'hace menos de 1 h';\n  if (horas < 48) return 'hace ' + horas + ' h';\n  return 'hace ' + Math.floor(horas / 24) + ' días';\n};\n\nconst td = 'padding:8px;border-bottom:1px solid #eee;vertical-align:top';\nconst tabla = (cabeceras, filas) => '<table style=\"width:100%;border-collapse:collapse;margin:6px 0 20px;font-size:14px\">'\n  + '<tr>' + cabeceras.map(c => '<th style=\"text-align:left;padding:8px;border-bottom:2px solid #ddd;color:#555\">' + esc(c) + '</th>').join('') + '</tr>'\n  + filas.join('') + '</table>';\nconst vacio = texto => '<p style=\"color:#888;margin:6px 0 20px\">' + esc(texto) + '</p>';\nconst celda = (contenido, extra) => '<td style=\"' + td + (extra ? ';' + extra : '') + '\">' + contenido + '</td>';\n\nreturn clinicas.map(clinica => {\n  const tz = clinica.zona_horaria || 'Europe/Madrid';\n  const hoy = diaISO(new Date(), tz);\n  const mias = arr => arr.filter(r => r.clinica_id === clinica.id);\n\n  const derivC = mias(derivaciones)\n    .sort((a, b) => (Date.parse(a.creado_en) || 0) - (Date.parse(b.creado_en) || 0));\n  const citasHoy = mias(citas)\n    .filter(c => (c.estado || '') === 'confirmada' && normFecha(c.fecha) === hoy)\n    .sort((a, b) => normHora(a.hora).localeCompare(normHora(b.hora)));\n  const esperaC = mias(espera)\n    .filter(e => (e.estado || '') === 'pendiente' && normFecha(e.fecha) >= hoy)\n    .sort((a, b) => (normFecha(a.fecha) + normHora(a.hora)).localeCompare(normFecha(b.fecha) + normHora(b.hora)));\n  const leadsC = mias(leads);\n\n  const bloqueDerivaciones = derivC.length\n    ? '<h3 style=\"color:#d9534f;margin:18px 0 2px\">⚠️ Pacientes a los que hay que llamar (' + derivC.length + ')</h3>'\n      + '<p style=\"color:#666;margin:2px 0 6px;font-size:13px\">Mientras estén pendientes, el asistente no les contesta consultas. Cuando habléis con el paciente, pulsad \"Marcar como atendida\".</p>'\n      + tabla(['Paciente', 'Teléfono', 'Motivo', 'Desde', ''], derivC.map(d => {\n        const enlace = enlaceCierre(d);\n        return '<tr>'\n          + celda('<b>' + esc(d.nombre || 'Sin nombre') + '</b>')\n          + celda('<a href=\"tel:' + esc(telVisible(d.telefono)) + '\">' + esc(telVisible(d.telefono)) + '</a>')\n          + celda(esc(d.motivo || ''))\n          + celda(esc(antiguedad(d.creado_en)), 'color:#888')\n          + celda(enlace ? '<a href=\"' + esc(enlace) + '\" style=\"color:#1a7f5a;font-weight:bold\">Marcar como atendida</a>' : '')\n          + '</tr>';\n      }))\n    : '';\n\n  const bloqueCitas = '<h3 style=\"color:#1a7f5a;margin:18px 0 2px\">Citas de hoy (' + citasHoy.length + ')</h3>'\n    + (citasHoy.length\n      ? tabla(['Hora', 'Paciente', 'Tratamiento', 'Teléfono'], citasHoy.map(c => '<tr>'\n        + celda('<b>' + esc(normHora(c.hora)) + '</b>')\n        + celda(esc(c.nombre || ''))\n        + celda(esc(c.tratamiento || ''))\n        + celda(esc(telVisible(c.telefono)))\n        + '</tr>'))\n      : vacio('Hoy no hay citas reservadas por WhatsApp.'));\n\n  const bloqueEspera = '<h3 style=\"color:#8a4b16;margin:18px 0 2px\">Lista de espera (' + esperaC.length + ')</h3>'\n    + (esperaC.length\n      ? tabla(['Quiere', 'Paciente', 'Tratamiento', 'Teléfono'], esperaC.slice(0, 20).map(e => '<tr>'\n        + celda(esc(aES(normFecha(e.fecha)) + ' ' + normHora(e.hora)))\n        + celda(esc(e.nombre || ''))\n        + celda(esc(e.tratamiento || ''))\n        + celda(esc(telVisible(e.telefono)))\n        + '</tr>'))\n      : vacio('Nadie esperando hueco.'));\n\n  const bloqueLeads = '<h3 style=\"color:#8a4b16;margin:18px 0 2px\">Interesados de las últimas 24 h (' + leadsC.length + ')</h3>'\n    + (leadsC.length\n      ? tabla(['Persona', 'Le interesa', 'Teléfono'], leadsC.slice(0, 20).map(l => '<tr>'\n        + celda(esc(l.nombre || 'Sin nombre'))\n        + celda(esc(l.tratamiento_interes || ''))\n        + celda(esc(telVisible(l.telefono)))\n        + '</tr>'))\n      : vacio('Ningún interesado nuevo.'));\n\n  const html = [\n    '<div style=\"font-family:Arial,Helvetica,sans-serif;max-width:680px;color:#222\">',\n    '<h2 style=\"color:#1a7f5a;border-bottom:3px solid #1a7f5a;padding-bottom:10px;margin-bottom:4px\">Hoy en ' + esc(clinica.nombre) + '</h2>',\n    '<p style=\"color:#666;margin-top:0\">' + esc(diaLargo(hoy)) + '</p>',\n    bloqueDerivaciones,\n    bloqueCitas,\n    bloqueEspera,\n    bloqueLeads,\n    '<p style=\"color:#999;font-size:12px;margin-top:24px;border-top:1px solid #eee;padding-top:12px\">',\n    'Resumen automático del asistente de WhatsApp. Solo incluye lo que ha pasado por el asistente: las citas que apuntáis a mano en la agenda no aparecen aquí.',\n    '</p>',\n    '</div>'\n  ].join('');\n\n  const asunto = 'Hoy en ' + clinica.nombre + ': ' + citasHoy.length + (citasHoy.length === 1 ? ' cita' : ' citas')\n    + (derivC.length ? ' y ' + derivC.length + (derivC.length === 1 ? ' paciente' : ' pacientes') + ' por llamar' : '');\n\n  return {\n    json: {\n      clinica_id: clinica.id,\n      email_avisos: clinica.email_avisos,\n      email_subject: asunto,\n      email_html: html\n    }\n  };\n}).filter(item => !!item.json.email_avisos);\n"
+      },
+      "id": "b81757aa-6a60-4f29-b2fc-d16d4dbfdd03",
+      "name": "Construir email diario",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        120,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email_avisos }}",
+        "subject": "={{ $json.email_subject }}",
+        "message": "={{ $json.email_html }}",
+        "options": {}
+      },
+      "id": "1e7965a9-4227-4a52-b167-f67a2442e977",
+      "name": "Enviar email diario",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        340,
+        400
+      ],
+      "webhookId": "a4796a58-06b7-4f3e-ab4b-878aedb29f49",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "zd7kC8QY1LMlJtNi",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# Workflow 06 - Email diario \"Hoy\"\n\nDe lunes a sabado a las 8:00 manda a cada clinica activa (a su email_avisos):\n\n1. **Pacientes a los que hay que llamar** (derivaciones pendientes), arriba y en rojo,\n   con telefono y el boton \"Marcar como atendida\" (workflow 07).\n2. Citas de hoy.\n3. Lista de espera pendiente.\n4. Interesados (leads) de las ultimas 24 h.\n\nExiste porque sin el la clinica no veia nada de esto: vivia solo en Supabase.\n\nNo incluye lo que el paciente conto sobre su salud (minimizacion de datos):\nese detalle solo va en el email de la propia derivacion.\n\nSi el boton \"Marcar como atendida\" sale sin enlace o con una direccion rara,\nescribe la direccion de tu n8n en URL_N8N_MANUAL, dentro de \"Construir email diario\".\n\nRecuerda ponerle el Error Workflow (04) en Settings, como a los demas.",
+        "height": 520,
+        "width": 780,
+        "color": 4
+      },
+      "id": "f6a06814-23e3-4975-9c03-193796dfb91f",
+      "name": "NOTA - Email diario",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1200,
+        560
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Cada dia a las 8": {
+      "main": [
+        [
+          {
+            "node": "Cargar clinicas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cargar clinicas": {
+      "main": [
+        [
+          {
+            "node": "Cargar citas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cargar citas": {
+      "main": [
+        [
+          {
+            "node": "Cargar derivaciones pendientes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cargar derivaciones pendientes": {
+      "main": [
+        [
+          {
+            "node": "Cargar lista de espera",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cargar lista de espera": {
+      "main": [
+        [
+          {
+            "node": "Cargar leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cargar leads": {
+      "main": [
+        [
+          {
+            "node": "Construir email diario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Construir email diario": {
+      "main": [
+        [
+          {
+            "node": "Enviar email diario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Madrid"
+  },
+  "versionId": "2023a620-1a3f-4cf8-938d-4220ac340721",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b46ba6e189765812cf420e6f1d27507c3730c94070cb152a228939aec7fe29af"
+  },
+  "id": "SUPA-CLINICA-06-EMAIL-DIARIO",
+  "tags": []
+}

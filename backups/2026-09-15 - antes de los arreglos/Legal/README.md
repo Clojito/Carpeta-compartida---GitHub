@@ -6,11 +6,6 @@
 > hechos a la medida de tu servicio: te ahorran la mayor parte del tiempo y el
 > dinero, pero **no sustituyen a una revisión profesional**.
 >
-> **Decisión tomada el 29-ago-2026: sin abogado por ahora.** La revisión la
-> hará el asesor de protección de datos de la clínica cuando le mandes el
-> paquete. Razones y cuándo reconsiderarlo en
-> `Negocio/Decisiones - autonomo y abogado.md`.
->
 > En tu caso concreto esa revisión no es opcional, y el motivo es este: tu bot
 > procesa **datos de salud** ("me duele una muela y me sangra"). El RGPD los
 > llama *categoría especial* (artículo 9) y les aplica un régimen más estricto,
@@ -38,10 +33,10 @@ Lo que hay que hacer:
    si los ingresos son bajos. **Verifica la cuota y las condiciones vigentes**,
    porque cambian con frecuencia y no me fío de darte una cifra de memoria.
 
-**Cuándo darte de alta (decidido el 29-ago-2026):** el **036** ya, porque es
-gratis y Meta lo pide para verificarte; el **RETA** justo antes de la primera
-factura, porque la cuota corre desde el día del alta. Detalle en
-`Negocio/Decisiones - autonomo y abogado.md`.
+**Cuándo darte de alta:** no antes de tener un compromiso real del dentista.
+La cuota corre desde el día del alta, tengas clientes o no. El orden sensato es:
+hablar con el dentista → acuerdo de piloto por escrito (aunque sea un email) →
+alta de autónomo → Meta Business Verification → primera factura.
 
 > Una gestoría online cuesta unos 30–50 €/mes y te lleva altas, IVA e IRPF.
 > Con un solo cliente puedes apañarte tú, pero merece la pena en cuanto haya
@@ -75,14 +70,14 @@ por eso están listados en el contrato.
 | 01 | Contrato de Encargado del Tratamiento | Lo firmas con cada clínica | **Sí, artículo 28 RGPD** |
 | 02 | Contrato de prestación de servicios | Precio, permanencia, responsabilidad | Muy recomendable |
 | 03 | Política de privacidad (web) | Para tu propia web | Sí, si tienes web |
-| 04 | Aviso legal y política de cookies | Quién eres (LSSI-CE); cookies solo si la web las usa | Sí, si tienes web |
-| 05 | Registro de Actividades de Tratamiento | Te lo pide la AEPD si te inspecciona | **Sí, artículo 30 RGPD** |
-| 06 | Textos RGPD del bot | Lo que el bot le dice al paciente (ya implementado) | **Sí, artículos 13 y 14 RGPD y 50 del Reglamento de IA** |
-| 07 | Borrador de EIPD para la clínica | La evaluación de impacto, dada hecha | La obligación es de la clínica |
+| 04 | Aviso legal | Quién eres, LSSI-CE | Sí, si tienes web |
+| 05 | Política de cookies | Solo si la web usa cookies | Depende |
+| 06 | Registro de Actividades de Tratamiento | Te lo pide la AEPD si te inspecciona | **Sí, artículo 30 RGPD** |
+| 07 | Textos RGPD del bot | Lo que el bot debe decirle al paciente | **Sí, artículos 13 y 14** |
 
-**Si solo pudieras hacer tres cosas:** el 01, el 05 y el 06. Sin el 01 no
-puedes trabajar legalmente con una clínica. El 05 es lo primero que pide la
-AEPD. El 06 es lo que ve el paciente.
+**Si solo pudieras hacer tres cosas:** el 01, el 06 y el 07. Sin el 01 no
+puedes trabajar legalmente con una clínica. El 06 es lo primero que pide la
+AEPD. El 07 es lo que ve el paciente.
 
 ---
 
@@ -97,22 +92,20 @@ AEPD. El 06 es lo que ve el paciente.
 
 ## Dos cosas que te van a morder si no las miras ahora
 
-**1. El proveedor de IA está en Estados Unidos (decidido: Groq, 15-sep-2026).**
+**1. El proveedor de IA está en Estados Unidos.**
 
-Se valoró Mistral (UE), pero decidiste seguir con **Groq**, gratis, con el
-modelo `openai/gpt-oss-120b` (Groq retiró el anterior, Llama 3.3, el 16-ago).
-Por ahí pasan los mensajes de los pacientes, incluidos los síntomas: **es una
-transferencia internacional de datos de salud**, y sigue siendo el punto más
-flojo de todo el paquete legal.
+Ahora mismo usas **Groq**, empresa estadounidense. Por ahí pasan los mensajes
+de los pacientes, incluyendo síntomas. Eso es una transferencia internacional
+de datos de salud, y es el punto más flojo de todo tu montaje legal.
 
-Lo que la hace defendible, y tiene que estar hecho antes del primer paciente:
-- Aceptar el DPA de Groq (incluye cláusulas contractuales tipo) y guardarlo en
-  PDF con la fecha.
-- Activar **Zero Data Retention** en console.groq.com → Settings → Data Controls.
-- Contárselo al asesor de la clínica tal cual: está en el Anexo II y en la EIPD.
+Opciones, de mejor a peor:
+- Un modelo alojado en la UE (Mistral es francesa; Azure OpenAI y AWS Bedrock
+  permiten fijar región europea).
+- Seguir con un proveedor de EE. UU. **verificando** que tiene un mecanismo de
+  transferencia válido y documentándolo en el contrato.
+- No hacer nada. No te lo recomiendo con datos de salud.
 
-Si el asesor lo tumba, la alternativa preparada es Mistral (UE): en el workflow
-es cambiar un solo nodo.
+Decídelo **antes** de firmar con la clínica, no después.
 
 **2. Minimiza lo que guardas.**
 

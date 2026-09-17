@@ -25,13 +25,13 @@
 |---|---|
 | **Papel** | **Encargado del tratamiento**. El Responsable es cada clínica cliente. |
 | **Responsables por cuenta de los que trato** | [LISTA DE CLÍNICAS CLIENTES + CIF] |
-| **Finalidad** | Gestión automatizada de citas, recordatorios, valoraciones, registro de interesados y derivación de consultas al personal de la clínica. Aviso al paciente, en su primer contacto, de que habla con un sistema de IA, y registro de sus bajas de mensajes automáticos. |
+| **Finalidad** | Gestión automatizada de citas, recordatorios, valoraciones, registro de interesados y derivación de consultas al personal de la clínica. |
 | **Categorías de interesados** | Pacientes y potenciales pacientes de las clínicas cliente. |
 | **Categorías de datos** | Identificativos (nombre, teléfono). De la cita (fecha, hora, tratamiento, estado, valoración). Contenido de los mensajes. **Datos de salud (art. 9)** facilitados voluntariamente por el paciente. |
 | **Base jurídica** | La que determine cada Responsable. Yo trato por contrato del art. 28 RGPD. |
 | **Destinatarios** | La clínica responsable. Subencargados del Anexo II del contrato. |
-| **Transferencias internacionales** | Sí, a tres subencargados: WhatsApp (Meta) y Google (Calendar y Gmail), adheridos al EU-US Data Privacy Framework, e inteligencia artificial (Groq, EE. UU.), con cláusulas contractuales tipo y retención cero. Base de datos (Supabase) y automatización (n8n Cloud): tratamiento en la UE, sin transferencia. Detalle en el Anexo II del Contrato de Encargado. |
-| **Plazo de supresión** | Al finalizar el contrato con la clínica: devolución o supresión en 30 días. Datos de citas, pacientes (fecha del aviso y bajas) y derivaciones conservados mientras dure el contrato. Registro de envíos fallidos y de errores: 90 días. |
+| **Transferencias internacionales** | [SÍ/NO] — [DETALLAR PROVEEDOR Y MECANISMO] |
+| **Plazo de supresión** | Al finalizar el contrato con la clínica: devolución o supresión en 30 días. Datos de citas conservados mientras dure el contrato. |
 | **Medidas de seguridad** | Ver Anexo I del Contrato de Encargado del Tratamiento. |
 
 ## Actividad 2 — Clientes y facturación (como Responsable)
@@ -82,6 +82,6 @@ gran escala de datos de salud o decisiones automatizadas. La obligación recae
 sobre el **Responsable** (la clínica), pero tú debes **asistirla** (cláusula
 3.h del contrato).
 
-Ya hay un borrador preparado para dárselo hecho a la clínica:
-`Legal/07 - Borrador EIPD para la clinica.md`. Es un argumento de venta muy
-bueno frente a clínicas con asesoría jurídica, porque les ahorras trabajo.
+Merece la pena que preguntes al abogado si conviene tener una EIPD básica
+preparada: es un argumento de venta muy bueno frente a clínicas con asesoría
+jurídica, porque les ahorras trabajo a ellas.

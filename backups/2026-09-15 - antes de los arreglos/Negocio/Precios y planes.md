@@ -6,23 +6,6 @@
 > de un estudio de mercado. Ajústalos con lo que aprendas de las primeras
 > conversaciones con clínicas.
 
-> ## ⚠️ Revisión del 8 y del 15 de septiembre
->
-> - **El plan Clínica+ vende dos cosas que no existen:** varias agendas o sedes
->   (multi-dentista, 35-55 h de trabajo) y el seguimiento comercial automático
->   de interesados (10-20 h). No lo ofrezcas hasta construirlas, o márcalas como
->   "bajo pedido".
-> - **Los costes fijos reales rondan los 300 €/mes el primer año** (RETA,
->   gestoría, Supabase Pro, n8n Pro, seguro...), no 25-75 €. Con eso, la primera
->   clínica a 149 € pierde dinero: el equilibrio está en unas 3 clínicas a 149 €
->   o 2 a 249 €. Detalle en `AUDITORIA-2026-09-08.md`, sección 5.
-> - **El piloto (alcance A) incluye:** reservar, cambiar y cancelar, derivación
->   a la clínica, recordatorio y email diario. **No incluye** valoraciones ni
->   resumen semanal.
-> - **IA:** Groq, gratis mientras quepa en su límite gratuito (sirve para
->   probar y para la demo, no para una clínica con pacientes). En pago por uso,
->   menos de 1 $/mes por clínica con el volumen previsto.
-
 ---
 
 ## 1. Primero: cuánto te cuesta a ti

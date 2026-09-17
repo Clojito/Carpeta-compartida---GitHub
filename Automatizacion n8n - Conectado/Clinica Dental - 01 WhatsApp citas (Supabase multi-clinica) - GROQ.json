@@ -11,15 +11,15 @@
       "type": "n8n-nodes-base.whatsAppTrigger",
       "typeVersion": 1,
       "position": [
-        -4048,
-        320
+        -10720,
+        2240
       ],
-      "id": "83bc7c72-1bb3-4214-b7a1-8735aab9a064",
+      "id": "47c1dedb-632c-49f0-93c7-dc3c39b41da4",
       "name": "WhatsApp Trigger",
       "webhookId": "6b984c62-83cf-4434-b224-7355f346e361",
       "credentials": {
         "whatsAppTriggerApi": {
-          "id": "RguXuWFPrcNo5G7I",
+          "id": "obda8ylAVdPiKM3G",
           "name": "WhatsApp OAuth account"
         }
       }
@@ -51,10 +51,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -3808,
-        320
+        -10480,
+        2240
       ],
-      "id": "5590b216-1a34-4208-bf63-ec544ef8f327",
+      "id": "f294f3d0-977a-4993-9fab-13d1eb2c2fd8",
       "name": "If texto valido"
     },
     {
@@ -69,15 +69,15 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
-        -1168,
-        320
+        -7840,
+        2240
       ],
-      "id": "2a110b78-9c92-4157-8fde-795c40ece86d",
+      "id": "e96eda56-20ec-4b03-9535-a8982d8282dc",
       "name": "AI Agent",
-      "onError": "continueErrorOutput",
       "retryOnFail": true,
       "maxTries": 2,
-      "waitBetweenTries": 3000
+      "waitBetweenTries": 3000,
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
@@ -88,10 +88,10 @@
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "typeVersion": 1.3,
       "position": [
-        -944,
-        560
+        -7616,
+        2480
       ],
-      "id": "d58d5a95-16e3-49f1-bd11-9272abe5eea0",
+      "id": "f06ff3c0-0b18-452e-a721-a16ecc582a01",
       "name": "Simple Memory"
     },
     {
@@ -101,10 +101,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -912,
-        320
+        -7584,
+        2240
       ],
-      "id": "8f757791-efd5-4d48-9543-756784b2a417",
+      "id": "049ec14b-99c4-4b03-8581-b4c98d3e1659",
       "name": "Normalizar y enrutar"
     },
     {
@@ -134,10 +134,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -640,
-        320
+        -7312,
+        2240
       ],
-      "id": "3736695c-cad6-4773-942c-0f208e6be017",
+      "id": "a61e21e3-ee7e-4f95-9ed4-dbcbe08b4bb0",
       "name": "If reservar"
     },
     {
@@ -167,10 +167,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -640,
-        656
+        -7312,
+        2576
       ],
-      "id": "6f56335d-5fec-4571-b6a1-b0d7630104c5",
+      "id": "0bd028c2-0eca-4fd8-8b30-bced43f18bbb",
       "name": "If modificar"
     },
     {
@@ -200,10 +200,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -640,
-        976
+        -7312,
+        2896
       ],
-      "id": "6dbd58cf-2883-4da9-9b22-af343770d002",
+      "id": "fef60862-a7a4-4609-a14a-1928bb7f4673",
       "name": "If cancelar"
     },
     {
@@ -222,15 +222,15 @@
       "type": "n8n-nodes-base.googleCalendar",
       "typeVersion": 1.3,
       "position": [
-        -368,
-        64
+        -7040,
+        1984
       ],
-      "id": "38822643-3fae-4af4-9f8c-c7852e6978f2",
+      "id": "5b6fdaba-3118-4bb5-814b-586294ab4f6c",
       "name": "Buscar disponibilidad reserva",
       "alwaysOutputData": true,
       "credentials": {
         "googleCalendarOAuth2Api": {
-          "id": "84kwzPufctoHlILh",
+          "id": "Y1UBam290FF3lla7",
           "name": "Google Calendar account"
         }
       }
@@ -242,10 +242,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -112,
-        64
+        -6784,
+        1984
       ],
-      "id": "b548df55-16cb-4376-94b7-a9d46758b079",
+      "id": "62fb89fa-ef61-40ce-8c03-a4e3ee86931b",
       "name": "Evaluar disponibilidad reserva"
     },
     {
@@ -275,10 +275,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        160,
-        64
+        -6512,
+        1984
       ],
-      "id": "69ff7b17-f39f-45f9-99a6-6c77d55ed2ed",
+      "id": "90aed0d4-4f93-4c65-8aaa-a63abc904182",
       "name": "If reserva libre"
     },
     {
@@ -286,7 +286,6 @@
         "operation": "getAll",
         "tableId": "citas",
         "returnAll": true,
-        "filterType": "manual",
         "matchType": "allFilters",
         "filters": {
           "conditions": [
@@ -308,18 +307,18 @@
           ]
         }
       },
-      "id": "f4235a3a-6e92-4e16-8901-185214946cae",
+      "id": "cd542854-c203-4fb9-ab16-70e0819d2b5a",
       "name": "Buscar citas paciente reserva",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        400,
-        0
+        -6272,
+        1920
       ],
       "alwaysOutputData": true,
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -331,10 +330,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        656,
-        0
+        -6016,
+        1920
       ],
-      "id": "946f6e9a-07db-4162-9df3-8f888a6a912b",
+      "id": "55c9c4dc-a87f-413d-a773-181efb1771a9",
       "name": "Preparar reserva y duplicados"
     },
     {
@@ -364,10 +363,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        912,
-        0
+        -5760,
+        1920
       ],
-      "id": "dfed9cca-4720-4881-b5b3-fbd441864535",
+      "id": "cb999176-e0ab-484e-a3a9-fd0a76fef51d",
       "name": "If tiene duplicados"
     },
     {
@@ -377,10 +376,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1184,
-        112
+        -5488,
+        2032
       ],
-      "id": "cd3614cf-1c8c-4321-b20f-f5535055c2d0",
+      "id": "dcfa19e4-076c-4c70-bb7b-06def9e1703e",
       "name": "Preparar crear reserva"
     },
     {
@@ -393,30 +392,28 @@
         "start": "={{ $json.fecha_inicio }}",
         "end": "={{ $json.fecha_fin }}",
         "additionalFields": {
-          "summary": "={{ $json.nombre }} - {{ $json.tratamiento }}",
-          "description": "={{ 'Teléfono: +' + ($json.telefono || '') + '\\n' + 'Reservada por WhatsApp con el asistente automático.' }}"
+          "description": "={{ 'Teléfono: +' + ($json.telefono || '') + '\\n' + 'Reservada por WhatsApp con el asistente automático.' }}",
+          "summary": "={{ $json.nombre }} - {{ $json.tratamiento }}"
         }
       },
       "type": "n8n-nodes-base.googleCalendar",
       "typeVersion": 1.3,
       "position": [
-        1440,
-        112
+        -5232,
+        2032
       ],
-      "id": "9241aedb-69af-430a-a2f7-588358c42dab",
+      "id": "11a47197-16b2-4c4c-9b68-8325d135eb64",
       "name": "Crear evento reserva",
       "credentials": {
         "googleCalendarOAuth2Api": {
-          "id": "84kwzPufctoHlILh",
+          "id": "Y1UBam290FF3lla7",
           "name": "Google Calendar account"
         }
       }
     },
     {
       "parameters": {
-        "operation": "create",
         "tableId": "citas",
-        "dataToSend": "defineBelow",
         "fieldsUi": {
           "fieldValues": [
             {
@@ -481,14 +478,14 @@
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        1696,
-        112
+        -4976,
+        2032
       ],
-      "id": "4a554bf0-7f46-43de-85fb-88f03e1958c2",
+      "id": "8893b716-9cb6-4f1f-bd9b-30a6da708630",
       "name": "Guardar cita reserva",
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -500,10 +497,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1952,
-        112
+        -4720,
+        2032
       ],
-      "id": "868774f1-5c4d-4622-827d-5f14b4ae50de",
+      "id": "431f38c0-5d33-4c19-800d-c9decf927c80",
       "name": "Preparar notificacion reserva"
     },
     {
@@ -511,7 +508,6 @@
         "operation": "getAll",
         "tableId": "citas",
         "returnAll": true,
-        "filterType": "manual",
         "matchType": "allFilters",
         "filters": {
           "conditions": [
@@ -533,18 +529,18 @@
           ]
         }
       },
-      "id": "e0b2e819-29fa-4118-869e-b798519ccb40",
+      "id": "9ed0618d-b2c7-4917-b6e6-c624b8a5f7d9",
       "name": "Buscar cita cancelacion",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        -368,
-        896
+        -7040,
+        2816
       ],
       "alwaysOutputData": true,
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -556,10 +552,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -112,
-        896
+        -6784,
+        2816
       ],
-      "id": "5913bba1-5778-47d1-ad0d-ecdbf6be92e8",
+      "id": "87ab3179-829f-4fd4-a2c9-bddb485fa428",
       "name": "Resolver cita cancelacion"
     },
     {
@@ -589,10 +585,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        160,
-        896
+        -6512,
+        2816
       ],
-      "id": "06b9a57a-8e94-43fc-8da6-c5524edc56c9",
+      "id": "f10e3c8e-7c3d-4c5b-906b-ae7084698037",
       "name": "If cita cancelacion encontrada"
     },
     {
@@ -606,17 +602,17 @@
         "eventId": "={{ $json.eventId }}",
         "options": {}
       },
-      "id": "4a7bc2fb-f687-4bf6-96b0-8e0c4cc20f65",
+      "id": "c7b69be9-635e-45cc-b9b4-5f58a8e944da",
       "name": "Eliminar cita Calendar",
       "type": "n8n-nodes-base.googleCalendar",
       "typeVersion": 1.3,
       "position": [
-        400,
-        784
+        -6272,
+        2704
       ],
       "credentials": {
         "googleCalendarOAuth2Api": {
-          "id": "84kwzPufctoHlILh",
+          "id": "Y1UBam290FF3lla7",
           "name": "Google Calendar account"
         }
       },
@@ -626,7 +622,6 @@
       "parameters": {
         "operation": "update",
         "tableId": "citas",
-        "filterType": "manual",
         "matchType": "allFilters",
         "filters": {
           "conditions": [
@@ -642,7 +637,6 @@
             }
           ]
         },
-        "dataToSend": "defineBelow",
         "fieldsUi": {
           "fieldValues": [
             {
@@ -652,17 +646,17 @@
           ]
         }
       },
-      "id": "f1c4da5d-70e3-42d5-991a-e4d1e655af7d",
+      "id": "b8d59551-0706-4fde-ab4e-23ca68590b30",
       "name": "Marcar cita cancelada",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        656,
-        784
+        -6016,
+        2704
       ],
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -674,10 +668,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        912,
-        784
+        -5760,
+        2704
       ],
-      "id": "3027b68e-37b0-49c1-a703-358c92b23144",
+      "id": "e08af6b6-1b37-44c0-8604-a998ad00c9ea",
       "name": "Preparar notificacion cancelacion"
     },
     {
@@ -685,7 +679,6 @@
         "operation": "getAll",
         "tableId": "citas",
         "returnAll": true,
-        "filterType": "manual",
         "matchType": "allFilters",
         "filters": {
           "conditions": [
@@ -707,18 +700,18 @@
           ]
         }
       },
-      "id": "200c6001-3953-4377-ad88-924f65f6338a",
+      "id": "3d952e40-6108-4297-898a-1356ac487fd8",
       "name": "Buscar cita modificacion",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        -368,
-        560
+        -7040,
+        2480
       ],
       "alwaysOutputData": true,
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -730,10 +723,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -112,
-        560
+        -6784,
+        2480
       ],
-      "id": "ec7c3710-06b5-4f87-bcd8-dd49a3d0109f",
+      "id": "a9030963-11fa-4657-9efa-7ef715cf8246",
       "name": "Resolver cita modificacion"
     },
     {
@@ -763,10 +756,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        160,
-        560
+        -6512,
+        2480
       ],
-      "id": "9abb7bf3-4fba-4af8-b42d-83316d38d5ff",
+      "id": "b853c8f1-7a7a-4a9f-b468-3b430c376084",
       "name": "If cita modificacion encontrada"
     },
     {
@@ -782,18 +775,18 @@
         "timeMax": "={{ $('Normalizar y enrutar').first().json.fecha_fin_nueva }}",
         "options": {}
       },
-      "id": "c0c772cf-8097-4a13-a7bf-a7af9fa3dea8",
+      "id": "42b8eca5-93fd-4150-accb-32ea70ae3217",
       "name": "Comprobar disponibilidad modificacion",
       "type": "n8n-nodes-base.googleCalendar",
       "typeVersion": 1.3,
       "position": [
-        400,
-        480
+        -6272,
+        2400
       ],
       "alwaysOutputData": true,
       "credentials": {
         "googleCalendarOAuth2Api": {
-          "id": "84kwzPufctoHlILh",
+          "id": "Y1UBam290FF3lla7",
           "name": "Google Calendar account"
         }
       }
@@ -805,10 +798,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        656,
-        480
+        -6016,
+        2400
       ],
-      "id": "bb96ce2a-8606-47ce-9636-92d3ea24744a",
+      "id": "cea95b86-4bfb-46a5-ace3-b8297b4df976",
       "name": "Evaluar disponibilidad modificacion"
     },
     {
@@ -838,10 +831,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        912,
-        480
+        -5760,
+        2400
       ],
-      "id": "209277c5-3aba-42df-a946-26a47492bc8d",
+      "id": "0ff4d4db-1cab-480e-8dd2-0a8f28bf4b2a",
       "name": "If modificacion libre"
     },
     {
@@ -855,17 +848,17 @@
         "eventId": "={{ $json.old_event_id }}",
         "options": {}
       },
-      "id": "6d8fa0b7-6e01-40e9-8df2-e9a711052427",
+      "id": "622275e8-848b-46d9-a7ed-00f10fee29d7",
       "name": "Eliminar evento antiguo",
       "type": "n8n-nodes-base.googleCalendar",
       "typeVersion": 1.3,
       "position": [
-        1184,
-        400
+        -5488,
+        2320
       ],
       "credentials": {
         "googleCalendarOAuth2Api": {
-          "id": "84kwzPufctoHlILh",
+          "id": "Y1UBam290FF3lla7",
           "name": "Google Calendar account"
         }
       },
@@ -875,7 +868,6 @@
       "parameters": {
         "operation": "update",
         "tableId": "citas",
-        "filterType": "manual",
         "matchType": "allFilters",
         "filters": {
           "conditions": [
@@ -891,7 +883,6 @@
             }
           ]
         },
-        "dataToSend": "defineBelow",
         "fieldsUi": {
           "fieldValues": [
             {
@@ -901,17 +892,17 @@
           ]
         }
       },
-      "id": "4c944172-c9d0-4bbf-9f30-8d1363af0499",
+      "id": "385287a9-c988-4627-a205-e9980134c078",
       "name": "Marcar cita modificada",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        1440,
-        400
+        -5232,
+        2320
       ],
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -926,30 +917,28 @@
         "start": "={{ $('Evaluar disponibilidad modificacion').first().json.fecha_inicio_nueva }}",
         "end": "={{ $('Evaluar disponibilidad modificacion').first().json.fecha_fin_nueva }}",
         "additionalFields": {
-          "summary": "={{ $('Evaluar disponibilidad modificacion').first().json.nombre }} - {{ $('Evaluar disponibilidad modificacion').first().json.tratamiento }}",
-          "description": "={{ 'Teléfono: +' + ($('Evaluar disponibilidad modificacion').first().json.telefono || '') + '\\n' + 'Cita cambiada por WhatsApp con el asistente automático.' }}"
+          "description": "={{ 'Teléfono: +' + ($('Evaluar disponibilidad modificacion').first().json.telefono || '') + '\\n' + 'Cita cambiada por WhatsApp con el asistente automático.' }}",
+          "summary": "={{ $('Evaluar disponibilidad modificacion').first().json.nombre }} - {{ $('Evaluar disponibilidad modificacion').first().json.tratamiento }}"
         }
       },
-      "id": "d37517b3-a239-4c4d-b5f4-442a4c77674f",
+      "id": "5b162498-8ec4-4fe8-ad4c-559b279805ee",
       "name": "Crear evento modificado",
       "type": "n8n-nodes-base.googleCalendar",
       "typeVersion": 1.3,
       "position": [
-        1696,
-        400
+        -4976,
+        2320
       ],
       "credentials": {
         "googleCalendarOAuth2Api": {
-          "id": "84kwzPufctoHlILh",
+          "id": "Y1UBam290FF3lla7",
           "name": "Google Calendar account"
         }
       }
     },
     {
       "parameters": {
-        "operation": "create",
         "tableId": "citas",
-        "dataToSend": "defineBelow",
         "fieldsUi": {
           "fieldValues": [
             {
@@ -1011,17 +1000,17 @@
           ]
         }
       },
-      "id": "ef7778a3-1e49-4532-8803-0bd1fcfc55f3",
+      "id": "e6b990f5-668b-4a2f-814e-fa009a358cec",
       "name": "Guardar cita modificada",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        1952,
-        400
+        -4720,
+        2320
       ],
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -1033,10 +1022,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2240,
-        400
+        -4432,
+        2320
       ],
-      "id": "46c3d6dc-689b-4c63-b0f0-77fd686faa08",
+      "id": "7e297279-23e4-4404-80cd-ea9e22234e81",
       "name": "Preparar notificacion modificacion"
     },
     {
@@ -1046,10 +1035,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -3568,
-        140
+        -10240,
+        2064
       ],
-      "id": "90b92de8-cd03-4431-a1ed-2917eb862998",
+      "id": "02cdbdc5-1ba3-4599-b3e6-6d35e72046a4",
       "name": "Preparar respuesta no texto"
     },
     {
@@ -1063,15 +1052,15 @@
       "type": "n8n-nodes-base.whatsApp",
       "typeVersion": 1.1,
       "position": [
-        2576,
-        304
+        -4096,
+        2224
       ],
-      "id": "add142bf-26b8-4191-9c4b-7cb1f78fb172",
+      "id": "ddf48325-3fca-4077-8fc7-43414aa35fbd",
       "name": "Enviar WhatsApp",
       "webhookId": "c6271aee-26c6-4d91-845c-96c93fe9a175",
       "credentials": {
         "whatsAppApi": {
-          "id": "ftqbr1IavwplTKpk",
+          "id": "Jc5FvKPLiMuRQ7LH",
           "name": "WhatsApp account"
         }
       }
@@ -1083,18 +1072,18 @@
         "message": "={{ $json.email_html }}",
         "options": {}
       },
-      "id": "9e1a8dbf-e94a-4ad2-86d1-5d6e8970420e",
+      "id": "08e525e6-e4cb-4579-b8b6-bbb78bd7f490",
       "name": "Enviar email dentista",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
-        2576,
-        496
+        -4096,
+        2416
       ],
       "webhookId": "ab440c5e-e9a8-47d9-a51c-1fe024e1ec0f",
       "credentials": {
         "gmailOAuth2": {
-          "id": "zd7kC8QY1LMlJtNi",
+          "id": "x9I3ffLGoXH1xWkZ",
           "name": "Gmail account"
         }
       }
@@ -1108,11 +1097,11 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        -4144,
-        -416
+        -10816,
+        1504
       ],
       "typeVersion": 1,
-      "id": "2d822809-7e16-4261-b656-7a5c50a0dcf0",
+      "id": "4eab4d70-c0a9-454e-ae0d-eeced342f33c",
       "name": "NOTA 00 - Guia rapida"
     },
     {
@@ -1124,11 +1113,11 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        -4128,
-        -16
+        -10800,
+        1904
       ],
       "typeVersion": 1,
-      "id": "3487ea24-a03e-448a-b9fb-9a459dca5572",
+      "id": "d281052e-a8d2-4a92-ac14-49c82d572f9f",
       "name": "NOTA 01 - Entrada"
     },
     {
@@ -1140,11 +1129,11 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        -448,
-        -304
+        -7120,
+        1616
       ],
       "typeVersion": 1,
-      "id": "cc25170e-5546-468b-a19d-5dc5b686e7bd",
+      "id": "50189dbe-8096-4315-b65f-d17b790873ec",
       "name": "NOTA 02 - Reserva"
     },
     {
@@ -1156,11 +1145,11 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        -432,
-        320
+        -7104,
+        2240
       ],
       "typeVersion": 1,
-      "id": "7529992a-8416-4bbb-b0d7-37c44d18d03c",
+      "id": "dbd53381-f529-4916-8732-fe3d1c8d0215",
       "name": "NOTA 03 - Modificacion"
     },
     {
@@ -1172,11 +1161,11 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        -432,
-        720
+        -7104,
+        2640
       ],
       "typeVersion": 1,
-      "id": "b55982c1-4a04-41ae-a3d5-da76f7626563",
+      "id": "750b6706-389c-4888-9a3d-621ff374b552",
       "name": "NOTA 04 - Cancelacion"
     },
     {
@@ -1188,11 +1177,11 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        2512,
-        0
+        -4160,
+        1920
       ],
       "typeVersion": 1,
-      "id": "5c78e66c-7d9c-45ad-8649-e5f88edc42b1",
+      "id": "c5c20e2d-5c92-4fb0-be58-f0a579c21d42",
       "name": "NOTA 05 - Salidas"
     },
     {
@@ -1204,11 +1193,11 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        -128,
-        1232
+        -6800,
+        3152
       ],
       "typeVersion": 1,
-      "id": "ce8777fc-c949-43a7-8cef-13799f0780b8",
+      "id": "3decff77-adea-4043-9604-d4c00fdf0bf2",
       "name": "NOTA 07 - Integraciones"
     },
     {
@@ -1238,10 +1227,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -640,
-        1152
+        -7312,
+        3072
       ],
-      "id": "62ca63e1-1dff-4eac-912f-d7f722263c5e",
+      "id": "f22d20ef-e2df-4059-814c-b691b5b40a24",
       "name": "If consultar horarios"
     },
     {
@@ -1260,15 +1249,15 @@
       "type": "n8n-nodes-base.googleCalendar",
       "typeVersion": 1.3,
       "position": [
-        -368,
-        1152
+        -7040,
+        3072
       ],
-      "id": "1bf15847-4dc7-43d8-93d0-089d3515a2b1",
+      "id": "782eded8-1b38-44af-921f-bfb390271c9e",
       "name": "Buscar disponibilidad horarios",
       "alwaysOutputData": true,
       "credentials": {
         "googleCalendarOAuth2Api": {
-          "id": "84kwzPufctoHlILh",
+          "id": "Y1UBam290FF3lla7",
           "name": "Google Calendar account"
         }
       }
@@ -1280,10 +1269,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -112,
-        1152
+        -6784,
+        3072
       ],
-      "id": "f572abdc-cb31-4780-9d00-67d5ed1eb889",
+      "id": "b8f621d5-7464-479c-9ffa-42c3abe99267",
       "name": "Preparar horarios disponibles"
     },
     {
@@ -1313,10 +1302,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -640,
-        1344
+        -7312,
+        3264
       ],
-      "id": "ed847a47-1965-463d-803a-b236e43e56a9",
+      "id": "a825bcc8-41c5-4c17-9ff8-275349eabd03",
       "name": "If guardar valoracion"
     },
     {
@@ -1324,7 +1313,6 @@
         "operation": "getAll",
         "tableId": "citas",
         "returnAll": true,
-        "filterType": "manual",
         "matchType": "allFilters",
         "filters": {
           "conditions": [
@@ -1341,18 +1329,18 @@
           ]
         }
       },
-      "id": "546087e7-2458-464c-ac9d-bd8334be596a",
+      "id": "517c6956-a0fa-40c0-a59e-c1bd8b57a58d",
       "name": "Buscar valoracion pendiente",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        -368,
-        1344
+        -7040,
+        3264
       ],
       "alwaysOutputData": true,
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -1364,10 +1352,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -112,
-        1344
+        -6784,
+        3264
       ],
-      "id": "c8c8e7ba-7c88-4dbf-8cc9-8746d926f69c",
+      "id": "60d1ce79-5999-42dc-82aa-41d1c0a60c42",
       "name": "Resolver valoracion pendiente"
     },
     {
@@ -1397,17 +1385,16 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        160,
-        1344
+        -6512,
+        3264
       ],
-      "id": "bbf768d5-0e95-4f9c-b29c-bd4ea699ee2b",
+      "id": "a1385c45-dd60-4a54-9c54-8743f7d3f9af",
       "name": "If valoracion encontrada"
     },
     {
       "parameters": {
         "operation": "update",
         "tableId": "citas",
-        "filterType": "manual",
         "matchType": "allFilters",
         "filters": {
           "conditions": [
@@ -1423,7 +1410,6 @@
             }
           ]
         },
-        "dataToSend": "defineBelow",
         "fieldsUi": {
           "fieldValues": [
             {
@@ -1445,17 +1431,17 @@
           ]
         }
       },
-      "id": "2530b5c8-92a7-483e-bdfe-bae2a661473b",
+      "id": "03dd3821-4e2d-420b-a979-c484cabab39f",
       "name": "Guardar valoracion",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        400,
-        1264
+        -6272,
+        3184
       ],
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -1467,10 +1453,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        656,
-        1264
+        -6016,
+        3184
       ],
-      "id": "e5b49c1a-0c5a-431b-9e08-9b088a3cabde",
+      "id": "eee5f591-c2d9-45ba-9d71-221748d5ca71",
       "name": "Preparar confirmacion valoracion"
     },
     {
@@ -1478,7 +1464,6 @@
         "operation": "getAll",
         "tableId": "lista_espera",
         "returnAll": true,
-        "filterType": "manual",
         "matchType": "allFilters",
         "filters": {
           "conditions": [
@@ -1495,18 +1480,18 @@
           ]
         }
       },
-      "id": "b8a96c6a-e174-4cfa-ba0f-1c21d38ed951",
+      "id": "19992923-a249-4e07-9ac6-d247b12de49c",
       "name": "Buscar lista espera reserva",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        400,
-        240
+        -6272,
+        2160
       ],
       "alwaysOutputData": true,
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -1518,10 +1503,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        656,
-        240
+        -6016,
+        2160
       ],
-      "id": "f9d344f6-dba6-467d-9614-277ddc792073",
+      "id": "613df7c5-6961-4180-8cb9-b5909fb934fe",
       "name": "Preparar lista espera reserva"
     },
     {
@@ -1551,17 +1536,15 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        912,
-        240
+        -5760,
+        2160
       ],
-      "id": "3b166aac-890a-4f5b-8675-cc3379921175",
+      "id": "36269e5e-4620-4a15-a56b-bd0f98d62e6d",
       "name": "If nueva lista espera"
     },
     {
       "parameters": {
-        "operation": "create",
         "tableId": "lista_espera",
-        "dataToSend": "defineBelow",
         "fieldsUi": {
           "fieldValues": [
             {
@@ -1614,14 +1597,14 @@
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        1184,
-        240
+        -5488,
+        2160
       ],
-      "id": "d044e77e-65d5-4ba6-abc9-711759fde237",
+      "id": "012589b9-d834-450b-974e-da1bbd8955f2",
       "name": "Guardar lista espera",
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -1633,10 +1616,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1440,
-        240
+        -5232,
+        2160
       ],
-      "id": "122d025e-0c8a-4385-a03e-de4b0715fe33",
+      "id": "d65a6959-d23a-4f70-9e4a-063c1ebc1af5",
       "name": "Preparar confirmacion lista espera"
     },
     {
@@ -1644,7 +1627,6 @@
         "operation": "getAll",
         "tableId": "lista_espera",
         "returnAll": true,
-        "filterType": "manual",
         "matchType": "allFilters",
         "filters": {
           "conditions": [
@@ -1666,18 +1648,18 @@
           ]
         }
       },
-      "id": "a84ff9fd-edc4-4a68-9a05-9514ab863907",
+      "id": "760d6561-051f-4110-a35a-7f96811944b2",
       "name": "Buscar lista espera cancelacion",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        1184,
-        976
+        -5488,
+        2896
       ],
       "alwaysOutputData": true,
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -1689,10 +1671,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1440,
-        976
+        -5232,
+        2896
       ],
-      "id": "98144561-258f-4df2-8ffc-9415633866a2",
+      "id": "b71898eb-1e45-4c7b-985e-11040b0278f7",
       "name": "Preparar aviso lista espera cancelacion"
     },
     {
@@ -1703,18 +1685,18 @@
         "textBody": "={{ $json.respuesta }}",
         "additionalFields": {}
       },
-      "id": "8375c4b6-f1ce-41c7-b54b-52bdbb120a3f",
+      "id": "cfde0095-8ba3-4147-9d1a-bd576c941a92",
       "name": "Enviar aviso lista espera cancelacion",
       "type": "n8n-nodes-base.whatsApp",
       "typeVersion": 1.1,
       "position": [
-        1696,
-        976
+        -4976,
+        2896
       ],
       "webhookId": "1b52910b-f11e-41e0-a16b-47c507b7fc27",
       "credentials": {
         "whatsAppApi": {
-          "id": "ftqbr1IavwplTKpk",
+          "id": "Jc5FvKPLiMuRQ7LH",
           "name": "WhatsApp account"
         }
       }
@@ -1723,7 +1705,6 @@
       "parameters": {
         "operation": "update",
         "tableId": "lista_espera",
-        "filterType": "manual",
         "matchType": "allFilters",
         "filters": {
           "conditions": [
@@ -1739,7 +1720,6 @@
             }
           ]
         },
-        "dataToSend": "defineBelow",
         "fieldsUi": {
           "fieldValues": [
             {
@@ -1753,17 +1733,17 @@
           ]
         }
       },
-      "id": "a178d500-1e99-4b7e-96c4-d14b25c2bbeb",
+      "id": "15bde66c-1046-4c57-a72e-30a44df92630",
       "name": "Marcar lista espera notificada cancelacion",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        1952,
-        976
+        -4720,
+        2896
       ],
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -1773,7 +1753,6 @@
         "operation": "getAll",
         "tableId": "lista_espera",
         "returnAll": true,
-        "filterType": "manual",
         "matchType": "allFilters",
         "filters": {
           "conditions": [
@@ -1795,18 +1774,18 @@
           ]
         }
       },
-      "id": "76e8a684-87df-43e5-9a58-f94cf28adecc",
+      "id": "d86e5962-1661-4210-9194-9bfaa92c7426",
       "name": "Buscar lista espera modificacion",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        2496,
-        720
+        -4176,
+        2640
       ],
       "alwaysOutputData": true,
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -1818,10 +1797,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2752,
-        720
+        -3920,
+        2640
       ],
-      "id": "11245fd6-f109-4618-9d2e-5213bea9dae5",
+      "id": "d236cc4d-3d31-4821-af31-da9cfd397e60",
       "name": "Preparar aviso lista espera modificacion"
     },
     {
@@ -1832,18 +1811,18 @@
         "textBody": "={{ $json.respuesta }}",
         "additionalFields": {}
       },
-      "id": "a6b27c0f-73b2-4e13-945d-26a3d41d7732",
+      "id": "35245b87-da79-4d9a-b020-c0c24e5ce913",
       "name": "Enviar aviso lista espera modificacion",
       "type": "n8n-nodes-base.whatsApp",
       "typeVersion": 1.1,
       "position": [
-        3008,
-        720
+        -3664,
+        2640
       ],
       "webhookId": "e77039d4-65d7-4797-8d8e-26f138a0178e",
       "credentials": {
         "whatsAppApi": {
-          "id": "ftqbr1IavwplTKpk",
+          "id": "Jc5FvKPLiMuRQ7LH",
           "name": "WhatsApp account"
         }
       }
@@ -1852,7 +1831,6 @@
       "parameters": {
         "operation": "update",
         "tableId": "lista_espera",
-        "filterType": "manual",
         "matchType": "allFilters",
         "filters": {
           "conditions": [
@@ -1868,7 +1846,6 @@
             }
           ]
         },
-        "dataToSend": "defineBelow",
         "fieldsUi": {
           "fieldValues": [
             {
@@ -1882,17 +1859,17 @@
           ]
         }
       },
-      "id": "3d57348a-62c8-4f64-b6ec-584a31294155",
+      "id": "f1606cc1-d4c0-4290-aba4-60402e61d07b",
       "name": "Marcar lista espera notificada modificacion",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        3280,
-        720
+        -3392,
+        2640
       ],
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -1906,11 +1883,11 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        800,
-        1232
+        -5872,
+        3152
       ],
       "typeVersion": 1,
-      "id": "185cbf54-f2c9-4243-a15c-3ed82c9a5f75",
+      "id": "314593d9-2591-48c1-b0a3-282234f46b92",
       "name": "NOTA 09 - Lista de espera"
     },
     {
@@ -1922,11 +1899,11 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        1040,
-        -608
+        -5632,
+        1312
       ],
       "typeVersion": 1,
-      "id": "35453304-9285-480d-8936-c2184d587638",
+      "id": "103d4379-548a-40b7-b3d5-157a5d816bf0",
       "name": "NOTA MODULAR - Como importar"
     },
     {
@@ -1956,10 +1933,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -112,
-        1984
+        -6784,
+        3904
       ],
-      "id": "7bf7a8f0-1054-484e-b6e9-9d9c174663db",
+      "id": "a201e0b8-a0fc-482f-b865-66108f61c0e8",
       "name": "If derivar humano"
     },
     {
@@ -1969,17 +1946,15 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        160,
-        1984
+        -6512,
+        3904
       ],
-      "id": "7139cbb3-5360-4b9d-b6da-5b9a146ec30e",
+      "id": "bcb95a64-42e3-4d5c-a064-720cee58ab6f",
       "name": "Preparar notificacion derivacion humano"
     },
     {
       "parameters": {
-        "operation": "create",
         "tableId": "derivaciones",
-        "dataToSend": "defineBelow",
         "fieldsUi": {
           "fieldValues": [
             {
@@ -2032,14 +2007,14 @@
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        400,
-        1984
+        -6272,
+        3904
       ],
-      "id": "6e02227b-1b4d-4de9-8e9d-4f1f38cac363",
+      "id": "9b5a948a-2d34-4c41-a01d-0f06af689d43",
       "name": "Guardar derivacion humano",
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       },
@@ -2054,11 +2029,11 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        1392,
-        1488
+        -5280,
+        3408
       ],
       "typeVersion": 1,
-      "id": "5da32110-a327-45cc-a4dc-c76fb3243758",
+      "id": "aeef3084-3eea-4dc0-a044-aee955acd22c",
       "name": "NOTA 10 - Derivacion humano"
     },
     {
@@ -2088,10 +2063,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        2240,
-        224
+        -4432,
+        2144
       ],
-      "id": "069b2f31-00dd-4b42-b403-31ca2246110d",
+      "id": "96131790-ee4f-41e1-832f-dc6d6f019387",
       "name": "If guardar derivacion reserva"
     },
     {
@@ -2121,10 +2096,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -656,
-        1616
+        -7328,
+        3536
       ],
-      "id": "8e3e6703-c1dc-443f-9577-a1548fbf7c3b",
+      "id": "4b9a0610-d6eb-4d01-9cf8-ce23e8bebfc3",
       "name": "If registrar lead"
     },
     {
@@ -2134,17 +2109,15 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -368,
-        1648
+        -7040,
+        3568
       ],
-      "id": "4d09d9d0-7711-4bea-b34e-7bab869a4d7e",
+      "id": "d8acd809-198c-4a7b-9278-157cd27965ea",
       "name": "Preparar lead"
     },
     {
       "parameters": {
-        "operation": "create",
         "tableId": "leads",
-        "dataToSend": "defineBelow",
         "fieldsUi": {
           "fieldValues": [
             {
@@ -2221,14 +2194,14 @@
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        -112,
-        1648
+        -6784,
+        3568
       ],
-      "id": "7f67c5d8-e76e-4dac-b8d6-6b059f4a31dc",
+      "id": "ab6f5e5e-cc54-4a8e-b4a4-f7f4556a4ba8",
       "name": "Guardar lead",
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       },
@@ -2243,11 +2216,11 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        1392,
-        1952
+        -5280,
+        3872
       ],
       "typeVersion": 1,
-      "id": "98370747-b385-4382-aaa1-f16247e6c400",
+      "id": "30a6fbf9-5f44-4e87-9d9f-1d5a35a10f34",
       "name": "NOTA 11 - Leads"
     },
     {
@@ -2257,10 +2230,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        160,
-        1648
+        -6512,
+        3568
       ],
-      "id": "71da8994-7175-4a85-97cc-e18d3f19cba3",
+      "id": "8da51e06-f5a5-41e6-a6d7-6110c44799e3",
       "name": "Preparar confirmacion lead"
     },
     {
@@ -2290,10 +2263,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -368,
-        1840
+        -7040,
+        3760
       ],
-      "id": "b976d6df-1008-4977-991d-92906ca8d6c5",
+      "id": "6f803f08-d273-4015-a3de-21941483f83d",
       "name": "If cerrar lead"
     },
     {
@@ -2301,7 +2274,6 @@
         "operation": "getAll",
         "tableId": "leads",
         "returnAll": true,
-        "filterType": "manual",
         "matchType": "allFilters",
         "filters": {
           "conditions": [
@@ -2321,15 +2293,15 @@
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        -112,
-        1840
+        -6784,
+        3760
       ],
-      "id": "73e05b16-c37e-4655-9cda-3d155d63151f",
+      "id": "15d9b493-8da5-43e0-8300-d06fa1423ecf",
       "name": "Buscar leads para cierre",
       "alwaysOutputData": true,
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -2341,10 +2313,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        160,
-        1840
+        -6512,
+        3760
       ],
-      "id": "3eb950f1-d863-4ac6-9d56-7c66439deaa4",
+      "id": "c65663f3-03f3-4c5c-8fd3-70102bf9e5a0",
       "name": "Preparar cierre lead"
     },
     {
@@ -2374,17 +2346,16 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        400,
-        1840
+        -6272,
+        3760
       ],
-      "id": "8c35f930-97e4-4207-972f-2cd1dc4c06bc",
+      "id": "55dfcf74-10a0-4049-b7ae-fd543f79b6e6",
       "name": "If hay lead cierre"
     },
     {
       "parameters": {
         "operation": "update",
         "tableId": "leads",
-        "filterType": "manual",
         "matchType": "allFilters",
         "filters": {
           "conditions": [
@@ -2400,7 +2371,6 @@
             }
           ]
         },
-        "dataToSend": "defineBelow",
         "fieldsUi": {
           "fieldValues": [
             {
@@ -2429,14 +2399,14 @@
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        656,
-        1744
+        -6016,
+        3664
       ],
-      "id": "1320b5ac-27cd-4bd2-9184-d47a181bfd3c",
+      "id": "8a365ff6-16a7-44eb-81c9-3b1257d1d229",
       "name": "Actualizar lead cerrado",
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -2448,10 +2418,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        912,
-        1744
+        -5760,
+        3664
       ],
-      "id": "8fc45a29-2a29-4810-8706-410e472fa2f9",
+      "id": "4d6780b3-e0d5-4857-b435-80898c73f324",
       "name": "Preparar confirmacion cierre lead"
     },
     {
@@ -2481,10 +2451,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -640,
-        1472
+        -7312,
+        3392
       ],
-      "id": "43112e72-d823-4515-b96a-e8d44d4d9bcb",
+      "id": "34feb3f0-fce1-4abd-951e-e3269c81aa1c",
       "name": "If consultar cita"
     },
     {
@@ -2492,7 +2462,6 @@
         "operation": "getAll",
         "tableId": "citas",
         "returnAll": true,
-        "filterType": "manual",
         "matchType": "allFilters",
         "filters": {
           "conditions": [
@@ -2514,18 +2483,18 @@
           ]
         }
       },
-      "id": "a556b5bd-c5c9-49e2-98c6-d8d588034004",
+      "id": "d0af9809-24c2-43ce-b9f1-ca551b2d33f5",
       "name": "Buscar cita informativa",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        -368,
-        1504
+        -7040,
+        3424
       ],
       "alwaysOutputData": true,
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -2537,10 +2506,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -112,
-        1504
+        -6784,
+        3424
       ],
-      "id": "eadceaff-cfab-4228-a667-8028a1837723",
+      "id": "35f1eb05-9aab-4713-a926-be63fa9f38f7",
       "name": "Resolver consulta cita"
     },
     {
@@ -2548,7 +2517,6 @@
         "operation": "getAll",
         "tableId": "clinicas_config",
         "returnAll": true,
-        "filterType": "manual",
         "matchType": "allFilters",
         "filters": {
           "conditions": [
@@ -2568,15 +2536,15 @@
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        -3568,
-        320
+        -10240,
+        2240
       ],
-      "id": "aa000001-0000-4000-8000-000000000001",
+      "id": "889c4843-da70-4e49-8db5-f0b92c0668eb",
       "name": "Cargar config clinica",
       "alwaysOutputData": true,
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -2588,10 +2556,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -3328,
-        320
+        -10000,
+        2240
       ],
-      "id": "aa000001-0000-4000-8000-000000000003",
+      "id": "1f2967be-f8ec-47d0-a0dd-a4f1103bb1c3",
       "name": "Construir contexto"
     },
     {
@@ -2599,7 +2567,6 @@
         "operation": "getAll",
         "tableId": "derivaciones",
         "returnAll": true,
-        "filterType": "manual",
         "matchType": "allFilters",
         "filters": {
           "conditions": [
@@ -2621,34 +2588,34 @@
           ]
         }
       },
-      "id": "p0000001-0000-4000-8000-000000000001",
+      "id": "7fcb0cee-9de2-4d23-b4b4-9e6b94beaf7e",
       "name": "Buscar derivacion pendiente",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        -1888,
-        320
+        -8560,
+        2240
       ],
       "alwaysOutputData": true,
-      "onError": "continueRegularOutput",
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
-      }
+      },
+      "onError": "continueRegularOutput"
     },
     {
       "parameters": {
         "jsCode": "// El bot se calla cuando ya hay una consulta derivada al equipo de la clinica.\n// Sin esto, el paciente seguia hablando con la IA mientras esperaba la llamada,\n// que es justo el momento en el que mas dano puede hacer una respuesta\n// automatica: esta describiendo un problema de salud y espera ayuda.\nconst ctx = $('Construir contexto').first().json;\nconst CFG = ctx.config || {};\nconst trigger = $('WhatsApp Trigger').first().json;\nconst mensaje = (trigger.messages?.[0]?.text?.body || '').toString();\nconst telefono = (trigger.messages?.[0]?.from || '').toString();\n\nconst soloDigitos = v => (v || '').toString().replace(/\\D/g, '');\nconst mismoTelefono = (a, b) => {\n  const x = soloDigitos(a), y = soloDigitos(b);\n  if (!x || !y) return false;\n  return x === y || x.slice(-9) === y.slice(-9);\n};\n\nconst minutosPausa = Number(CFG.pausa_derivacion_minutos) > 0\n  ? Number(CFG.pausa_derivacion_minutos)\n  : 180;\n\nconst ahora = Date.now();\nconst pendientes = $('Buscar derivacion pendiente').all()\n  .map(i => i.json || {})\n  .filter(r => r && r.id && mismoTelefono(r.telefono, telefono))\n  .map(r => ({ ms: Date.parse(r.creado_en) }))\n  .filter(r => Number.isFinite(r.ms) && (ahora - r.ms) < minutosPausa * 60000)\n  .sort((a, b) => b.ms - a.ms);\n\nconst derivacion = pendientes[0] || null;\n\n// Puerta de escape: si el paciente quiere gestionar una cita no lo dejamos\n// atrapado esperando. Solo se silencian las consultas.\n// \"baja\", \"stop\", \"alta\" y \"datos\" tambien pasan: pedir que no le escribamos\n// o preguntar por sus datos no puede quedarse sin respuesta.\nconst quiereCita = /\\b(cita|citas|reservar|reserva|anular|cancelar|cambiar|aplazar|hora|horario|agenda|baja|stop|alta|datos)\\b/\n  .test(mensaje.toLowerCase());\n\nconst pausada = !!derivacion && !quiereCita;\n\n// Si la derivacion acaba de crearse, el paciente ya ha recibido el mensaje de\n// \"te llamamos\". No hace falta repetirselo al momento.\nconst reciente = derivacion ? (ahora - derivacion.ms) < 2 * 60000 : false;\n\n// Se devuelve TODO el contexto tal cual, porque el AI Agent lee de aqui su\n// system_prompt. Si se pierde, el agente se queda sin instrucciones.\nreturn [{\n  json: {\n    ...ctx,\n    pausada,\n    silenciar: pausada && reciente,\n    telefono_paciente: telefono,\n    minutos_pausa: minutosPausa\n  }\n}];"
       },
-      "id": "p0000001-0000-4000-8000-000000000002",
+      "id": "c610c57a-fef1-475d-bc7a-93a77ebc6147",
       "name": "Comprobar pausa",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1648,
-        320
+        -8320,
+        2240
       ]
     },
     {
@@ -2675,53 +2642,52 @@
         },
         "options": {}
       },
-      "id": "p0000001-0000-4000-8000-000000000003",
+      "id": "703f96bc-e1bd-4b1b-9cd7-c086c56add4c",
       "name": "If conversacion pausada",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -1408,
-        320
+        -8080,
+        2240
       ]
     },
     {
       "parameters": {
         "jsCode": "const d = $input.first().json || {};\n\n// Acaba de recibir el mensaje de \"te llamamos\": no repetirselo.\nif (d.silenciar) return [];\n\nconst CFG = d.config || {};\nconst tel = CFG.telefono_publico || '';\n\nconst lineas = [\n  'Tu consulta ya está en manos del equipo de la clínica y te van a contactar lo antes posible 🙏',\n  '',\n  'Mientras tanto prefiero no contestarte yo, para no darte información que debe darte un profesional.'\n];\n\nif (tel) {\n  lineas.push('');\n  lineas.push('Si es urgente, llama al ' + tel + ' o al 112.');\n}\n\nlineas.push('');\nlineas.push('Si lo que necesitas es pedir o cambiar una cita, escríbeme \"cita\" y te ayudo con eso.');\n\nreturn [{\n  json: {\n    accion: 'responder',\n    telefono: d.telefono_paciente,\n    respuesta: lineas.join('\\n')\n  }\n}];"
       },
-      "id": "p0000001-0000-4000-8000-000000000004",
+      "id": "5b62afe4-7e0e-46ca-a23f-3ee974e88789",
       "name": "Preparar aviso de espera",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1408,
-        540
+        -8080,
+        2464
       ]
     },
     {
       "parameters": {
         "jsCode": "// RED DE SEGURIDAD DE LA IA (15-sep-2026)\n// Si el modelo de IA falla dos veces seguidas (proveedor caido, credencial\n// caducada, modelo retirado...), el paciente NO se queda sin respuesta: recibe\n// este mensaje con el telefono de la clinica. Justo despues, el nodo\n// \"Aviso fallo IA\" hace fallar la ejecucion A PROPOSITO para que salte el\n// workflow 04 y te llegue el aviso.\n//\n// Existe porque del 16-ago al 15-sep-2026 el bot estuvo mudo sin que nadie se\n// enterara: Groq retiro el modelo y esta salida de error no iba a ninguna parte.\nconst CFG = $('Construir contexto').first().json.config || {};\nconst telefono = ($('WhatsApp Trigger').first().json.messages?.[0]?.from || '').toString();\n\nconst error = $input.first().json.error;\nconst detalle = (typeof error === 'string'\n  ? error\n  : (error && (error.message || error.description)) || JSON.stringify(error || {}))\n  .toString().replace(/\\s+/g, ' ').slice(0, 300);\n\nconst telefonoClinica = CFG.telefono_publico ? ' al ' + CFG.telefono_publico : '';\n\nreturn [{\n  json: {\n    accion: 'responder',\n    telefono,\n    respuesta: 'Perdona, ahora mismo no puedo atenderte por aquí. Llama a la clínica' + telefonoClinica + ' y te ayudamos.',\n    error_ia: detalle || 'sin detalle'\n  }\n}];\n"
       },
-      "id": "cf83cfdd-5b97-4812-b0e6-ab7181196c31",
+      "id": "16e05b0e-a8ab-4ab8-8eb1-7bd53e28a185",
       "name": "Respuesta emergencia IA",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1168,
-        800
+        -7840,
+        2720
       ]
     },
     {
       "parameters": {
-        "errorType": "errorMessage",
         "errorMessage": "={{ 'La IA no ha respondido. El paciente (telefono acabado en ' + ($json.telefono || '').slice(-3) + ') ha recibido el mensaje de emergencia con el telefono de la clinica. Error: ' + $json.error_ia }}"
       },
-      "id": "96c70317-d5ed-4dfe-924c-94ff90c01fdf",
+      "id": "571c75c4-c7c4-4ebf-a911-5cf03e155bf6",
       "name": "Aviso fallo IA",
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -1168,
-        1000
+        -7840,
+        2928
       ]
     },
     {
@@ -2729,7 +2695,6 @@
         "operation": "getAll",
         "tableId": "pacientes",
         "returnAll": true,
-        "filterType": "manual",
         "matchType": "allFilters",
         "filters": {
           "conditions": [
@@ -2746,18 +2711,18 @@
           ]
         }
       },
-      "id": "18729402-f4df-46e2-bfb9-188be11554cc",
+      "id": "40dc8838-4d7b-4fd5-9cc5-2593d91afc0d",
       "name": "Buscar paciente",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        -3088,
-        320
+        -9760,
+        2240
       ],
       "alwaysOutputData": true,
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -2766,13 +2731,13 @@
       "parameters": {
         "jsCode": "// AVISO DE PRIMER CONTACTO (15-sep-2026)\n// La primera vez que un telefono escribe a una clinica hay que decirle dos\n// cosas, y las dos son obligacion legal desde el primer paciente real:\n//   - Que habla con un sistema automatico de IA (art. 50 del Reglamento\n//     europeo de IA, en vigor desde el 2-ago-2026). Esta obligacion es TUYA\n//     como proveedor del sistema, no de la clinica.\n//   - Quien trata sus datos y donde puede informarse (arts. 13 y 14 RGPD).\n// El texto sale de Legal/06, apartado 1. Si lo cambias aqui, cambialo alli.\n//\n// \"Primer contacto\" = el telefono no existe en la tabla pacientes de ESTA\n// clinica. La fila se crea justo despues de mandarle el aviso, asi que su\n// columna informado_rgpd_en es la prueba de que se le informo.\nconst ctx = $('Construir contexto').first().json;\nconst CFG = ctx.config || {};\nconst telefono = ($('WhatsApp Trigger').first().json.messages?.[0]?.from || '').toString();\n\nconst yaRegistrado = $('Buscar paciente').all()\n  .map(item => item.json || {})\n  .some(fila => !!fila.id);\n\nconst lineas = [\n  '¡Hola! Soy ' + (CFG.nombre_asistente || 'el asistente') + ', el asistente virtual de ' + CFG.nombre + ' 🦷',\n  '',\n  'Te ayudo a pedir, cambiar o anular tu cita, a cualquier hora.',\n  '',\n  'ℹ️ Soy un sistema automático con inteligencia artificial, no una persona. '\n    + CFG.nombre + ' trata tus datos para gestionar tus citas.'\n    + (CFG.url_privacidad\n      ? ' Puedes consultar los detalles y ejercer tus derechos aquí: ' + CFG.url_privacidad\n      : ' En la clínica te dan toda la información sobre tus datos y tus derechos.')\n];\n\nif (CFG.telefono_publico) {\n  lineas.push('');\n  lineas.push('Si prefieres hablar con una persona, llama al ' + CFG.telefono_publico + '.');\n}\nlineas.push('Si no quieres recibir mensajes automáticos, como los recordatorios, escribe BAJA.');\n\n// Se devuelve TODO el contexto tal cual: los nodos de detras lo necesitan.\nreturn [{\n  json: {\n    ...ctx,\n    primer_contacto: !yaRegistrado && telefono !== '',\n    telefono_paciente: telefono,\n    aviso_primer_contacto: lineas.join('\\n')\n  }\n}];\n"
       },
-      "id": "893ae543-95e3-4c9d-85bf-1c6e22348f70",
+      "id": "e0f433f6-cfc2-4287-b323-4df28f851fba",
       "name": "Comprobar primer contacto",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -2848,
-        320
+        -9520,
+        2240
       ]
     },
     {
@@ -2799,13 +2764,13 @@
         },
         "options": {}
       },
-      "id": "4ae60b3e-0175-412f-b682-2ea32bfa0e3b",
+      "id": "ba69ad52-4956-4892-bd35-e8c026d763a7",
       "name": "If primer contacto",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -2608,
-        320
+        -9280,
+        2240
       ]
     },
     {
@@ -2816,27 +2781,25 @@
         "textBody": "={{ $('Comprobar primer contacto').first().json.aviso_primer_contacto }}",
         "additionalFields": {}
       },
-      "id": "69277b06-048c-4f9a-bd65-bfd4c6c0ddbe",
+      "id": "316b9941-a995-402b-bf8c-d588f33dca59",
       "name": "Enviar aviso primer contacto",
       "type": "n8n-nodes-base.whatsApp",
       "typeVersion": 1.1,
       "position": [
-        -2368,
-        140
+        -9040,
+        2064
       ],
       "webhookId": "4a41e950-06c6-4133-ba3f-c5667b6d4fc6",
       "credentials": {
         "whatsAppApi": {
-          "id": "ftqbr1IavwplTKpk",
+          "id": "Jc5FvKPLiMuRQ7LH",
           "name": "WhatsApp account"
         }
       }
     },
     {
       "parameters": {
-        "operation": "create",
         "tableId": "pacientes",
-        "dataToSend": "defineBelow",
         "fieldsUi": {
           "fieldValues": [
             {
@@ -2854,40 +2817,38 @@
           ]
         }
       },
-      "id": "810dd71c-e455-4a30-83c3-0281f23ef0ee",
+      "id": "779b4d31-25f7-41b2-a964-d0a438742f78",
       "name": "Registrar paciente",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        -2128,
-        140
+        -8800,
+        2064
       ],
-      "onError": "continueRegularOutput",
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
-      }
+      },
+      "onError": "continueRegularOutput"
     },
     {
       "parameters": {
         "jsCode": "// MENSAJES QUE NO LLEGARON (15-sep-2026)\n// WhatsApp manda un callback de estado por cada mensaje que sale. Casi todos\n// son \"sent\", \"delivered\" o \"read\" y se ignoran. Los \"failed\" se apuntan en la\n// tabla envios_fallidos: por ejemplo, un mensaje enviado fuera de la ventana de\n// 24 h (error 131047). Antes se tiraban junto con los demas y el fallo era\n// invisible.\n//\n// REGLAS DE ESTA RAMA (ver el incidente del 08/08/2026 en el README):\n//   - No usar $('Construir contexto'): en esta rama no se ha ejecutado.\n//   - No fallar nunca: todo va dentro de try/catch y ante la duda, return [].\n//   - Solo registrar. NUNCA avisar por WhatsApp desde aqui: si ese aviso\n//     tambien fallara, generaria otro \"failed\" y volveria el bucle.\ntry {\n  const trigger = $('WhatsApp Trigger').first().json || {};\n  const estados = Array.isArray(trigger.statuses) ? trigger.statuses : [];\n\n  return estados\n    .filter(estado => estado && estado.status === 'failed')\n    .map(estado => {\n      const error = (Array.isArray(estado.errors) && estado.errors[0]) || {};\n      return {\n        json: {\n          phone_number_id: (trigger.metadata?.phone_number_id || '').toString(),\n          destinatario: (estado.recipient_id || '').toString(),\n          wamid: (estado.id || '').toString(),\n          codigo_error: (error.code ?? '').toString(),\n          titulo_error: (error.title || error.message || '').toString().slice(0, 300),\n          detalle_error: (error.error_data?.details || '').toString().slice(0, 1000)\n        }\n      };\n    });\n} catch (e) {\n  return [];\n}\n"
       },
-      "id": "ecf9c8e6-93c3-403e-8557-8f12347eed5d",
+      "id": "7c2d05ec-2958-418d-b3f2-c2815d4df17b",
       "name": "Filtrar envio fallido",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -3568,
-        560
+        -10240,
+        2480
       ]
     },
     {
       "parameters": {
-        "operation": "create",
         "tableId": "envios_fallidos",
-        "dataToSend": "defineBelow",
         "fieldsUi": {
           "fieldValues": [
             {
@@ -2917,21 +2878,21 @@
           ]
         }
       },
-      "id": "ee552026-8bba-4671-ae66-f2fb051fd7a9",
+      "id": "74a84917-fea7-4075-bfad-ec80c29c28af",
       "name": "Registrar envio fallido",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        -3328,
-        560
+        -10000,
+        2480
       ],
-      "onError": "continueRegularOutput",
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
-      }
+      },
+      "onError": "continueRegularOutput"
     },
     {
       "parameters": {
@@ -2957,20 +2918,19 @@
         },
         "options": {}
       },
-      "id": "0abdc699-5b0d-4964-891c-cf0867f329e6",
+      "id": "ca3ef446-17f2-42fc-a08c-f9dede780ef5",
       "name": "If cambiar opt-out",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -912,
-        120
+        -7584,
+        2048
       ]
     },
     {
       "parameters": {
         "operation": "update",
         "tableId": "pacientes",
-        "filterType": "manual",
         "matchType": "allFilters",
         "filters": {
           "conditions": [
@@ -2986,7 +2946,6 @@
             }
           ]
         },
-        "dataToSend": "defineBelow",
         "fieldsUi": {
           "fieldValues": [
             {
@@ -3000,17 +2959,17 @@
           ]
         }
       },
-      "id": "217bb4d7-71fe-4a73-b723-dbf2646f5aac",
+      "id": "76e965a7-8ad3-442d-b9a1-c8c36b231b83",
       "name": "Actualizar opt-out paciente",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        -640,
-        100
+        -7312,
+        2032
       ],
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -3023,13 +2982,13 @@
           "temperature": 0.5
         }
       },
-      "id": "85069785-0ada-4e73-b7ec-47025a75710e",
+      "id": "3846ff42-51cc-4eda-8771-b211d23a8197",
       "name": "Groq Chat Model",
       "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
       "typeVersion": 1,
       "position": [
-        -1168,
-        560
+        -7824,
+        2432
       ],
       "credentials": {
         "groqApi": {
@@ -3046,13 +3005,13 @@
           "temperature": 0.5
         }
       },
-      "id": "29f52490-fc56-4a42-8c90-ed99af99b6ff",
+      "id": "fa92b1ed-f491-4982-b2e1-9669aed26b51",
       "name": "Groq Chat Model reserva",
       "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
       "typeVersion": 1,
       "position": [
-        -1168,
-        780
+        -7824,
+        2652
       ],
       "credentials": {
         "groqApi": {
@@ -4253,15 +4212,14 @@
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
-    "availableInMCP": false,
     "timezone": "Europe/Madrid"
   },
-  "versionId": "0d134a11-0aac-43dd-8b35-b08edb4f72b5",
+  "versionId": "b224cb2c-aec7-49f4-9e8d-f3c8fe6f9cff",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "2a52922ab0feda7d248e6d57fdfd3b8ff26d093f6ac1b725283ec74830c38987"
+    "instanceId": "8f92f4a2a5bf0716e4b9510d6955606501ef13b95b27b0aee2eedb8a7db7ff96"
   },
   "nodeGroups": [],
-  "id": "SUPA-CLINICA-01-WHATSAPP-CITAS",
+  "id": "nlwuqWCgDmnDgdZj",
   "tags": []
 }

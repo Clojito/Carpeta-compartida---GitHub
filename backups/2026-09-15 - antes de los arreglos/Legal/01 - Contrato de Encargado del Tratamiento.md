@@ -129,12 +129,7 @@ automatizado, y recabar la base jurídica que corresponda.
 
 > **Nota para ti:** este punto protege a las dos partes. La clínica es quien
 > tiene la relación con el paciente y quien debe informarle. Tú le das las
-> herramientas (documento `06`), pero la obligación es suya.
->
-> **Ojo, con una excepción:** avisar de que el paciente habla con una IA
-> (artículo 50 del Reglamento de IA, en vigor desde el 2-ago-2026) es
-> obligación **tuya** como proveedor del sistema. Por eso lo hace el propio bot
-> y está en la cláusula 5 bis.
+> herramientas (documento `07`), pero la obligación es suya.
 
 ### 5. Datos de salud
 
@@ -149,33 +144,6 @@ EL ENCARGADO se obliga a:
 - Derivar a personal humano de la clínica toda consulta de naturaleza clínica,
   **sin emitir en ningún caso diagnósticos, recomendaciones terapéuticas ni
   consejo médico**.
-
-### 5 bis. Uso de inteligencia artificial
-
-El Servicio utiliza un modelo de inteligencia artificial de un tercero para
-entender los mensajes de los pacientes y extraer los datos de la cita. En
-relación con ese uso, EL ENCARGADO se obliga a:
-
-- Utilizar únicamente proveedores de IA incluidos en el **Anexo II**, con
-  contrato de encargado firmado, sin conservación de los mensajes (retención
-  cero) y, si tratan los datos fuera del Espacio Económico Europeo, con las
-  garantías del capítulo V del RGPD.
-- Contratar el servicio de IA en una modalidad en la que el proveedor **no use
-  los mensajes para entrenar sus modelos**.
-- Informar a cada paciente, en su primer contacto, de que conversa con un
-  sistema automático de inteligencia artificial (artículo 50 del Reglamento
-  (UE) 2024/1689), responder con la verdad si el paciente lo pregunta y
-  conservar la fecha en que se le informó.
-- No utilizar el sistema para diagnosticar, valorar la urgencia de un caso ni
-  tomar decisiones clínicas: toda consulta de naturaleza clínica se deriva al
-  personal de EL RESPONSABLE.
-- Permitir que el paciente deje de recibir mensajes automáticos cuando lo pida.
-
-> **Nota para ti:** esta es la cláusula que va a buscar el asesor de la clínica
-> en cuanto lea "inteligencia artificial". El cuarto punto (el bot no valora
-> urgencias, lo deriva todo) es además lo que mantiene el servicio fuera de la
-> categoría de "alto riesgo" del Anexo III del Reglamento de IA. No lo cambies
-> sin pensarlo.
 
 ### 6. Transferencias internacionales
 
@@ -244,32 +212,15 @@ Fdo.: ______________________          Fdo.: ______________________
 - Cifrado en reposo en la base de datos.
 
 **Alojamiento**
-- Base de datos y motor de automatización alojados en la **Unión Europea**.
-- Modelo de inteligencia artificial en EE. UU. (Groq), con cláusulas
-  contractuales tipo y sin conservación de los mensajes (retención cero).
-
-**Minimización y transparencia**
-- El sistema no pide datos de salud; si el paciente los aporta, la consulta se
-  deriva a la clínica sin valorarla.
-- Las citas solo se consultan, modifican o cancelan desde el mismo número de
-  teléfono con el que se reservaron.
-- Aviso automático de sistema de IA y de privacidad en el primer contacto de
-  cada paciente, con registro de la fecha.
-- Registro de las solicitudes de baja de mensajes automáticos.
+- Base de datos alojada en la **Unión Europea**.
 
 **Trazabilidad**
 - Registro de ejecuciones del sistema y de los errores.
 - Registro de incidencias con fecha, causa y resolución.
 
 **Continuidad**
-- Copias de seguridad automáticas diarias de la base de datos, con 7 días de
-  retención (Supabase, plan Pro).
-- Sistema automático de alertas ante fallos, con mensaje al paciente indicando
-  el teléfono de la clínica si el asistente no puede contestar.
-
-> ⚠️ **La línea de copias de seguridad solo es verdad si Supabase está en el
-> plan Pro.** El plan gratuito no hace copias. Si firmas antes de subir de plan,
-> bórrala: un anexo con una medida que no existe es peor que no tenerlo.
+- Copias de seguridad automáticas diarias del proveedor de base de datos.
+- Sistema automático de alertas ante fallos.
 
 **Organizativas**
 - Deber de confidencialidad por escrito de cualquier persona con acceso.
@@ -282,27 +233,15 @@ Fdo.: ______________________          Fdo.: ______________________
 
 ## ANEXO II — Subencargados autorizados
 
-| Subencargado | Servicio | Ubicación del tratamiento | Transferencia internacional | Garantía |
-|---|---|---|---|---|
-| Supabase Inc. | Base de datos | UE — AWS eu-central-1 (Fráncfort) | No | Acuerdo de tratamiento (DPA) de Supabase |
-| n8n GmbH (n8n Cloud) | Motor de automatización | UE — Microsoft Azure, Fráncfort | No | DPA de n8n |
-| Groq, Inc. | Modelo de inteligencia artificial | EE. UU. (Google Cloud) | Sí | DPA de Groq con cláusulas contractuales tipo de la UE; prohibición contractual de entrenar con los datos; retención cero (ZDR) activada |
-| WhatsApp Ireland Ltd. (Meta) | Mensajería | UE, con transferencia a Meta Platforms Inc. (EE. UU.) | Sí | EU-US Data Privacy Framework |
-| Google (Calendar y Gmail) | Agenda y correo | EE. UU. | Sí | EU-US Data Privacy Framework + condiciones de tratamiento de datos de Google Workspace |
+| Subencargado | Servicio | Ubicación | Transferencia internacional |
+|---|---|---|---|
+| Supabase | Base de datos | UE (Frankfurt/Irlanda) | No |
+| n8n Cloud | Motor de automatización | [VERIFICAR REGIÓN] | [VERIFICAR] |
+| Meta Platforms (WhatsApp) | Mensajería | EE. UU. | Sí — [VERIFICAR MECANISMO] |
+| Google (Calendar y Gmail) | Agenda y correo | EE. UU. | Sí — [VERIFICAR MECANISMO] |
+| [PROVEEDOR DE IA] | Procesamiento de lenguaje | [UBICACIÓN] | [VERIFICAR] |
 
-> **Datos verificados el 8 y el 15 de septiembre de 2026.** Antes de firmar
-> quedan cuatro cosas, y las cuatro son tuyas:
->
-> 1. **Guarda el DPA de cada proveedor en PDF, con la fecha.** Si mañana cambian
->    la web, lo que firmaste es lo que tienes guardado.
-> 2. **Groq:** acepta su DPA (console.groq.com/docs/legal) y guárdalo en PDF, y
->    activa **Zero Data Retention** en Settings → Data Controls. Sin eso, Groq
->    puede guardar peticiones hasta 30 días para investigar abusos. Ojo: **esta
->    fila es una transferencia a EE. UU. de mensajes que pueden contener datos
->    de salud.** Está cubierta por las cláusulas contractuales tipo, pero es lo
->    que más probablemente cuestione el asesor de la clínica. Si lo tumba, la
->    alternativa en la UE es Mistral: en el workflow es cambiar un nodo.
-> 3. **Google:** su DPA solo cubre **Google Workspace**. Con una cuenta Gmail
->    gratuita esta fila no se sostiene. O pasas la agenda y el correo a Workspace
->    (unos 7 €/mes), o se usa el calendario y el correo de la propia clínica.
-> 4. Si cambias cualquier proveedor, avisa a la clínica con 30 días (cláusula 3.e).
+> **No firmes con los corchetes puestos.** Entra en la web de cada proveedor,
+> busca su DPA y su información de transferencias, y rellena la tabla con datos
+> comprobados. Es tedioso, pero es exactamente lo que te va a pedir cualquier
+> clínica con asesor legal — y es lo que te protege a ti.

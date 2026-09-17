@@ -1,0 +1,302 @@
+{
+  "name": "Clinica Dental - 07 Marcar derivacion atendida",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "derivacion-atendida",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "f4057f8f-1256-49dc-8078-3bef4e2665a6",
+      "name": "Recibir enlace",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1000,
+        400
+      ],
+      "webhookId": "4708c119-6eae-4485-ab8b-08c1d6366a77"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "derivaciones",
+        "returnAll": true,
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "derivacion_id",
+              "condition": "eq",
+              "keyValue": "={{ ($json.query && $json.query.id) || 'sin-id' }}"
+            }
+          ]
+        }
+      },
+      "id": "b8ddb448-fc84-4c36-9529-fa576f82ee03",
+      "name": "Buscar derivacion",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -780,
+        400
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "SUPABASE_CRED",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// CERRAR UNA DERIVACION DESDE EL EMAIL (workflow 07, 15-sep-2026)\n// El boton \"Marcar como atendida\" de los emails abre esta direccion con el id\n// de la derivacion y su token secreto. Funciona en DOS pasos a proposito:\n//   1. Primera visita: solo muestra una pagina de confirmacion.\n//   2. Boton \"Si, ya le hemos atendido\" (misma direccion + &ok=1): la cierra.\n// Asi, si el antivirus del correo abre el enlace para analizarlo, no cierra\n// nada por su cuenta.\nconst entrada = $('Recibir enlace').first().json || {};\nconst q = entrada.query || {};\nconst id = (q.id || '').toString();\nconst token = (q.t || '').toString();\nconst confirmado = (q.ok || '').toString() === '1';\n\nconst fila = $('Buscar derivacion').all()\n  .map(item => item.json || {})\n  .find(r => r.id && r.derivacion_id === id);\n\n// Comparacion que tarda lo mismo acierte o falle: no da pistas sobre el token.\nconst mismoToken = (a, b) => {\n  if (!a || !b || a.length !== b.length) return false;\n  let diferencia = 0;\n  for (let i = 0; i < a.length; i++) diferencia |= a.charCodeAt(i) ^ b.charCodeAt(i);\n  return diferencia === 0;\n};\n\nconst esc = v => (v === null || v === undefined ? '' : v.toString())\n  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')\n  .replace(/\"/g, '&quot;').replace(/'/g, '&#39;');\n\nconst pagina = (titulo, cuerpo) => '<!doctype html><html lang=\"es\"><head><meta charset=\"utf-8\">'\n  + '<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>' + esc(titulo) + '</title></head>'\n  + '<body style=\"font-family:Arial,Helvetica,sans-serif;background:#f6f7f6;margin:0;padding:24px;color:#222\">'\n  + '<div style=\"max-width:480px;margin:40px auto;background:#fff;border-radius:10px;padding:28px;box-shadow:0 1px 4px rgba(0,0,0,.08)\">'\n  + '<h1 style=\"font-size:22px;margin:0 0 12px\">' + esc(titulo) + '</h1>' + cuerpo + '</div></body></html>';\n\nif (!fila || !mismoToken((fila.token_cierre || '').toString(), token)) {\n  return [{ json: { accion: 'mostrar', html: pagina('Enlace no válido', '<p>Este enlace no es válido o está incompleto. Si necesitas cerrar una consulta, avisa a vuestro proveedor del asistente.</p>') } }];\n}\n\nconst quien = esc(fila.nombre || 'el paciente') + (fila.fecha_hora ? ' (' + esc(fila.fecha_hora) + ')' : '');\n\nif ((fila.estado || '') !== 'pendiente') {\n  return [{ json: { accion: 'mostrar', html: pagina('Ya estaba atendida', '<p>La consulta de ' + quien + ' ya estaba marcada como atendida. No hay que hacer nada más.</p>') } }];\n}\n\nif (!confirmado) {\n  const enlace = '?id=' + encodeURIComponent(id) + '&t=' + encodeURIComponent(token) + '&ok=1';\n  return [{\n    json: {\n      accion: 'mostrar',\n      html: pagina('¿Marcar como atendida?',\n        '<p>Consulta de <b>' + quien + '</b>.</p>'\n        + '<p>Púlsalo solo si ya habéis hablado con el paciente. A partir de ese momento el asistente vuelve a contestarle con normalidad.</p>'\n        + '<p style=\"margin-top:24px\"><a href=\"' + esc(enlace) + '\" style=\"display:inline-block;background:#1a7f5a;color:#fff;padding:12px 18px;border-radius:6px;text-decoration:none;font-weight:bold\">Sí, ya le hemos atendido</a></p>')\n    }\n  }];\n}\n\nreturn [{ json: { accion: 'cerrar', derivacion_id: id, token, quien } }];\n"
+      },
+      "id": "b56ef05b-eaf6-4044-a287-7e519307fd50",
+      "name": "Decidir",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -560,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cond-cerrar-derivacion",
+              "leftValue": "={{ $json.accion === 'cerrar' }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "96c64149-02e4-49dc-9f09-2ef8b28d25ef",
+      "name": "If cerrar",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -340,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "derivaciones",
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "derivacion_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.derivacion_id }}"
+            },
+            {
+              "keyName": "token_cierre",
+              "condition": "eq",
+              "keyValue": "={{ $json.token }}"
+            },
+            {
+              "keyName": "estado",
+              "condition": "eq",
+              "keyValue": "pendiente"
+            }
+          ]
+        },
+        "dataToSend": "defineBelow",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "estado",
+              "fieldValue": "atendida"
+            },
+            {
+              "fieldId": "cerrado_en",
+              "fieldValue": "={{ $now.setZone('Europe/Madrid').toFormat('dd/MM/yyyy H:mm') }}"
+            },
+            {
+              "fieldId": "atendido_por",
+              "fieldValue": "boton del email"
+            }
+          ]
+        }
+      },
+      "id": "35186bae-860e-4d6f-83b5-689b1c0f538b",
+      "name": "Marcar atendida",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -100,
+        300
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "SUPABASE_CRED",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Pagina final despues de intentar cerrar la derivacion.\n// Si la actualizacion no devolvio ninguna fila, es que otra persona la cerro\n// justo antes (dos clics seguidos, dos personas...).\nconst decision = $('Decidir').first().json;\nconst actualizada = $input.all().some(item => item.json && item.json.id);\n\nconst pagina = (titulo, cuerpo) => '<!doctype html><html lang=\"es\"><head><meta charset=\"utf-8\">'\n  + '<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>' + titulo + '</title></head>'\n  + '<body style=\"font-family:Arial,Helvetica,sans-serif;background:#f6f7f6;margin:0;padding:24px;color:#222\">'\n  + '<div style=\"max-width:480px;margin:40px auto;background:#fff;border-radius:10px;padding:28px;box-shadow:0 1px 4px rgba(0,0,0,.08)\">'\n  + '<h1 style=\"font-size:22px;margin:0 0 12px\">' + titulo + '</h1>' + cuerpo + '</div></body></html>';\n\n// decision.quien ya viene escapado desde \"Decidir\".\nconst html = actualizada\n  ? pagina('Hecho ✅', '<p>La consulta de <b>' + decision.quien + '</b> queda marcada como atendida. El asistente vuelve a contestarle con normalidad.</p><p style=\"color:#888\">Ya puedes cerrar esta página.</p>')\n  : pagina('Ya estaba atendida', '<p>Esta consulta ya estaba cerrada. No hay que hacer nada más.</p>');\n\nreturn [{ json: { html } }];\n"
+      },
+      "id": "ba00f43a-85c0-48a2-a0bb-65b4f60ba758",
+      "name": "Pagina hecho",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        120,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.html }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html; charset=utf-8"
+              }
+            ]
+          }
+        }
+      },
+      "id": "e98e34c2-9ed5-4a61-bed7-8099d29d78fc",
+      "name": "Responder",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        340,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "content": "# Workflow 07 - Marcar derivacion atendida\n\nEs el destino del boton \"Marcar como atendida\" de los emails de derivacion y\ndel email diario. Antes, una derivacion solo se cerraba ejecutando SQL en\nSupabase, o sea, solo tu. Mientras seguia abierta el bot estaba callado 3 h.\n\n**Hay que ACTIVARLO** (interruptor Active): es un webhook, sin activar no responde.\n\nDos pasos a proposito: el primer clic muestra \"¿Marcar como atendida?\" y solo\nel segundo la cierra. Asi el antivirus del correo, que abre los enlaces para\nanalizarlos, no cierra nada por su cuenta.\n\nSeguridad: el enlace lleva el derivacion_id y un token aleatorio guardado en\nderivaciones.token_cierre. Sin el token exacto no se cierra nada.\n\nLas derivaciones creadas antes del 15-sep-2026 no tienen token: esas se\nsiguen cerrando con el SQL del README (Parte 6).",
+        "height": 520,
+        "width": 760,
+        "color": 5
+      },
+      "id": "ca9ed2a3-5c0b-491d-ba07-7045157d0c6e",
+      "name": "NOTA - Cerrar derivacion",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1000,
+        580
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Recibir enlace": {
+      "main": [
+        [
+          {
+            "node": "Buscar derivacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar derivacion": {
+      "main": [
+        [
+          {
+            "node": "Decidir",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decidir": {
+      "main": [
+        [
+          {
+            "node": "If cerrar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If cerrar": {
+      "main": [
+        [
+          {
+            "node": "Marcar atendida",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Responder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marcar atendida": {
+      "main": [
+        [
+          {
+            "node": "Pagina hecho",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pagina hecho": {
+      "main": [
+        [
+          {
+            "node": "Responder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Madrid"
+  },
+  "versionId": "4670450b-06e7-4fa3-b739-859b95f01794",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b46ba6e189765812cf420e6f1d27507c3730c94070cb152a228939aec7fe29af"
+  },
+  "id": "SUPA-CLINICA-07-CERRAR-DERIVACION",
+  "tags": []
+}

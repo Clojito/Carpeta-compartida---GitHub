@@ -6,19 +6,6 @@ uno el día que te revientan.
 
 Esta es la lista completa. Los ordeno por **cuándo te van a doler**.
 
-> ## ⚠️ Corrección del 9-sep, verificada: la verificación NO bloquea el piloto
->
-> Una cuenta **sin verificar** puede escribir a **250 destinatarios únicos cada
-> 24 horas** y contestar sin límite dentro de la ventana. Una clínica son unos 5
-> pacientes distintos al día. Lo que te ata hoy es el **número de prueba** de
-> Meta (máximo 5 destinatarios), y de ahí se sale con **un número real + un
-> método de pago** en la cuenta. Arranca la verificación igual (la necesitas
-> para crecer y para el nombre visible), pero no planifiques alrededor de esa
-> espera. *Compruébalo en tu cuenta antes de prometer fechas.*
->
-> **Actualización del 15-sep:** el workflow 02 ya envía la plantilla de
-> recordatorio y los siete workflows usan una sola credencial de WhatsApp.
-
 ---
 
 ## Resumen: qué te bloquea y cuánto tarda
@@ -26,7 +13,7 @@ Esta es la lista completa. Los ordeno por **cuándo te van a doler**.
 | # | Cosa | ¿Bloquea pacientes reales? | Cuánto tarda | ¿Depende de ti? |
 |---|---|---|---|---|
 | 1 | El número ya está en WhatsApp Business | 🔴 Sí | 1 día | Sí |
-| 2 | Verificación del negocio | 🟡 No para el piloto (ver corrección arriba) | Días–semanas | No |
+| 2 | Verificación del negocio | 🔴 Sí | Días–semanas | No |
 | 3 | Plantillas aprobadas (workflows 02 y 03) | 🔴 Sí | Minutos–24 h | Sí |
 | 4 | Token permanente | 🟠 No, pero te tira el bot cada día | 20 min | Sí |
 | 5 | Nombre para mostrar aprobado | 🟠 Sí, para salir del modo prueba | 1–3 días | Sí |
@@ -140,22 +127,15 @@ verdad**, que es el peor momento posible para descubrirlo.
 
 ### Cómo se arregla
 
-Das de alta la plantilla en el Administrador de WhatsApp y esperas la
-aprobación (suele ser cuestión de minutos u horas).
-
-✅ **El nodo de envío del workflow 02 ya está cambiado** (15-sep). Solo falta
-darla de alta. La de valoración puede esperar: el workflow 03 queda fuera del
-piloto.
+Das de alta dos plantillas en el Administrador de WhatsApp y esperas la
+aprobación (suele ser cuestión de minutos u horas). Luego yo cambio el nodo de
+envío en 10 minutos.
 
 **Plantilla 1 — recordatorio**
 
-- Nombre: `recordatorio_cita_24h` *(exactamente así: el workflow la busca por este nombre)*
+- Nombre: `recordatorio_cita_24h`
 - Categoría: **Utilidad** *(no marketing: va ligada a una cita concreta)*
-- Idioma: **Spanish** (código `es`). Si eliges "Spanish (SPA)", el código es
-  `es_ES` y hay que cambiar `IDIOMA_PLANTILLA` en el nodo
-  `Preparar recordatorios` del workflow 02.
-- **Sin botones** por ahora: el workflow 01 todavía no entiende las respuestas
-  de botón.
+- Idioma: Español
 
 ```
 Hola {{1}}, te recordamos tu cita de {{2}} mañana a las {{3}} en {{4}}.
@@ -191,8 +171,7 @@ si quieres. Ejemplo: 5 Todo genial
 1. No empieces ni termines con una variable.
 2. Nada de emojis raros, mayúsculas gritadas ni promesas comerciales.
 
-Cuando esté aprobada la del recordatorio, pasa la prueba O2 de
-`Pruebas/Bateria de mensajes.md`.
+Cuando estén aprobadas, dímelo y cambio los nodos.
 
 ---
 
@@ -209,9 +188,7 @@ El arreglo es un **token de Usuario del Sistema**, que no caduca:
 3. **Añadir activos** → tu app de WhatsApp → control total
 4. **Generar token** → permisos `whatsapp_business_messaging` y
    `whatsapp_business_management` → caducidad **Nunca**
-5. Pegarlo en la credencial **WhatsApp account** de n8n. Desde el 15-sep los
-   siete workflows usan esa misma; la antigua *WhatsApp account 15* se puede
-   borrar cuando todo funcione.
+5. Pegarlo en las credenciales de n8n
 
 Hazlo **antes de la demo**. Que se te caiga el bot delante del dentista por
 esto sería una tontería evitable.
@@ -278,14 +255,12 @@ van bajo tu misma cuenta.
 - [ ] Comprar/apartar un **número nuevo** para el piloto
 - [ ] En la demo: preguntar si la clínica ya hace publicidad en Instagram
 
-**Cuando la plantilla esté aprobada**
+**Cuando las plantillas estén aprobadas**
 
-- [x] ~~Avisarme → cambio los nodos de envío~~ ✅ El 02 ya usa la plantilla (15-sep). El 03 queda fuera del piloto
-- [ ] Pasar la prueba O2 (recordatorio a un número que lleve más de 24 h sin escribir)
+- [ ] Avisarme → cambio los nodos de envío de los workflows 02 y 03
 
 **Antes de pacientes reales**
 
-- [ ] **Número real + método de pago** en la cuenta (esto es lo que saca del modo prueba)
 - [ ] Nombre para mostrar aprobado
-- [ ] Verificación enviada (no bloquea el piloto, pero arráncala)
-- [ ] IA: se sigue con Groq (EE. UU.). Antes de pacientes reales: DPA de Groq y Zero Data Retention activado
+- [ ] Verificación aprobada (o ruta B con la cuenta de la clínica)
+- [ ] Sacar el proveedor de IA fuera de Estados Unidos

@@ -12,14 +12,11 @@ preparado para **varias clínicas con un solo workflow**.
 | `03 - optimizaciones.sql` | Vista e índice de rendimiento. Se ejecuta tercero. |
 | `04 - avisos-error.sql` | Registro de errores y cortafuegos. Se ejecuta cuarto. |
 | `05 - pausa-derivacion.sql` | El bot se calla tras derivar a una persona. Se ejecuta quinto. |
-| `06 - pacientes-y-cumplimiento.sql` | Pacientes, aviso de IA/RGPD, bajas y envíos fallidos. Se ejecuta sexto. |
-| `Clinica Dental - 01 WhatsApp citas (Supabase).json` | El bot principal (106 nodos). |
+| `Clinica Dental - 01 WhatsApp citas (Supabase).json` | El bot principal (94 nodos). |
 | `Clinica Dental - 02 Recordatorios 24h (Supabase).json` | Recordatorio el día antes. |
 | `Clinica Dental - 03 Solicitud valoraciones post cita (Supabase).json` | Pide valoración al terminar. |
 | `Clinica Dental - 04 Avisos de error.json` | Te avisa por WhatsApp si algo falla. |
-| `Clinica Dental - 05 Resumen semanal.json` | Email semanal a cada clínica (fuera del piloto). |
-| `Clinica Dental - 06 Email diario Hoy.json` | Email diario a la clínica: pacientes a los que llamar, citas, lista de espera y leads. |
-| `Clinica Dental - 07 Marcar derivacion atendida.json` | El botón "Marcar como atendida" de los emails. |
+| `Clinica Dental - 05 Resumen semanal.json` | Email semanal a cada clínica. |
 
 ---
 
@@ -42,15 +39,8 @@ En **SQL Editor** → **New query**, pega y ejecuta **en este orden**:
 3. `03 - optimizaciones.sql` → crea la vista `clinicas_config` y un índice
 4. `04 - avisos-error.sql` → crea la tabla `avisos_error` (el workflow 04 no funciona sin ella)
 5. `05 - pausa-derivacion.sql` → añade la pausa del bot tras derivar a una persona
-6. `06 - pacientes-y-cumplimiento.sql` → crea `pacientes` y `envios_fallidos`, y añade `clinicas.url_privacidad` y `derivaciones.token_cierre`
 
-Todos se pueden ejecutar varias veces sin romper nada. El último te devuelve una fila de comprobación con la clínica, sus tratamientos y las dos tablas nuevas a 0.
-
-Después, pon el enlace a la política de privacidad de la clínica (sale en el aviso de primer contacto):
-
-```sql
-update clinicas set url_privacidad = 'https://...' where id = '11111111-1111-1111-1111-111111111111';
-```
+Todos se pueden ejecutar varias veces sin romper nada. El último te devuelve una fila de comprobación: debe decir `num_tratamientos = 5` y `pausa_derivacion_minutos = 180`.
 
 ## Paso 3 — Claves de conexión
 
@@ -67,24 +57,9 @@ update clinicas set url_privacidad = 'https://...' where id = '11111111-1111-111
 - **Service Role Secret**: la clave `service_role`
 - Nómbrala `Supabase account`.
 
-Crea también estas dos, con estos nombres exactos (los workflows las buscan así):
-
-- **Groq** → nombre `Groq account`. API key gratuita de
-  [console.groq.com](https://console.groq.com) → API Keys. Activa también
-  **Zero Data Retention** (Settings → Data Controls): Groq procesa los mensajes
-  en EE. UU. y así no los conserva.
-- **WhatsApp API** → nombre `WhatsApp account`, con el token permanente de Meta.
-  Es **una sola** credencial para los siete workflows.
-
-## Paso 5 — Importar los 7 workflows
+## Paso 5 — Importar los 5 workflows
 
 Para cada `.json`: **Workflows** → **Import from File**. Luego abre un nodo morado de Supabase y elige la credencial `Supabase account`; n8n la aplica al resto.
-
-> **Si ya tienes los workflows en n8n**, no los importes como nuevos: abre cada
-> uno → **⋯** → **Import from File** y elige su `.json`. Así se reemplaza el
-> contenido pero se conservan su Error Workflow y la dirección del webhook de
-> WhatsApp. Antes, descárgalos (**⋯** → **Download**) y guárdalos en `backups/`
-> con la fecha. El 06 y el 07 sí son nuevos.
 
 Repasa también las credenciales de WhatsApp, Google Calendar y Gmail.
 
@@ -92,11 +67,7 @@ Repasa también las credenciales de WhatsApp, Google Calendar y Gmail.
 
 El workflow 04 **no funciona hasta que le dices a los demás que lo usen**:
 
-En cada workflow (01, 02, 03, 05, 06 y 07): menú **⋯** → **Settings** → **Error Workflow** → elige `Clinica Dental - 04 Avisos de error` → Guardar.
-
-En el workflow 04, nodo `Decidir si avisar`, escribe tu correo en `EMAIL_AVISOS`: así los avisos te llegan también por email aunque lleves más de 24 h sin escribir al bot.
-
-Y **activa el workflow 07**: es un webhook, y sin activar el botón "Marcar como atendida" de los emails no funciona.
+En cada workflow (01, 02, 03 y 05): menú **⋯** → **Settings** → **Error Workflow** → elige `Clinica Dental - 04 Avisos de error` → Guardar.
 
 ## Paso 7 — Probar, en este orden
 
@@ -110,14 +81,10 @@ Prueba con **tu propio número** antes de enseñárselo a nadie:
 5. **Lead** — "¿Cuánto cuesta la ortodoncia?" → fila en `leads`.
 6. **Derivación** — "Me duele una muela y me sangra" → fila en `derivaciones` + email.
 7. **Recordatorio / valoración** — ejecuta a mano los workflows 02 y 03.
-8. **Error** — en n8n los avisos de error **solo saltan con el workflow activo** y disparado por su propio trigger, no con "Execute workflow". Sigue los pasos de la nota del workflow 04 (cron cada 2 minutos).
-9. **Resumen semanal** — ejecuta a mano el workflow 05 (fuera del piloto).
-10. **Primer contacto** — escribe desde un número que nunca haya escrito al bot: llega primero el aviso de IA y privacidad, y aparece una fila en `pacientes`.
-11. **IA caída** — pon una API key falsa en `Groq account` y escribe: debes recibir *"ahora mismo no puedo atenderte por aquí. Llama a la clínica..."*.
-12. **Botón de derivación** — tras el paso 6, abre el email y pulsa "Marcar como atendida": pide confirmar y, al confirmar, la fila pasa a `atendida`.
-13. **Email diario** — ejecuta a mano el workflow 06.
+8. **Error** — desconecta a propósito la credencial de Supabase en el workflow 02 y ejecútalo: debe llegarte un WhatsApp.
+9. **Resumen semanal** — ejecuta a mano el workflow 05.
 
-La batería completa, con los casos trampa, está en `Pruebas/Bateria de mensajes.md`. Activa los workflows solo cuando todo esto vaya bien.
+Activa los workflows solo cuando los 9 pasos vayan bien.
 
 ---
 
@@ -178,8 +145,6 @@ clínica, y sigue siendo uno solo tengas 1 cliente o 30.
 | 03 Valoraciones | Igual que el 02; el fin de la cita se calcula en la zona de su clínica |
 | 04 Avisos de error | No aplica: los avisos son para ti, no para el cliente |
 | 05 Resumen semanal | Agrupa por `clinica_id` y manda un correo a cada `email_avisos` |
-| 06 Email diario | Igual que el 05, cada mañana |
-| 07 Marcar derivación atendida | Por el `derivacion_id` y el token del enlace |
 
 **Por qué los workflows 02 y 03 buscan citas de varios días y luego filtran en código:**
 si la consulta filtrase por «la fecha de mañana en Madrid», una clínica en otro huso
@@ -268,7 +233,7 @@ Salta cuando **cualquier** workflow falla y manda un WhatsApp al **+34 640575291
 
 > ⚠️ **Limitación de Meta que debes conocer.** La API de WhatsApp Business solo permite mensajes libres durante las 24 h siguientes a que *ese* número te escriba. Si hace más de 24 h que no escribes al número del bot desde tu móvil, **el aviso no te llegará**. No es un fallo del workflow; es una norma de Meta.
 >
-> El nodo está configurado para no romper nada si eso pasa, pero un aviso que no llega no sirve. **Por eso, desde el 15-sep, el aviso sale también por email**: escribe tu correo en `EMAIL_AVISOS`, dentro del nodo `Decidir si avisar`. Mientras esté vacío, solo se usa WhatsApp.
+> El nodo está configurado para no romper nada si eso pasa, pero un aviso que no llega no sirve. **Mi recomendación: cambia ese nodo por Telegram** (gratis, 5 minutos, sin ventana de 24 h) o por email. Te lo dejo montado en WhatsApp porque es lo que pediste, pero para alertas reales no es el canal adecuado.
 
 ---
 
@@ -296,9 +261,7 @@ Solo se silencian las consultas.
 **Cuánto dura.** Lo marca la columna `pausa_derivacion_minutos` de cada clínica.
 Por defecto **180 minutos (3 horas)**. Pasado ese tiempo el bot vuelve solo.
 
-**Para reactivarlo antes**, la clínica pulsa **"Marcar como atendida"** en el email de la derivación o en el email diario (workflow 07). Pide confirmación en un segundo clic, para que el antivirus del correo no la cierre solo al analizar el enlace.
-
-Las derivaciones anteriores al 15-sep-2026 no tienen botón. Esas se cierran en Supabase:
+**Para reactivarlo antes**, marca la derivación como atendida en Supabase:
 
 ```sql
 update derivaciones
@@ -327,62 +290,10 @@ Es multi-clínica desde el primer día: hace 4 consultas en total (no 4 por clí
 
 ---
 
-# Parte 8 — Cambios del 15-sep-2026
-
-Lo que cambió en estos ficheros al aplicar el plan de arreglos. El porqué de
-cada punto está en `AUDITORIA-2026-09-08.md`; el orden de trabajo, en
-`PLAN-DE-ARREGLOS.md`.
-
-| Qué | Dónde | Por qué |
-|---|---|---|
-| IA: Llama 3.3 → **Groq `gpt-oss-120b`** (gratis), con `gpt-oss-20b` de reserva | 01, `Groq Chat Model` y `Groq Chat Model reserva` | Groq retiró Llama 3.3 el 16-ago y el bot estaba mudo |
-| Salida de error del `AI Agent` conectada, con 1 reintento | 01, `Respuesta emergencia IA` → `Aviso fallo IA` | Si la IA falla, el paciente recibe el teléfono de la clínica y a ti te llega el aviso |
-| Citas solo por teléfono, nunca por nombre | 01, los tres nodos `Resolver ...` y `Buscar cita informativa` | Cualquiera podía ver, mover o cancelar la cita de otra persona sabiendo su nombre |
-| Detector clínico con palabras completas | 01, `Normalizar y enrutar` | "Salvador", "Dolores", "febrero" o "tomo nota" derivaban y callaban el bot 3 h |
-| Reservar ya no cancela otras citas | 01, `Preparar reserva y duplicados` | Cancelaba en silencio todas las citas futuras del paciente |
-| Teléfono en el evento de Calendar | 01, `Crear evento reserva` y `Crear evento modificado` | Recepción no podía llamar desde el evento |
-| Aviso de primer contacto (IA + privacidad) | 01, de `Buscar paciente` a `Registrar paciente` | Art. 50 del Reglamento de IA, en vigor desde el 2-ago-2026 |
-| Fuera "Suenas humana"; admite ser una IA | 01, `Construir contexto` | Misma razón |
-| BAJA / ALTA / "borrad mis datos" | 01, router y `Actualizar opt-out paciente`; 02 y 03, `Cargar bajas` | "stop" solo cerraba un lead y el recordatorio llegaba igual |
-| Derivación con "no puedo darte consejo médico" y 112 | 01, router y confirmación de reserva | Lo exige `Legal/06` |
-| Mensajes no entregados, registrados | 01, `Filtrar envio fallido`; tabla `envios_fallidos` | Un recordatorio que no llegaba era invisible |
-| Recordatorio con **plantilla** de Meta | 02, `Enviar recordatorio` | Fuera de la ventana de 24 h el texto libre falla (131047) |
-| Envíos rechazados: no se marcan y avisan | 02 y 03, `Resumir fallos` → `Avisar fallos` | Antes se marcaban como enviados aunque fallaran |
-| Una sola consulta aunque haya varias clínicas | 02 y 03, `executeOnce` | Con 2 clínicas cada paciente habría recibido 2 recordatorios |
-| Avisos de error también por email | 04, `EMAIL_AVISOS` | WhatsApp no avisa si llevas 24 h sin escribir al bot |
-| Una sola credencial de WhatsApp y de Gmail | 01 a 07 | Había dos que caducaban por separado |
-| Email diario "Hoy" | 06 (nuevo) | La clínica no veía derivaciones, lista de espera ni leads |
-| Botón "Marcar como atendida" | 07 (nuevo) y `derivaciones.token_cierre` | Una derivación solo se podía cerrar con SQL |
-
-**Prueba automática:** `Pruebas/automaticas/simular-workflows.js` ejecuta el
-código real de los nodos Code con datos de prueba (52 comprobaciones). Pásala
-cada vez que toques el código de un nodo, antes de importar.
-
-**Límite gratuito de Groq — léelo antes de tocar el nodo del modelo.** El plan
-gratuito permite **8.000 tokens por minuto y 200.000 al día por modelo**, y
-cuenta el prompt **más** el máximo de respuesta que se reserva. El prompt del
-bot son unos 4.000 tokens. Por eso:
-
-- "Maximum Number of Tokens" está en **2000**. Con el valor por defecto del
-  nodo (4096), Groq rechaza **todas** las peticiones (error 413).
-- La memoria guarda 8 mensajes, no 12.
-- El prompt de sistema es igual en todos los mensajes del día, así que Groq lo
-  cachea (2 h) y los tokens cacheados no cuentan para el límite.
-- Hay un modelo de reserva (`gpt-oss-20b`) con su propio cupo: si el principal
-  da error de límite o lo retiran, contesta el otro.
-
-Con esto da para probar y para la demo. **Para una clínica con pacientes no
-basta**: pasa al pago por uso de Groq (console.groq.com → Settings → Billing),
-que sale por menos de 1 $ al mes por clínica.
-
 # Lo que queda pendiente
 
-- **Plantilla `recordatorio_cita_24h`**: el workflow 02 ya la usa, pero hay que darla de alta y que Meta la apruebe. Sin eso el 02 falla (y ahora te avisa).
-- **Workflow 03 (valoraciones)** sigue enviando texto libre: no lo actives hasta hacerle lo mismo que al 02.
-- **Respuestas con botones** (`button` / `interactive`): el 01 las trata como "no texto". Por eso la plantilla va sin botones.
-- **RLS**: activada solo en las tablas nuevas (`pacientes`, `envios_fallidos`). Para las antiguas, instrucciones al final de `01 - esquema.sql`. Activarla sin políticas no rompe n8n, porque usa la clave `service_role`.
-- **Los avisos de lista de espera** del 01 no miran las bajas. Se mandan a quien acaba de pedir ese hueco, normalmente dentro de la ventana de 24 h.
-- **Minimización:** `derivaciones.mensaje_original` guarda el texto literal del síntoma. Valorar guardar solo el resumen (`Legal/06`, apartado 4).
+- **RLS sigue desactivada.** No hace falta con una sola clínica. Instrucciones al final de `01 - esquema.sql`.
 - **`instrucciones_extra` está vacío.** Úsalo para matices de cada cliente sin tocar el prompt base.
-- **Seguimiento comercial de leads.** Las columnas `proximo_seguimiento_en`, `numero_seguimientos` y `max_seguimientos` se rellenan pero nadie las lee.
+- **Seguimiento comercial de leads.** Las columnas `proximo_seguimiento_en`, `numero_seguimientos` y `max_seguimientos` se rellenan pero nadie las lee. Falta el workflow que recupere leads fríos: es el que más ingresos directos genera a la clínica.
+- **Plantillas de WhatsApp para los workflows 02 y 03.** Es el único bloqueo real que queda para producción: fuera de la ventana de 24 horas Meta solo deja enviar plantillas aprobadas, no texto libre. Hay que darlas de alta en el Administrador de WhatsApp y cambiar el nodo de envío. Detalle en `ESTADO-DEL-PROYECTO.md`.
 - **Aviso de derivación urgente por WhatsApp** al móvil del dentista, además del email.

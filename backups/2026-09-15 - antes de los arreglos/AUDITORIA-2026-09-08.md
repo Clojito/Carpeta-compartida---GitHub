@@ -1,22 +1,6 @@
 # Auditoría bitclap.es — 8 de septiembre de 2026
 ### · Revisada contra el código el 9 de septiembre ·
 
-> ## ✅ ACTUALIZACIÓN 15 DE SEPTIEMBRE — arreglado en los ficheros
->
-> Los 5 bloqueantes que quedaban el 9-sep (modelo de IA, salida de error, fuga
-> de identidad, detector clínico y plantillas) y casi todo el plan están
-> **aplicados en los ficheros del repositorio, pero todavía no en tu n8n**: hay
-> que importarlos y probarlos. Qué está hecho y qué te toca a ti, en
-> [PLAN-DE-ARREGLOS.md](./PLAN-DE-ARREGLOS.md).
->
-> **Una corrección a esta auditoría, comprobada ejecutando el código viejo:**
-> en la sección 3.4, "después" **no** disparaba la derivación (no contiene
-> "pus"). El resto de ejemplos sí, y el problema era mayor de lo que decía: de
-> 12 frases normales de prueba, el detector viejo derivaba **11** (incluidas
-> "quiero una cita para mirarme una caries", "I live in Spain" y "tuve un
-> accidente de coche y no puedo ir a mi cita"). Con el detector nuevo, 0, y
-> detecta los 8 síntomas de prueba (el viejo no detectaba "toothache").
-
 > ## ⚠️ ESTADO A 9 DE SEPTIEMBRE — LEE ESTO PRIMERO
 >
 > Anoche subiste el trabajo que habías hecho en el PC de casa (commit

@@ -6,25 +6,6 @@
 >
 > Los días van numerados, no con fecha. El plan empieza el día que lo empieces.
 
-> ## ⚠️ Correcciones del 9 y del 15 de septiembre — léelas antes de seguir
->
-> 1. **El bot no estaba "terminado y probado".** El modelo de IA de Groq
->    (Llama 3.3) se apagó el 16-ago y el bot llevaba mudo desde entonces. El
->    15-sep se cambió a otro modelo gratuito de Groq (`gpt-oss-120b`), junto con
->    el resto de arreglos: **hay que importarlo y probarlo antes de enseñar nada.**
-> 2. **El cambio de IA no era "semana 2": era la primera tarea.** Sin él no hay
->    demo. Ya está en el workflow; te falta crear la credencial de Groq en n8n.
-> 3. **La verificación de Meta no bloquea pacientes reales.** Sin verificar se
->    puede escribir a 250 destinatarios únicos cada 24 h. Lo que te ata es el
->    número de prueba: sal con un número real + método de pago.
-> 4. Las plantillas ya no son "avisarme y cambio los nodos": el workflow 02 ya
->    usa la plantilla. Solo falta darla de alta.
-> 5. **La demo, con margen de 2-3 semanas**, no "esta semana": es el tiempo que
->    necesitas para importar, probar y ajustar el prompt con el modelo nuevo.
->
-> El orden técnico está en `PLAN-DE-ARREGLOS.md`. Este documento sigue valiendo
-> para el carril comercial: dentista, 036 y demo.
-
 Objetivo: **tener el sí del dentista por escrito y todos los relojes que no
 controlas puestos en marcha.**
 

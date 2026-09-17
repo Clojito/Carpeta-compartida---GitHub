@@ -29,13 +29,10 @@ modalidad contratada en el **Anexo A**.
 - Configuración inicial y puesta en marcha.
 - Atención automatizada 24/7 de los mensajes que reciba el número de la clínica.
 - Gestión de citas: alta, modificación, cancelación y lista de espera.
-- Registro de las citas en el Google Calendar de la clínica y consulta de su
-  disponibilidad.
-- Recordatorios automáticos 24 horas antes de la cita y, si el plan lo incluye,
-  solicitud de valoración.
+- Sincronización con el calendario de la clínica.
+- Recordatorios automáticos y solicitud de valoración.
 - Derivación a personal de la clínica de las consultas que lo requieran.
-- Resumen diario por correo electrónico (citas del día, pacientes a los que
-  llamar, lista de espera e interesados).
+- Resumen periódico por correo electrónico.
 - Mantenimiento correctivo y soporte según el **Anexo A**.
 
 ### 3. Qué NO incluye
@@ -53,8 +50,7 @@ modalidad contratada en el **Anexo A**.
   precios, duraciones y datos de contacto, y **mantenerlos actualizados**.
 - Dar acceso al calendario y al número de WhatsApp de la clínica.
 - **Atender en un plazo razonable las consultas derivadas** por el sistema.
-- Informar a sus pacientes del tratamiento de datos (ver documento `06`) y
-  facilitar a EL PRESTADOR el enlace a su política de privacidad.
+- Informar a sus pacientes del tratamiento de datos (ver documento `07`).
 - Comunicar cualquier incidencia en cuanto la detecte.
 
 > **La segunda y la tercera son las importantes.** Si la clínica no actualiza
@@ -175,6 +171,5 @@ Fdo.: ______________________          Fdo.: ______________________
 - [ ] Solicitud de valoración post-visita
 - [ ] Registro de interesados (leads)
 - [ ] Derivación de consultas clínicas
-- [ ] Resumen diario por email
 - [ ] Resumen semanal por email
-- [ ] Seguimiento comercial de leads *(no disponible todavía: no lo marques)*
+- [ ] Seguimiento comercial de leads
