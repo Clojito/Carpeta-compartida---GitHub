@@ -49,7 +49,7 @@
       "alwaysOutputData": true,
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -92,7 +92,7 @@
       "alwaysOutputData": true,
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       },
@@ -156,7 +156,7 @@
       "webhookId": "bc948d24-0378-4259-bed5-3a44bde8140f",
       "credentials": {
         "whatsAppApi": {
-          "id": "ftqbr1IavwplTKpk",
+          "id": "Jc5FvKPLiMuRQ7LH",
           "name": "WhatsApp account"
         }
       },
@@ -197,7 +197,7 @@
       ],
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -247,7 +247,7 @@
       "executeOnce": true,
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }

@@ -126,8 +126,12 @@ desde otro teléfono, se le pide que llame a la clínica.
 | `Operacion/` | Guía para recepción, guía para el dentista y runbook para ti |
 | `Legal/` | Documentos 01 a 07. Ver su `README.md` |
 | `Negocio/` | Decisiones, Meta, precios, plan comercial, mensaje al dentista |
-| `backups/` | Copias antiguas de workflows. `2026-09-15 - antes de los arreglos/` es todo el proyecto antes de los arreglos |
-| `Demo - automatización whatsapp/` | Versión vieja con Google Sheets. No se usa; se puede borrar |
+| `backups/` | **Solo historia.** Una carpeta por fecha. Nada de aquí se importa nunca |
+
+> **Regla de oro del repositorio (21-sep):** los workflows que se usan viven
+> **solo** en `Automatizaciones Supabase/`. Si encuentras un `.json` fuera de
+> ahí, es historia. Antes había tres copias del workflow 01 repartidas en dos
+> carpetas y una estaba desactualizada: era cuestión de tiempo importar la mala.
 
 ---
 

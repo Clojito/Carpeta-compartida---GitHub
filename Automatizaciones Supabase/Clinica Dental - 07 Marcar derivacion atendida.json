@@ -46,7 +46,7 @@
       "alwaysOutputData": true,
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -151,7 +151,7 @@
       "alwaysOutputData": true,
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
