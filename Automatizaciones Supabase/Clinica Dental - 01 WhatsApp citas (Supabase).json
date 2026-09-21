@@ -19,7 +19,7 @@
       "webhookId": "6b984c62-83cf-4434-b224-7355f346e361",
       "credentials": {
         "whatsAppTriggerApi": {
-          "id": "RguXuWFPrcNo5G7I",
+          "id": "obda8ylAVdPiKM3G",
           "name": "WhatsApp OAuth account"
         }
       }
@@ -230,7 +230,7 @@
       "alwaysOutputData": true,
       "credentials": {
         "googleCalendarOAuth2Api": {
-          "id": "84kwzPufctoHlILh",
+          "id": "Y1UBam290FF3lla7",
           "name": "Google Calendar account"
         }
       }
@@ -319,7 +319,7 @@
       "alwaysOutputData": true,
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -407,7 +407,7 @@
       "name": "Crear evento reserva",
       "credentials": {
         "googleCalendarOAuth2Api": {
-          "id": "84kwzPufctoHlILh",
+          "id": "Y1UBam290FF3lla7",
           "name": "Google Calendar account"
         }
       }
@@ -488,7 +488,7 @@
       "name": "Guardar cita reserva",
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -544,7 +544,7 @@
       "alwaysOutputData": true,
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -616,7 +616,7 @@
       ],
       "credentials": {
         "googleCalendarOAuth2Api": {
-          "id": "84kwzPufctoHlILh",
+          "id": "Y1UBam290FF3lla7",
           "name": "Google Calendar account"
         }
       },
@@ -662,7 +662,7 @@
       ],
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -718,7 +718,7 @@
       "alwaysOutputData": true,
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -793,7 +793,7 @@
       "alwaysOutputData": true,
       "credentials": {
         "googleCalendarOAuth2Api": {
-          "id": "84kwzPufctoHlILh",
+          "id": "Y1UBam290FF3lla7",
           "name": "Google Calendar account"
         }
       }
@@ -865,7 +865,7 @@
       ],
       "credentials": {
         "googleCalendarOAuth2Api": {
-          "id": "84kwzPufctoHlILh",
+          "id": "Y1UBam290FF3lla7",
           "name": "Google Calendar account"
         }
       },
@@ -911,7 +911,7 @@
       ],
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -940,7 +940,7 @@
       ],
       "credentials": {
         "googleCalendarOAuth2Api": {
-          "id": "84kwzPufctoHlILh",
+          "id": "Y1UBam290FF3lla7",
           "name": "Google Calendar account"
         }
       }
@@ -1021,7 +1021,7 @@
       ],
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -1071,7 +1071,7 @@
       "webhookId": "c6271aee-26c6-4d91-845c-96c93fe9a175",
       "credentials": {
         "whatsAppApi": {
-          "id": "ftqbr1IavwplTKpk",
+          "id": "Jc5FvKPLiMuRQ7LH",
           "name": "WhatsApp account"
         }
       }
@@ -1094,7 +1094,7 @@
       "webhookId": "ab440c5e-e9a8-47d9-a51c-1fe024e1ec0f",
       "credentials": {
         "gmailOAuth2": {
-          "id": "zd7kC8QY1LMlJtNi",
+          "id": "x9I3ffLGoXH1xWkZ",
           "name": "Gmail account"
         }
       }
@@ -1268,7 +1268,7 @@
       "alwaysOutputData": true,
       "credentials": {
         "googleCalendarOAuth2Api": {
-          "id": "84kwzPufctoHlILh",
+          "id": "Y1UBam290FF3lla7",
           "name": "Google Calendar account"
         }
       }
@@ -1352,7 +1352,7 @@
       "alwaysOutputData": true,
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -1455,7 +1455,7 @@
       ],
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -1506,7 +1506,7 @@
       "alwaysOutputData": true,
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -1621,7 +1621,7 @@
       "name": "Guardar lista espera",
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -1677,7 +1677,7 @@
       "alwaysOutputData": true,
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -1714,7 +1714,7 @@
       "webhookId": "1b52910b-f11e-41e0-a16b-47c507b7fc27",
       "credentials": {
         "whatsAppApi": {
-          "id": "ftqbr1IavwplTKpk",
+          "id": "Jc5FvKPLiMuRQ7LH",
           "name": "WhatsApp account"
         }
       }
@@ -1763,7 +1763,7 @@
       ],
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -1806,7 +1806,7 @@
       "alwaysOutputData": true,
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -1843,7 +1843,7 @@
       "webhookId": "e77039d4-65d7-4797-8d8e-26f138a0178e",
       "credentials": {
         "whatsAppApi": {
-          "id": "ftqbr1IavwplTKpk",
+          "id": "Jc5FvKPLiMuRQ7LH",
           "name": "WhatsApp account"
         }
       }
@@ -1892,7 +1892,7 @@
       ],
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -2039,7 +2039,7 @@
       "name": "Guardar derivacion humano",
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       },
@@ -2228,7 +2228,7 @@
       "name": "Guardar lead",
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       },
@@ -2329,7 +2329,7 @@
       "alwaysOutputData": true,
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -2436,7 +2436,7 @@
       "name": "Actualizar lead cerrado",
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -2525,7 +2525,7 @@
       "alwaysOutputData": true,
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -2576,7 +2576,7 @@
       "alwaysOutputData": true,
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -2633,7 +2633,7 @@
       "onError": "continueRegularOutput",
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -2757,7 +2757,7 @@
       "alwaysOutputData": true,
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -2827,7 +2827,7 @@
       "webhookId": "4a41e950-06c6-4133-ba3f-c5667b6d4fc6",
       "credentials": {
         "whatsAppApi": {
-          "id": "ftqbr1IavwplTKpk",
+          "id": "Jc5FvKPLiMuRQ7LH",
           "name": "WhatsApp account"
         }
       }
@@ -2865,7 +2865,7 @@
       "onError": "continueRegularOutput",
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -2928,7 +2928,7 @@
       "onError": "continueRegularOutput",
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -3010,7 +3010,7 @@
       ],
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -4262,6 +4262,6 @@
     "instanceId": "2a52922ab0feda7d248e6d57fdfd3b8ff26d093f6ac1b725283ec74830c38987"
   },
   "nodeGroups": [],
-  "id": "SUPA-CLINICA-01-WHATSAPP-CITAS",
+  "id": "nlwuqWCgDmnDgdZj",
   "tags": []
 }

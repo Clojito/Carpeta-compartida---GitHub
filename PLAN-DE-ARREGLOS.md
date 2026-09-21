@@ -57,10 +57,17 @@
       (gratis, sin tarjeta).
 - [ ] Settings → **Data Controls** → activa **Zero Data Retention**.
 - [ ] n8n → Credentials → New → **Groq** → nombre exacto `Groq account`.
-- [ ] Importa `Automatizacion n8n - Conectado/Clinica Dental - 01 WhatsApp
-      citas (Supabase multi-clinica) - GROQ.json` **encima** de tu workflow 01.
-      Ya lleva tus credenciales reales; solo hay que elegir `Groq account` en
-      los dos nodos de Groq.
+- [ ] Importa `Automatizaciones Supabase/Clinica Dental - 01 WhatsApp citas
+      (Supabase).json` **encima** de tu workflow 01. Lleva tus identificadores
+      de credencial reales; solo hay que elegir `Groq account` en los dos nodos
+      de Groq.
+
+      > **Ojo, cambió la ruta el 21-sep.** Este fichero estaba en
+      > `Automatizacion n8n - Conectado/`, al lado de una copia vieja que era
+      > muy fácil importar por error. Esa carpeta ya no existe: los siete
+      > workflows viven **solo** en `Automatizaciones Supabase/` y todos usan
+      > los mismos identificadores de credencial. Lo archivado está en
+      > `backups/2026-09-16 - export de n8n (credenciales reales)/`.
       **Actualizado el 16-sep** con el filtro de ámbito (el bot escribía páginas
       web y se disculpaba en inglés). Si ya lo habías importado, vuelve a
       importarlo: el cambio está en `Normalizar y enrutar` y en el prompt.

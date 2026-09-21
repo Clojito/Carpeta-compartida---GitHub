@@ -46,7 +46,7 @@
       "onError": "continueRegularOutput",
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -105,7 +105,7 @@
       "onError": "continueRegularOutput",
       "credentials": {
         "supabaseApi": {
-          "id": "SUPABASE_CRED",
+          "id": "raEav7TcLo4eWBrr",
           "name": "Supabase account"
         }
       }
@@ -162,7 +162,7 @@
       "webhookId": "e1a2b3c4-0000-4000-8000-000000000003",
       "credentials": {
         "whatsAppApi": {
-          "id": "ftqbr1IavwplTKpk",
+          "id": "Jc5FvKPLiMuRQ7LH",
           "name": "WhatsApp account"
         }
       },
@@ -236,7 +236,7 @@
       "onError": "continueRegularOutput",
       "credentials": {
         "gmailOAuth2": {
-          "id": "zd7kC8QY1LMlJtNi",
+          "id": "x9I3ffLGoXH1xWkZ",
           "name": "Gmail account"
         }
       }
