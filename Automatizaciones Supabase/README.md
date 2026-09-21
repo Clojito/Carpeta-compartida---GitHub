@@ -13,7 +13,8 @@ preparado para **varias clínicas con un solo workflow**.
 | `04 - avisos-error.sql` | Registro de errores y cortafuegos. Se ejecuta cuarto. |
 | `05 - pausa-derivacion.sql` | El bot se calla tras derivar a una persona. Se ejecuta quinto. |
 | `06 - pacientes-y-cumplimiento.sql` | Pacientes, aviso de IA/RGPD, bajas y envíos fallidos. Se ejecuta sexto. |
-| `Clinica Dental - 01 WhatsApp citas (Supabase).json` | El bot principal (106 nodos). |
+| `07 - multi-clinica-estricto.sql` | Cierra los huecos multi-clínica: RLS, defaults y `envios_fallidos`. Se ejecuta séptimo. |
+| `Clinica Dental - 01 WhatsApp citas (Supabase).json` | El bot principal (107 nodos). |
 | `Clinica Dental - 02 Recordatorios 24h (Supabase).json` | Recordatorio el día antes. |
 | `Clinica Dental - 03 Solicitud valoraciones post cita (Supabase).json` | Pide valoración al terminar. |
 | `Clinica Dental - 04 Avisos de error.json` | Te avisa por WhatsApp si algo falla. |
@@ -43,8 +44,14 @@ En **SQL Editor** → **New query**, pega y ejecuta **en este orden**:
 4. `04 - avisos-error.sql` → crea la tabla `avisos_error` (el workflow 04 no funciona sin ella)
 5. `05 - pausa-derivacion.sql` → añade la pausa del bot tras derivar a una persona
 6. `06 - pacientes-y-cumplimiento.sql` → crea `pacientes` y `envios_fallidos`, y añade `clinicas.url_privacidad` y `derivaciones.token_cierre`
+7. `07 - multi-clinica-estricto.sql` → activa RLS en el resto de tablas, quita el valor por defecto de `clinica_id` y añade `clinica_id` a `envios_fallidos`
 
-Todos se pueden ejecutar varias veces sin romper nada. El último te devuelve una fila de comprobación con la clínica, sus tratamientos y las dos tablas nuevas a 0.
+> ⚠️ **El 07 tiene una comprobación previa. Léete su apartado 0 antes de ejecutarlo.**
+> Activa RLS, y si la credencial de Supabase en n8n usa la clave `anon` en vez de
+> `service_role`, el bot se queda sin base de datos. El propio fichero lleva el
+> comando exacto para deshacerlo.
+
+Todos se pueden ejecutar varias veces sin romper nada. El último te devuelve tres comprobaciones: ninguna tabla con valor por defecto en `clinica_id`, todas con `rowsecurity = true`, y la clínica con sus tratamientos.
 
 Después, pon el enlace a la política de privacidad de la clínica (sale en el aviso de primer contacto):
 
@@ -194,7 +201,9 @@ decide qué cita toca es el código, que sí conoce la zona de cada clínica.
 4. `insert into tratamientos (...)` con ese `id`.
 5. Ya está. Sin tocar n8n.
 
-Al final de `02 - multi-clinica.sql` tienes el SQL preparado, más los dos pasos extra recomendados a partir de la segunda clínica: quitar el `default` de `clinica_id` y activar RLS.
+Al final de `02 - multi-clinica.sql` tienes el SQL preparado.
+
+> Los dos pasos que antes figuraban aquí como "recomendados a partir de la segunda clínica" —quitar el `default` de `clinica_id` y activar RLS— **ya están hechos** en `07 - multi-clinica-estricto.sql`. Si lo has ejecutado, al dar de alta una clínica nueva **tienes que poner su `clinica_id` a mano** en los `insert`: ya no hay valor por defecto que lo rellene, y eso es a propósito.
 
 ---
 
@@ -380,7 +389,7 @@ que sale por menos de 1 $ al mes por clínica.
 - **Plantilla `recordatorio_cita_24h`**: el workflow 02 ya la usa, pero hay que darla de alta y que Meta la apruebe. Sin eso el 02 falla (y ahora te avisa).
 - **Workflow 03 (valoraciones)** sigue enviando texto libre: no lo actives hasta hacerle lo mismo que al 02.
 - **Respuestas con botones** (`button` / `interactive`): el 01 las trata como "no texto". Por eso la plantilla va sin botones.
-- **RLS**: activada solo en las tablas nuevas (`pacientes`, `envios_fallidos`). Para las antiguas, instrucciones al final de `01 - esquema.sql`. Activarla sin políticas no rompe n8n, porque usa la clave `service_role`.
+- **RLS**: ya está en todas las tablas, en cuanto ejecutes `07 - multi-clinica-estricto.sql`. Activarla sin políticas no rompe n8n **siempre que la credencial use la clave `service_role`**; con la `anon` dejaría al bot sin base de datos. El apartado 0 del propio fichero explica cómo comprobarlo y el 4 cómo deshacerlo.
 - **Los avisos de lista de espera** del 01 no miran las bajas. Se mandan a quien acaba de pedir ese hueco, normalmente dentro de la ventana de 24 h.
 - **Minimización:** `derivaciones.mensaje_original` guarda el texto literal del síntoma. Valorar guardar solo el resumen (`Legal/06`, apartado 4).
 - **`instrucciones_extra` está vacío.** Úsalo para matices de cada cliente sin tocar el prompt base.

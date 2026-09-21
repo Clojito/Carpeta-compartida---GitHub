@@ -41,9 +41,19 @@
 
 ## 👉 Lo que te toca a ti, en este orden
 
-### Paso 1 — Supabase (15 min)
+### Paso 1 — Supabase (20 min)
 
 - [ ] SQL Editor → ejecuta `Automatizaciones Supabase/06 - pacientes-y-cumplimiento.sql`.
+- [ ] **Comprueba la credencial de Supabase en n8n antes del siguiente punto.**
+      n8n → Credentials → `Supabase account` → el campo **Service Role Secret**
+      tiene que llevar la clave que en Supabase sale como
+      *Settings → API → service_role*, **no** la `anon public`.
+- [ ] SQL Editor → ejecuta `Automatizaciones Supabase/07 - multi-clinica-estricto.sql`.
+      Cierra los tres huecos multi-clínica de la auditoría del 21-sep: activa RLS
+      en las seis tablas que seguían abiertas, quita el valor por defecto de
+      `clinica_id` y añade `clinica_id` a `envios_fallidos`.
+      Lee su **apartado 0** antes de pulsar RUN, y ten a mano el apartado 4, que
+      es el comando para deshacerlo si algo se rompe.
 - [ ] Si la clínica ya tiene política de privacidad web:
       `update clinicas set url_privacidad = 'https://...' where id = '...';`
       (Para probar, déjala vacía o pon cualquier dirección.)
@@ -249,7 +259,8 @@
 - **Sincronización Calendar → Supabase**, hasta saber qué usan para la agenda.
 - **Valoraciones y resumen semanal**: el 03 y el 05 se quedan apagados.
 - **Botones en las plantillas**, hasta después del piloto.
-- **RLS en las tablas antiguas, la web, el seguimiento de leads, RETA.**
+- **La web, el seguimiento de leads, RETA.**
+  *(La RLS en las tablas antiguas ya no está aquí: se hizo el 22-sep con el SQL 07.)*
 - **Reescribir el router**: funciona. Tócalo solo donde falle la batería.
 
 ---

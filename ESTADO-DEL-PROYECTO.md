@@ -269,7 +269,7 @@ mirar si tiene API.
 - **Workflow 03 con plantilla**, igual que el 02, para poder activar valoraciones.
 - **Respuestas con botones** en el 01, para poner botones en las plantillas.
 - **Seguimiento comercial de leads**: las columnas existen pero nadie las lee.
-- **RLS en las tablas antiguas** (en las nuevas ya está).
+- ~~RLS en las tablas antiguas~~ → **hecho el 22-sep** con `07 - multi-clinica-estricto.sql`, junto con quitar el `default` de `clinica_id` y añadir `clinica_id` a `envios_fallidos`. Falta **ejecutarlo en Supabase**.
 - **Guardar solo el resumen** de las derivaciones, no el texto literal.
 - **Aviso de derivación urgente por WhatsApp** al móvil del dentista.
 - **Limitar el historial de ejecuciones** de n8n, que guarda el contenido de los mensajes.

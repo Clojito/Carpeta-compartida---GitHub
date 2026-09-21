@@ -148,6 +148,11 @@
               "keyName": "event_id",
               "condition": "eq",
               "keyValue": "={{ $('Preparar solicitudes valoracion').item.json.eventId }}"
+            },
+            {
+              "keyName": "clinica_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Preparar solicitudes valoracion').item.json.clinica_id }}"
             }
           ]
         },
