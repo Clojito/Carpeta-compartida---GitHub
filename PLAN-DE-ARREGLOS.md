@@ -1,12 +1,14 @@
 # Plan de arreglos — de donde estás a un piloto con pacientes reales
 
-> **Actualizado el 15 de septiembre de 2026.** Ese día se aplicó en los
-> ficheros del repositorio todo lo que se podía hacer **sin entrar en tus
-> cuentas** (n8n, Meta, Groq, Google, Supabase).
+> **Actualizado el 24 de septiembre de 2026.** El 15-sep se aplicó en los
+> ficheros todo lo que se podía hacer sin entrar en tus cuentas. El 22-sep lo
+> importaste en una instancia nueva de n8n y ejecutaste los SQL. El 24-sep lo
+> **comprobé directamente** en tu n8n y tu Supabase: los Pasos 1 a 3 están
+> hechos (ver la leyenda en el Paso 1).
 >
-> ⚠️ **Lo marcado ✅ está en los ficheros, no en tu n8n.** Hasta que lo
-> importes y lo pruebes, el bot que corre en n8n Cloud sigue siendo el viejo, y
-> sigue mudo.
+> ⚠️ **Importado no es probado.** A 24-sep el bot no tiene **ninguna
+> ejecución**: nadie le ha escrito desde que se importó. Lo siguiente es el
+> Paso 4.
 >
 > **Copia de cómo estaba todo antes:** carpeta
 > `backups/2026-09-15 - antes de los arreglos/` y etiqueta git
@@ -30,25 +32,41 @@
 - **Hecho en el repositorio:** todo el código de las fases 0, 2, 3 y 6, el
   cambio de modelo de IA, lo técnico y documental de la fase 4 y el runbook.
   Además, cinco arreglos que no estaban en el plan (abajo).
+- **Hecho en tus cuentas (comprobado el 24-sep):** SQL 06 y 07, los 7
+  workflows importados, credenciales enlazadas, Error Workflow en todos,
+  avisos por email y 01, 04, 06 y 07 activos.
 - **Probado:** el código de los nodos, con un simulador (63 comprobaciones) y
-  78 casos del detector clínico. **Sin probar:** nada dentro de n8n real.
-- **Te queda: unas 20-40 h**, casi todo importar, probar y ajustar el prompt,
-  más los trámites con tus cuentas. A tu ritmo real (8-9 h/semana), **3-5
-  semanas**, sin contar esperas externas.
-- **Por dónde empezar:** el Paso 1, justo aquí debajo.
+  78 casos del detector clínico. **Sin probar:** el bot de verdad por WhatsApp
+  (cero ejecuciones a 24-sep).
+- **Te queda: unas 18-35 h**, casi todo probar y ajustar el prompt, más los
+  trámites con tus cuentas. A tu ritmo real (8-9 h/semana), **3-5 semanas**,
+  sin contar esperas externas.
+- **Por dónde empezar:** el **Paso 4**. Escribe al bot.
 
 ---
 
 ## 👉 Lo que te toca a ti, en este orden
 
-### Paso 1 — Supabase (20 min)
+> **Estado real comprobado el 24-sep** (con acceso directo a tu n8n y a tu
+> Supabase). Leyenda:
+> - `[x] ✅` hecho y **comprobado en tu cuenta**.
+> - `[x] ✅ (repo)` hecho en los ficheros; en tu cuenta no aplica o no se puede ver.
+> - `[ ]` pendiente.
+> - `[ ] ❓` puede que esté hecho, pero no lo puedo comprobar desde aquí.
 
-- [ ] SQL Editor → ejecuta `Automatizaciones Supabase/06 - pacientes-y-cumplimiento.sql`.
-- [ ] **Comprueba la credencial de Supabase en n8n antes del siguiente punto.**
+### Paso 1 — Supabase (20 min) — ✅ casi terminado
+
+- [x] ✅ SQL Editor → ejecuta `Automatizaciones Supabase/06 - pacientes-y-cumplimiento.sql`.
+      *(Comprobado el 24-sep: existen `pacientes` y `envios_fallidos`, y `derivaciones.token_cierre`.)*
+- [ ] ❓ **Comprueba la credencial de Supabase en n8n antes del siguiente punto.**
       n8n → Credentials → `Supabase account` → el campo **Service Role Secret**
       tiene que llevar la clave que en Supabase sale como
       *Settings → API → service_role*, **no** la `anon public`.
-- [ ] SQL Editor → ejecuta `Automatizaciones Supabase/07 - multi-clinica-estricto.sql`.
+      *(La credencial existe, pero n8n no deja ver su contenido. Con la `anon`
+      el bot no vería nada por culpa de la RLS: lo sabrás en la primera prueba.)*
+- [x] ✅ SQL Editor → ejecuta `Automatizaciones Supabase/07 - multi-clinica-estricto.sql`.
+      *(Comprobado el 24-sep: RLS activa en las 9 tablas, `clinica_id` obligatorio
+      y sin valor por defecto, y `envios_fallidos.clinica_id` creado.)*
       Cierra los tres huecos multi-clínica de la auditoría del 21-sep: activa RLS
       en las seis tablas que seguían abiertas, quita el valor por defecto de
       `clinica_id` y añade `clinica_id` a `envios_fallidos`.
@@ -57,17 +75,20 @@
 - [ ] Si la clínica ya tiene política de privacidad web:
       `update clinicas set url_privacidad = 'https://...' where id = '...';`
       (Para probar, déjala vacía o pon cualquier dirección.)
+      *(24-sep: sigue vacía. Para las pruebas no importa; antes de un paciente real, sí.)*
 
-### Paso 2 — Groq (15-30 min)
+### Paso 2 — Groq (15-30 min) — 🟡 falta probar
 
 > Decidido el 15-sep: se sigue con **Groq gratis** en lugar de Mistral. Modelo
 > `openai/gpt-oss-120b` y, de reserva, `openai/gpt-oss-20b`.
 
-- [ ] [console.groq.com](https://console.groq.com) → API Keys → crea una key
+- [x] ✅ [console.groq.com](https://console.groq.com) → API Keys → crea una key
       (gratis, sin tarjeta).
-- [ ] Settings → **Data Controls** → activa **Zero Data Retention**.
-- [ ] n8n → Credentials → New → **Groq** → nombre exacto `Groq account`.
-- [ ] Importa `Automatizaciones Supabase/Clinica Dental - 01 WhatsApp citas
+- [ ] ❓ Settings → **Data Controls** → activa **Zero Data Retention**.
+      *(No tengo acceso a Groq. Compruébalo tú: es obligatorio antes de datos reales.)*
+- [x] ✅ n8n → Credentials → New → **Groq** → nombre exacto `Groq account`.
+      *(Comprobado el 24-sep: existe y está puesta en los dos nodos de Groq del 01.)*
+- [x] ✅ Importa `Automatizaciones Supabase/Clinica Dental - 01 WhatsApp citas
       (Supabase).json` **encima** de tu workflow 01. Lleva tus identificadores
       de credencial reales; solo hay que elegir `Groq account` en los dos nodos
       de Groq.
@@ -81,25 +102,37 @@
       **Actualizado el 16-sep** con el filtro de ámbito (el bot escribía páginas
       web y se disculpaba en inglés). Si ya lo habías importado, vuelve a
       importarlo: el cambio está en `Normalizar y enrutar` y en el prompt.
+      *(Comprobado el 24-sep: el 01 de n8n es **idéntico** al del repo en el código
+      de los 107 nodos y en las conexiones, filtro de ámbito incluido.)*
 - [ ] Después de importar, pasa el **bloque P** de la batería (P1 a P5 son las
       que se rompían).
 - [ ] Antes del primer paciente real: acepta el DPA de Groq y guárdalo en PDF.
 
-### Paso 3 — n8n: importar (1-3 h)
+### Paso 3 — n8n: importar (1-3 h) — ✅ terminado
 
-- [ ] **Descarga primero** los workflows que tienes ahora en n8n (⋯ →
+- [x] ✅ **Descarga primero** los workflows que tienes ahora en n8n (⋯ →
       Download) y guárdalos en `backups/` con la fecha.
-- [ ] **Importa encima** de los que ya tienes, no como nuevos: abre el workflow
+      *(Montaste una instancia nueva de n8n el 22-sep, así que no había nada que guardar.)*
+- [x] ✅ **Importa encima** de los que ya tienes, no como nuevos: abre el workflow
       → ⋯ → Import from File. Así conservas el Error Workflow y el webhook de
       WhatsApp. Hazlo con el 01, el 02, el 03 y el 04.
-- [ ] Importa como nuevos el **06** y el **07**.
-- [ ] En cada workflow, revisa que no haya nodos con aviso rojo de credencial:
+      *(Comprobado el 24-sep: los 7 workflows están en `bitclap0.app.n8n.cloud`.)*
+- [x] ✅ Importa como nuevos el **06** y el **07**.
+- [x] ✅ En cada workflow, revisa que no haya nodos con aviso rojo de credencial:
       `Groq account`, `WhatsApp account` (una sola para todos),
       `Supabase account`, Google Calendar y `Gmail account`.
-- [ ] Settings → Error Workflow = 04 en el 01, 02, 03, 05, 06 y 07.
-- [ ] En el 04, nodo `Decidir si avisar`: escribe tu correo en `EMAIL_AVISOS`.
-- [ ] **Activa el 07** y el **01**. El 02 y el 06, cuando pases el Paso 4. El
+      *(Comprobado el 24-sep: una credencial por servicio, todas enlazadas.)*
+- [x] ✅ Settings → Error Workflow = 04 en el 01, 02, 03, 05, 06 y 07.
+      *(Comprobado el 24-sep en los seis.)*
+- [x] ✅ En el 04, nodo `Decidir si avisar`: escribe tu correo en `EMAIL_AVISOS`.
+      *(24-sep: puesto y publicado en n8n = `prueb4sn8n.pruebas@gmail.com`, por
+      decisión tuya. En el fichero del repo se queda **vacío a propósito** para no
+      subir un correo a GitHub: si reimportas el 04, vuelve a ponerlo.)*
+- [x] ✅ **Activa el 07** y el **01**. El 02 y el 06, cuando pases el Paso 4. El
       03 y el 05 se quedan **desactivados**.
+      *(24-sep: activos el 01, el 04, el 06 y el 07. El 06 se activó antes del
+      Paso 4 por decisión tuya: solo manda correos a la dirección de prueba.
+      El 02, el 03 y el 05 siguen apagados.)*
 
 > **Si al importar algo se queja** (por ejemplo, el desplegable del modelo de
 > Groq o el de la plantilla en blanco), vuelve a elegirlo a mano en el nodo.
@@ -123,7 +156,8 @@
       días.
 - [ ] **Supabase Pro** (25 $/mes) antes del primer paciente real: copias diarias
       y sin pausa. Sin esto, el Anexo I del contrato miente.
-- [ ] Borra la credencial vieja `WhatsApp account 15` cuando todo funcione.
+- [x] ✅ Borra la credencial vieja `WhatsApp account 15` cuando todo funcione.
+      *(Comprobado el 24-sep: en la instancia nueva ya no existe.)*
 
 ### Paso 6 — Batería completa y ajuste del prompt (9-16 h)
 
@@ -171,7 +205,8 @@
 - [x] ✅ **Dos cambios mínimos de prompt:** se identifica como IA y consulta
   las citas por teléfono, sin pedir nombre.
 - [ ] **Reajustar el prompt con la batería** → Paso 6.
-- [ ] **Credencial de Groq y Zero Data Retention** → Paso 2.
+- [x] ✅ **Credencial de Groq** en n8n (comprobado el 24-sep).
+- [ ] ❓ **Zero Data Retention** en Groq → Paso 2.
 
 ### FASE 2 — Arreglos baratos de alto impacto
 - [x] ✅ **Fallback por nombre eliminado** en `Resolver cita cancelacion`,
@@ -218,8 +253,8 @@
 - [x] ✅ **Borrador de EIPD**: `Legal/07 - Borrador EIPD para la clinica.md`.
 
 ### FASE 5 — Infraestructura que se cae sola
-- [x] ✅ **Credenciales unificadas en los ficheros**: una de WhatsApp y una de
-  Gmail para los siete workflows.
+- [x] ✅ **Credenciales unificadas**: una de WhatsApp y una de Gmail para los
+  siete workflows. Ya también en tu n8n (comprobado el 24-sep).
 - [ ] **Token permanente de Meta** → Paso 5.
 - [ ] **OAuth de Google en producción** → Paso 5.
 - [ ] **Supabase Pro** → Paso 5.
@@ -250,6 +285,25 @@
 - [x] ✅ **Numeración de `Legal/`**: los documentos se citaban como 06 y 07 cuando
   eran 05 y 06.
 
+### 🆕 Problemas nuevos encontrados el 24-sep
+
+- [ ] **Los avisos de error y el email diario van al mismo buzón**
+  (`prueb4sn8n.pruebas@gmail.com`). Para las pruebas vale. Con una clínica real,
+  **los avisos tienen que ir a un correo tuyo**, no al de la clínica: son fallos
+  técnicos. Se cambia en el 04, `EMAIL_AVISOS`.
+- [ ] **El fichero del 04 en el repo no lleva el correo** y el de n8n sí. Es a
+  propósito (no se sube un email a GitHub), pero si reimportas el 04 desde el
+  repo, los avisos por email dejan de salir hasta que lo vuelvas a poner.
+- [ ] **`url_privacidad` vacía** en la clínica de prueba. El aviso de primer
+  contacto sale sin enlace a la política. Antes de un paciente real → Paso 7.
+- [ ] ❓ **La credencial `Supabase account` no se puede comprobar desde fuera.**
+  Si lleva la clave `anon` en vez de `service_role`, el bot fallará en su primer
+  mensaje por la RLS. La primera prueba del Paso 4 lo dirá.
+- [x] ✅ **Error mío durante la revisión, ya corregido:** al editar el 06 envié
+  un texto de relleno en lugar del código del nodo `Construir email diario`. Lo
+  restauré en el momento y el historial de n8n confirma que quedó **idéntico** a
+  antes. El 06 estaba apagado, así que no afectó a nada.
+
 ---
 
 ## Lo que NO vas a hacer todavía
@@ -269,14 +323,14 @@
 
 | Paso | Qué | Horas |
 |---|---|---|
-| 1 | Supabase: SQL 06 | 0,25 |
-| 2 | Groq: key, retención cero, credencial e importar | 0,25-0,5 |
-| 3 | Importar y configurar en n8n | 1-3 |
-| 4 | Pruebas básicas + retoques de la importación | 2-6 |
+| 1 | Supabase: SQL 06 y 07 | ✅ hecho |
+| 2 | Groq: key, credencial e importar (falta ZDR y bloque P) | ✅ casi, 0,5 |
+| 3 | Importar y configurar en n8n | ✅ hecho |
+| 4 | Pruebas básicas + retoques | 2-6 |
 | 5 | Meta, Google, Supabase Pro | 1-2 |
 | 6 | Batería con gpt-oss + ajuste del prompt | 9-16 |
 | 7 | Legal, firma y demo | 5-10 |
-| | **Total** | **~20-40 h** |
+| | **Total restante (24-sep)** | **~18-35 h** |
 
 A **8-9 h/semana** (tu ritmo observado): **3-5 semanas**.
 A **15 h/semana**: **2-3 semanas**.
@@ -290,10 +344,10 @@ dentista) van aparte, pero corren en paralelo si las lanzas pronto.
 
 ## Lo que no he podido comprobar (para que no te pille por sorpresa)
 
-1. **Nada se ha importado en n8n.** Los parámetros de los nodos nuevos (Groq,
-   Send Template, Webhook, Respond to Webhook, Stop and Error) están comprobados
-   contra el código fuente de n8n, pero la primera importación puede pedir
-   retoques en la interfaz.
+1. ✅ ~~**Nada se ha importado en n8n.**~~ Resuelto: importado el 22-sep sin
+   retoques y comprobado el 24-sep. Pero **ningún workflow se ha ejecutado
+   todavía**: los nodos de Supabase, Calendar, WhatsApp y Groq no se han probado
+   de verdad.
 2. **El simulador solo prueba los nodos Code**, que es donde estaban los fallos.
    Los nodos de Supabase, Calendar y WhatsApp solo se prueban en n8n.
 3. **El prompt con gpt-oss no está probado.** Es la parte con más riesgo y más

@@ -7,7 +7,8 @@
 > **Mantenlo vivo:** cuando algo deje de ser cierto, edítalo o bórralo. Un
 > documento desactualizado es peor que no tenerlo.
 
-**Última actualización:** 15 de septiembre de 2026
+**Última actualización:** 24 de septiembre de 2026 (comprobado directamente en
+n8n y Supabase)
 
 > **Si vienes de otro ordenador, lee en este orden:**
 > 1. Este documento (5 minutos).
@@ -26,10 +27,11 @@ una persona. La clínica recibe cada mañana un email con lo que tiene que hacer
 
 Marca prevista: **bitclap.es** · Mercado: España · Fundador: solo.
 
-**Estado real (15-sep-2026):** el producto está construido, y el 15-sep se
-aplicaron **en los ficheros** los arreglos de la auditoría. **Todavía no están
-importados en n8n ni probados.** El bot que corre hoy en n8n Cloud sigue mudo
-desde el 16-ago, porque Groq retiró el modelo de IA que usaba. Cero clientes.
+**Estado real (24-sep-2026):** el producto está construido. Los arreglos de la
+auditoría están en los ficheros (15-sep), ✅ **importados en n8n** (22-sep) y
+✅ **comprobados en tus cuentas** (24-sep): el workflow 01 que corre es idéntico
+al del repo. **Falta probarlo de verdad**: a 24-sep no tiene ninguna ejecución.
+Cero clientes.
 
 ---
 
@@ -37,10 +39,11 @@ desde el 16-ago, porque Groq retiró el modelo de IA que usaba. Cero clientes.
 
 | Cosa | Estado |
 |---|---|
-| Bot en n8n Cloud | 🟡 Vuelve a responder (probado el 16-sep). Se salía del papel: escribía webs, hacía sumas y se disculpaba en inglés |
-| Bot en el repositorio | 🟡 Arreglado el 15-sep y con filtro de ámbito el 16-sep. Falta importarlo y pasar la batería |
-| Modelo de IA | 🟡 Groq gratis: `gpt-oss-120b` + `gpt-oss-20b` de reserva, ya en el workflow. Falta la credencial en n8n. **En EE. UU.** y con un límite gratuito que solo da para pruebas y demo |
-| Base de datos | ✅ Supabase en la UE, multi-clínica. 🟡 Falta ejecutar el SQL 06 y pasar a Pro |
+| Bot en n8n Cloud | ✅ Instancia nueva (`bitclap0`), 7 workflows importados el 22-sep; activos 01, 04, 06 y 07. 🟡 **Sin probar** (cero ejecuciones a 24-sep) |
+| Bot en el repositorio | ✅ Arreglado el 15-sep, filtro de ámbito el 16-sep, y **idéntico a n8n** (comprobado el 24-sep). Falta pasar la batería |
+| Modelo de IA | ✅ Groq `gpt-oss-120b` + `gpt-oss-20b` de reserva, con credencial en n8n. ❓ Zero Data Retention sin comprobar. **En EE. UU.** y con un límite gratuito que solo da para pruebas y demo |
+| Base de datos | ✅ Supabase en la UE, multi-clínica, ✅ SQL 06 y 07 aplicados (RLS en las 9 tablas). 🟡 Falta pasar a Pro |
+| Avisos de error | ✅ Por WhatsApp y por email (`prueb4sn8n.pruebas@gmail.com`, 24-sep). 🟡 Es el mismo buzón que el email diario: cambiar antes de una clínica real |
 | Plantilla de recordatorio | 🟡 El workflow 02 ya la usa. Falta darla de alta en Meta |
 | Operación de la clínica | ✅ Email diario, botón para cerrar derivaciones y guías (en el repo) |
 | Cliente potencial | 🟡 Una clínica interesada, sin contrato, unos 2 meses sin hablar |
@@ -53,7 +56,7 @@ desde el 16-ago, porque Groq retiró el modelo de IA que usaba. Cero clientes.
 
 **Lo que de verdad separa hoy de un primer paciente, en orden:**
 
-1. **Importar y probar los arreglos** (tu tiempo: unas 20-40 h, casi todo pruebas).
+1. ~~Importar~~ ✅ (22-sep) **y probar los arreglos** (tu tiempo: unas 18-35 h, casi todo pruebas).
 2. **Una fecha con el dentista.** Es lo que más mueve la probabilidad de arrancar este año.
 3. **Número real + método de pago en Meta**, y la plantilla aprobada.
 4. **Firmar** el acuerdo de piloto y el contrato de encargado antes del primer paciente.
@@ -237,6 +240,15 @@ Se documentan porque son trampas fáciles de volver a pisar.
 - **Arreglo:** el filtro vive en el código (bloque `// ambito`), no solo en el
   prompt, así que aguanta aunque cambies de modelo. Bloque P de la batería.
 
+**El 24-sep-2026** (revisión directa de n8n y Supabase):
+- ✅ Todo lo importado coincide con el repo. No hubo que corregir nada de lo
+  importado.
+- ✅ **Avisos del 04 también por email**, publicado en n8n.
+- ✅ **Email diario (06) activado.**
+- **Lección:** para editar el código de un nodo por MCP, generar el texto con un
+  script a partir del fichero del repo y **comprobar el diff de versiones antes
+  de publicar**. Escribirlo a mano rompió el 06 unos segundos (restaurado).
+
 ---
 
 ## 8. Lo que falta
@@ -269,7 +281,7 @@ mirar si tiene API.
 - **Workflow 03 con plantilla**, igual que el 02, para poder activar valoraciones.
 - **Respuestas con botones** en el 01, para poner botones en las plantillas.
 - **Seguimiento comercial de leads**: las columnas existen pero nadie las lee.
-- ~~RLS en las tablas antiguas~~ → **hecho el 22-sep** con `07 - multi-clinica-estricto.sql`, junto con quitar el `default` de `clinica_id` y añadir `clinica_id` a `envios_fallidos`. Falta **ejecutarlo en Supabase**.
+- ✅ ~~RLS en las tablas antiguas~~ → **hecho el 22-sep** con `07 - multi-clinica-estricto.sql`, junto con quitar el `default` de `clinica_id` y añadir `clinica_id` a `envios_fallidos`. ✅ **Ejecutado en Supabase** (comprobado el 24-sep).
 - **Guardar solo el resumen** de las derivaciones, no el texto literal.
 - **Aviso de derivación urgente por WhatsApp** al móvil del dentista.
 - **Limitar el historial de ejecuciones** de n8n, que guarda el contenido de los mensajes.
