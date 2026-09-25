@@ -304,6 +304,19 @@
   restauré en el momento y el historial de n8n confirma que quedó **idéntico** a
   antes. El 06 estaba apagado, así que no afectó a nada.
 
+### 🆕 Problemas nuevos de la batería (25-sep, pruebas A1 a C4)
+
+Detalle y ejemplos en `Pruebas/Bateria de mensajes.md`, apartado "Revisión de
+las pruebas del 24 y 25-sep".
+
+- [ ] **F1** Enseña al paciente formatos técnicos ("(Formato YYYY-MM-DD)", "2026-09-29").
+- [ ] **F2** No resuelve "el jueves", "el viernes"... Le falta la tabla de los próximos 7 días.
+- [ ] **F3** Registra como lead a quien quiere pedir cita (ensucia `leads` y el email diario).
+- [ ] **F4** Pide primero el nombre e ignora el tratamiento, el día o la franja que ya le han dado.
+- [ ] **F5** Se inventa horas libres sin consultar la agenda.
+- [ ] **F6** Mezcla "tú" y "usted". **F7** "Por la tarde" no filtra los huecos.
+- [ ] **Borrar los datos de prueba** (4 citas en Calendar y Supabase, leads falsos).
+
 ---
 
 ## Lo que NO vas a hacer todavía

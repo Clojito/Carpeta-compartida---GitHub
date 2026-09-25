@@ -109,42 +109,80 @@ ahí es donde más se equivocan los modelos.
 
 ---
 
+## 📋 Revisión de las pruebas del 24 y 25-sep (hechas por Luis hasta C4)
+
+Revisadas una a una en las ejecuciones de n8n (40 mensajes reales). Lo que dice
+esta sección está sacado de lo que el bot **contestó de verdad**, no de lo que
+se esperaba.
+
+**Lo que funciona bien (no tocar):**
+- ✅ **Fechas relativas bien calculadas:** "mañana" → 26-sep, "el próximo martes" → 29-sep,
+  "el lunes" → 28-sep y "pasado mañana" (domingo 27) → *"la clínica está cerrada los domingos"*.
+- ✅ **Fecha pasada rechazada:** "el 15 de septiembre" → pide una fecha futura.
+- ✅ **Reserva completa de principio a fin:** Calendar + Supabase + email a la clínica, y avisa
+  de las otras citas del mismo número.
+- ✅ **Mensajes groseros:** contesta en español, corto y sin sermonear (el filtro del 16-sep funciona).
+- ✅ **"a las 5"** → pregunta si son las 17:00.
+- ✅ **El modelo de reserva entró solo una vez** (ejecución 78) y la conversación siguió sin cortes.
+
+**Lo que falla, por orden de gravedad:**
+
+| # | Fallo | Pruebas | Por qué pasa |
+|---|---|---|---|
+| F1 | **Enseña formatos técnicos al paciente:** *"(Formato YYYY‑MM‑DD)"*, *"(HH:mm)"*, *"el 2026‑09‑29"* | A5, B4, B5 | El prompt habla de formatos para el JSON y el modelo los copia en el texto |
+| F2 | **No sabe qué fecha es "el jueves":** pide al paciente la fecha exacta | A5 | El contexto temporal solo da hoy, mañana, pasado y el lunes próximo. Los demás días los tiene que calcular el modelo, y no se atreve |
+| F3 | **Apunta como "interesado" (lead) a quien quiere cita:** "¿sería posible concertar una consulta de ortodoncia?", "kiero pedir zita pa una limpieza", "necesito ir al dentista" | A4, B3, B8 | La regla de leads del prompt es demasiado amplia. Además ensucia la tabla `leads` y el email diario |
+| F4 | **Pide el nombre primero e ignora lo que ya le has dicho:** a *"limpieza el jueves por la tarde"* o *"cita"* contesta solo *"¿tu nombre completo?"* | B9, B10, C1, C2, C3, C4 | El prompt ordena pedir primero el nombre. Suena a formulario, no a recepcionista |
+| F5 | **Se inventa horas libres:** a "no lo sé" ofrece *"15:00, 16:00 o 17:00"* sin mirar la agenda | (tras B4) | Nada le prohíbe proponer horas por su cuenta |
+| F6 | **Mezcla "tú" y "usted"** (*"¿en qué puedo ayudarle?"*) | mensajes groseros | Detalle de tono |
+| F7 | **"El martes por la tarde"** devuelve también los huecos de la mañana | A2 | El listado de horarios no filtra por franja |
+
+**Datos de prueba que han quedado en la agenda y en Supabase:** 4 citas (Efren
+25-sep, Luis Ander López 26-sep, Luis 28-sep, Marta Rodríguez 30-sep) y 3-4 leads
+falsos. Hay que borrarlos antes de enseñar el email diario a nadie.
+
+**Ojo al probar:** el bot recuerda los últimos 8 mensajes de tu número. Si
+encadenas pruebas sin separarlas, una contamina a la siguiente (con "me llamo Ana"
+preguntó por *"la revisión de la tarde"* de la prueba anterior).
+
+---
+
 ## Bloque A — Reserva, gente que escribe formal
 
 | # | Mensaje | Qué debe pasar |
 |---|---|---|
-| A1 | `Buenos días, me gustaría solicitar una cita para una limpieza dental.` | Pide nombre, fecha y hora, uno cada vez |
-| A2 | `Hola, buenas tardes. ¿Tendrían disponibilidad para una revisión el próximo martes por la tarde?` | Ofrece huecos del martes, no de mañana |
-| A3 | `Quisiera reservar una cita para un empaste a nombre de Marta Rodríguez el 15 de septiembre a las 11:00.` | Reserva directa, sin preguntar más |
-| A4 | `Buenas. ¿Sería posible concertar una consulta de ortodoncia? Gracias de antemano.` | Pregunta día y hora |
-| A5 | `Me llamo Carlos Fernández Ruiz y necesito una cita para blanqueamiento el jueves a las 17:00.` | Reserva con el nombre completo bien |
+| A1 | `Buenos días, me gustaría solicitar una cita para una limpieza dental.` | Pide nombre, fecha y hora, uno cada vez | ✅
+| A2 | `Hola, buenas tardes. ¿Tendrían disponibilidad para una revisión el próximo martes por la tarde?` | Ofrece huecos del martes, no de mañana | ✅
+| A3 | `Quisiera reservar una cita para un empaste a nombre de Marta Rodríguez el 15 de septiembre a las 11:00.` | Reserva directa, sin preguntar más | ✅
+| A4 | `Buenas. ¿Sería posible concertar una consulta de ortodoncia? Gracias de antemano.` | Pregunta día y hora | ❌ -> Claro, la ortodoncia está disponible; ¿te gustaría que reservemos una cita o prefieres que te llamemos?
+| A5 | `Me llamo Carlos Fernández Ruiz y necesito una cita para blanqueamiento el jueves a las 17:00.` | Reserva con el nombre completo bien | ❌ -> ¡Encantada, Carlos! 😊 ¿Podrías confirmarme la fecha exacta (YYYY‑MM‑DD) para el jueves que deseas?
 
 ## Bloque B — Reserva, gente que escribe como escribimos de verdad
 
 | # | Mensaje | Qué debe pasar |
 |---|---|---|
-| B1 | `hola` | Saludo corto, se ofrece a ayudar |
-| B2 | `buenas tenéis hueco para mañana?` | Pregunta el tratamiento o da huecos de mañana |
-| B3 | `kiero pedir zita pa una limpieza` | Entiende la falta y sigue |
-| B4 | `me llamo Ana` | **T4** — debe quedarse con "Ana" |
-| B5 | `soy Luis` | **T4** — debe quedarse con "Luis" |
-| B6 | `pa cuando teneis sitio` | Pregunta día/tratamiento, no se pierde |
-| B7 | `oye q tal, mira q keria pedir cita pa el lunes si puede ser` | Sigue la conversación normal |
-| B8 | `necesito ir al dentista` | Pregunta para qué tratamiento |
-| B9 | `hola buenas queria pedir cita para una limpieza para el jueves si puede ser por la tarde gracias` | Todo de golpe, sin puntuación: debe sacar tratamiento + día + franja |
-| B10 | `cita` | Pregunta qué necesita |
-| B11 | `👋` | No revienta; responde algo con sentido |
-| B12 | `xfa una cita pa mi hijo` | Pregunta datos; no debe inventar nombre |
+| B1 | `hola` | Saludo corto, se ofrece a ayudar |✅
+| B2 | `buenas tenéis hueco para mañana?` | Pregunta el tratamiento o da huecos de mañana | ✅
+| B3 | `kiero pedir zita pa una limpieza` | Entiende la falta y sigue |✅
+| B4 | `me llamo Ana` | **T4** — debe quedarse con "Ana" |✅
+| B5 | `soy Luis` | **T4** — debe quedarse con "Luis" |✅
+| B6 | `pa cuando teneis sitio` | Pregunta día/tratamiento, no se pierde | ✅
+| B7 | `oye q tal, mira q keria pedir cita pa el lunes si puede ser` | Sigue la conversación normal | ✅
+| B8 | `necesito ir al dentista` | Pregunta para qué tratamiento |✅
+| B9 | `hola buenas queria pedir cita para una limpieza para el jueves si puede ser por la tarde gracias` | Todo de golpe, sin puntuación: debe sacar tratamiento + día + franja | ❌ ¿Me podrías indicar tu nombre completo, por favor?
+| B10 | `cita` | Pregunta qué necesita | ❌ ¿Me puedes indicar tu nombre completo, por favor?
+| B11 | `👋` | No revienta; responde algo con sentido | ✅
+| B12 | `xfa una cita pa mi hijo` | Pregunta datos; no debe inventar nombre | ✅ ¿Me puedes indicar el nombre completo de tu hijo, por favor?
 
 ## Bloque C — Fechas y horas (aquí está lo gordo)
 
 | # | Mensaje | Qué debe pasar |
 |---|---|---|
-| C1 | `Quiero una cita el viernes por la mañana` | **T1** — viernes, NO mañana |
-| C2 | `Cita para el lunes por la mañana a las 10` | **T1** — lunes 10:00 |
-| C3 | `mañana por la mañana` | Mañana (día siguiente) por la mañana. Las dos cosas a la vez |
-| C4 | `pasado mañana a las 16:00` | Día +2 a las 16:00 |
-| C5 | `a las 5` | **T2** — debe aclarar si 05:00 o 17:00 |
+| C1 | `Quiero una cita el viernes por la mañana` | **T1** — viernes, NO mañana |✅
+| C2 | `Cita para el lunes por la mañana a las 10` | **T1** — lunes 10:00 | ✅
+| C3 | `mañana por la mañana` | Mañana (día siguiente) por la mañana. Las dos cosas a la vez | ✅
+| C4 | `pasado mañana a las 16:00` | Día +2 a las 16:00 | ✅
+| C5 | `a las 5` | **T2** — debe aclarar si 05:00 o 17:00 | ✅
 | C6 | `a las 9 de la noche` | **T2** — 21:00 está fuera de horario. NO debe dar las 09:00 |
 | C7 | `a las 8` | **T2** — 20:00 es la hora de cierre: debe rechazarla y decir la última hora real |
 | C8 | `a las 3 pm` | 15:00 |
