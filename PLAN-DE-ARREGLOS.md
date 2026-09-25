@@ -309,13 +309,29 @@
 Detalle y ejemplos en `Pruebas/Bateria de mensajes.md`, apartado "Revisión de
 las pruebas del 24 y 25-sep".
 
-- [ ] **F1** Enseña al paciente formatos técnicos ("(Formato YYYY-MM-DD)", "2026-09-29").
-- [ ] **F2** No resuelve "el jueves", "el viernes"... Le falta la tabla de los próximos 7 días.
-- [ ] **F3** Registra como lead a quien quiere pedir cita (ensucia `leads` y el email diario).
-- [ ] **F4** Pide primero el nombre e ignora el tratamiento, el día o la franja que ya le han dado.
-- [ ] **F5** Se inventa horas libres sin consultar la agenda.
-- [ ] **F6** Mezcla "tú" y "usted". **F7** "Por la tarde" no filtra los huecos.
-- [ ] **Borrar los datos de prueba** (4 citas en Calendar y Supabase, leads falsos).
+**✅ Arreglados y publicados en n8n el 25-sep** (comprobado: el borrador de n8n
+era idéntico al repo antes de publicar; simulador en 82 comprobaciones).
+Falta repetir las pruebas por WhatsApp para confirmar los que dependen del modelo
+(F2, F4, F5 y F6).
+
+- [x] ✅ **F1** Formatos técnicos al paciente. Prompt + filtro en `Enviar WhatsApp`
+      que quita "(formato ...)" y pasa 2026-09-29 a 29/09/2026 **siempre**.
+- [x] ✅ **F2** "El jueves": el prompt lleva la fecha de los próximos 7 días.
+- [x] ✅ **F3** Pedir cita ya no es lead. Prompt + `If registrar lead`, que no guarda
+      el lead si el mensaje habla de cita, reserva, concertar, hueco o dentista.
+- [x] ✅ **F4** Orden tratamiento → día → hora → nombre, sin pedir lo ya dicho y
+      confirmando lo entendido.
+- [x] ✅ **F5** Prohibido ofrecer horas libres por su cuenta: usa `consultar_horarios`.
+- [x] ✅ **F6** Tuteo siempre. **F7** "Por la tarde" / "por la mañana" filtran los
+      huecos ("buenas tardes" no cuenta).
+- [x] ✅ **Datos de prueba borrados de Supabase** (7 citas y 6 leads). Copia en el
+      PC, fuera del repo porque lleva teléfono y nombres.
+- [ ] **Borrar a mano los 7 eventos de prueba del calendario** de
+      `prueb4sn8n.pruebas@gmail.com` (Efren, Luis Ander López, Luis, Marta
+      Rodríguez x2, Carlos Fernández Ruiz, Luis Ander). No tengo acceso a esa
+      cuenta de Google. Mientras sigan ahí, esas horas salen como ocupadas.
+- [ ] La nota `NOTA 01 - Entrada` del lienzo de n8n no menciona estos arreglos
+      (el repo sí). Es solo un post-it; no afecta al funcionamiento.
 
 ---
 

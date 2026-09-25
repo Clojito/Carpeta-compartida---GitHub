@@ -249,6 +249,17 @@ Se documentan porque son trampas fáciles de volver a pisar.
   script a partir del fichero del repo y **comprobar el diff de versiones antes
   de publicar**. Escribirlo a mano rompió el 06 unos segundos (restaurado).
 
+**El 25-sep-2026** (primeras pruebas reales, bloques A a C4, 40 mensajes):
+- ✅ Fechas relativas, fecha pasada, domingo cerrado y reserva completa: bien.
+- ✅ **Siete fallos de conversación (F1-F7) arreglados y publicados**: formatos
+  técnicos al paciente, "el jueves" sin resolver, citas guardadas como leads,
+  nombre pedido lo primero, horas inventadas, "usted" y franjas sin filtrar.
+- ✅ Datos de prueba borrados de Supabase. Los eventos del calendario de pruebas,
+  a mano.
+- **Regla nueva:** en n8n solo se tocan nodos pequeños o el prompt. `Normalizar
+  y enrutar` (53.000 caracteres) no se edita por MCP: si hay que cambiarlo, se
+  reimporta el workflow entero desde el repo.
+
 ---
 
 ## 8. Lo que falta

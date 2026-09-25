@@ -125,7 +125,12 @@ se esperaba.
 - ✅ **"a las 5"** → pregunta si son las 17:00.
 - ✅ **El modelo de reserva entró solo una vez** (ejecución 78) y la conversación siguió sin cortes.
 
-**Lo que falla, por orden de gravedad:**
+> ✅ **F1 a F7 arreglados y publicados en n8n el 25-sep** (detalle en
+> `PLAN-DE-ARREGLOS.md`). **Repite A4, A5, B3, B8, B9, B10 y C1-C4** para
+> confirmarlo: F1, F3 y F7 están blindados en código, pero F2, F4, F5 y F6
+> dependen de que el modelo obedezca al prompt.
+
+**Lo que fallaba, por orden de gravedad:**
 
 | # | Fallo | Pruebas | Por qué pasa |
 |---|---|---|---|
@@ -137,9 +142,8 @@ se esperaba.
 | F6 | **Mezcla "tú" y "usted"** (*"¿en qué puedo ayudarle?"*) | mensajes groseros | Detalle de tono |
 | F7 | **"El martes por la tarde"** devuelve también los huecos de la mañana | A2 | El listado de horarios no filtra por franja |
 
-**Datos de prueba que han quedado en la agenda y en Supabase:** 4 citas (Efren
-25-sep, Luis Ander López 26-sep, Luis 28-sep, Marta Rodríguez 30-sep) y 3-4 leads
-falsos. Hay que borrarlos antes de enseñar el email diario a nadie.
+**Datos de prueba:** ✅ borrados de Supabase el 25-sep (7 citas y 6 leads). Los
+eventos del calendario de pruebas hay que borrarlos a mano en Google Calendar.
 
 **Ojo al probar:** el bot recuerda los últimos 8 mensajes de tu número. Si
 encadenas pruebas sin separarlas, una contamina a la siguiente (con "me llamo Ana"
