@@ -334,6 +334,60 @@ const comprobar = (condicion, descripcion, detalle) => {
     }
   }
 
+  // ------------------------------------------------ bateria A-C (25-sep)
+  {
+    const p = ctx.system_prompt;
+    // F2: la tabla de los proximos 7 dias, con nombre del dia y fecha ISO.
+    const filas = (p.match(/^- (lunes|martes|miércoles|jueves|viernes|sábado|domingo),? \d{1,2} de \w+ = \d{4}-\d{2}-\d{2}$/gm) || []);
+    comprobar(filas.length === 7, 'F2: el prompt trae los proximos 7 dias', filas);
+    // F4: el nombre se pide al final y hay que confirmar lo entendido.
+    const reservar = p.slice(p.indexOf('RESERVAR CITA'), p.indexOf('CANCELAR CITA'));
+    comprobar(/1\. Tratamiento/.test(reservar) && /4\. Nombre/.test(reservar) && /confirma en pocas palabras/.test(reservar), 'F4: orden tratamiento-fecha-hora-nombre', reservar.slice(0, 400));
+    // F1, F5, F6 y F3 en el prompt.
+    comprobar(/NUNCA escribas formatos técnicos/.test(p), 'F1: el prompt prohibe formatos tecnicos');
+    comprobar(/NUNCA ofrezcas horas concretas/.test(p), 'F5: el prompt prohibe inventarse horas');
+    comprobar(/Trata SIEMPRE al cliente de tú/.test(p), 'F6: tuteo');
+    comprobar(/NO es un lead: es una reserva/.test(p), 'F3: pedir cita no es lead');
+
+    // Las expresiones de n8n se evaluan tal cual estan en el JSON.
+    const expr = (nodo, campo) => {
+      const n = wf01.nodes.find(x => x.name === nodo);
+      const e = campo.split('.').reduce((o, k) => o[k], n.parameters);
+      return e.replace(/^=\{\{\s*/, '').replace(/\s*\}\}$/, '');
+    };
+    // F1: filtro de texto de Enviar WhatsApp.
+    const cuerpo = new Function('$json', 'return (' + expr('Enviar WhatsApp', 'textBody') + ');');
+    const limpio = cuerpo({ respuesta: '¡Encantada, Carlos! ¿Podrías confirmarme la fecha exacta (YYYY‑MM‑DD) para el jueves?' });
+    comprobar(!/YYYY/.test(limpio) && /jueves\?$/.test(limpio), 'F1: quita "(YYYY-MM-DD)"', limpio);
+    comprobar(cuerpo({ respuesta: '¿Qué hora prefieres el 2026‑09‑29? (Formato HH:mm)' }) === '¿Qué hora prefieres el 29/09/2026?', 'F1: fecha ISO a dd/mm/aaaa y quita "(Formato HH:mm)"', cuerpo({ respuesta: '¿Qué hora prefieres el 2026‑09‑29? (Formato HH:mm)' }));
+    comprobar(cuerpo({ respuesta: 'Perfecto, a las 15:00.' }) === 'Perfecto, a las 15:00.', 'F1: no toca un texto normal');
+    comprobar(/no he podido terminar/.test(cuerpo({})), 'F1: sin respuesta sigue saliendo el texto de reserva');
+
+    // F3: condicion de If registrar lead.
+    const condLead = wf01.nodes.find(x => x.name === 'If registrar lead').parameters.conditions.conditions[0].leftValue
+      .replace(/^=\{\{\s*/, '').replace(/\s*\}\}$/, '');
+    const esLead = (accion, texto) => new Function('$json', '$', 'return (' + condLead + ');')(
+      { accion }, () => ({ first: () => ({ json: { messages: [{ text: { body: texto } }] } }) }));
+    comprobar(esLead('registrar_lead', '¿Cuánto cuesta un blanqueamiento?') === true, 'F3: una pregunta de precio sigue siendo lead');
+    for (const texto of ['kiero pedir zita pa una limpieza', 'Buenas. ¿Sería posible concertar una consulta de ortodoncia?', 'necesito ir al dentista', 'quiero reservar ortodoncia']) {
+      comprobar(esLead('registrar_lead', texto) === false, 'F3: "' + texto + '" no se guarda como lead');
+    }
+    comprobar(esLead('reservar', 'cita') === false, 'F3: otras acciones no entran');
+
+    // F7: la franja pedida filtra los huecos.
+    const horarios = texto => ejecutar(wf01, 'Preparar horarios disponibles', {
+      'Construir contexto': [ctx],
+      'Normalizar y enrutar': [{ fecha: '2099-01-06', tratamiento: 'Revision', duracion_minutos: 30, hora_apertura: '09:00', hora_cierre: '20:00' }],
+      'WhatsApp Trigger': [trigger(texto)]
+    }, []);
+    const [tarde] = await horarios('Hola, buenas tardes. ¿Hay hueco el martes por la tarde?');
+    comprobar(!/Mañana:/.test(tarde.json.respuesta) && /Tarde:/.test(tarde.json.respuesta) && /por la tarde/.test(tarde.json.respuesta), 'F7: "por la tarde" solo da la tarde', tarde.json.respuesta.slice(0, 120));
+    const [todo] = await horarios('buenas tardes, ¿qué hay el martes?');
+    comprobar(/Mañana:/.test(todo.json.respuesta) && /Tarde:/.test(todo.json.respuesta), 'F7: "buenas tardes" no cuenta como franja');
+    const [man] = await horarios('mañana por la mañana');
+    comprobar(/Mañana:/.test(man.json.respuesta) && !/Tarde:/.test(man.json.respuesta), 'F7: "por la mañana" solo da la mañana');
+  }
+
   console.log(fallos === 0 ? `SIMULACION OK (${pruebas} comprobaciones)` : `${fallos} de ${pruebas} comprobaciones FALLAN`);
   process.exitCode = fallos ? 1 : 0;
 })().catch(e => { console.error('ERROR EN EL SIMULADOR:', e); process.exitCode = 2; });

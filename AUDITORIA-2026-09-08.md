@@ -1,12 +1,47 @@
 # Auditoría bitclap.es — 8 de septiembre de 2026
 ### · Revisada contra el código el 9 de septiembre ·
 
+> ## 📋 SEGUIMIENTO A 24 DE SEPTIEMBRE — qué está resuelto de esta auditoría
+>
+> El texto original de la auditoría se conserva debajo tal cual. Cada hallazgo
+> lleva ahora su estado en el título. Comprobado el 24-sep **directamente en tu
+> n8n y tu Supabase**, no solo en los ficheros.
+>
+> **Leyenda:** ✅ resuelto · 🟡 a medias · 🔴 sigue abierto
+>
+> | # | Hallazgo | Estado | Qué falta |
+> |---|---|---|---|
+> | 3.1 | El bot no responde | ✅ Resuelto | Nada. Modelo nuevo (Groq gpt-oss) y salida de error conectada. Respondió el 16-sep |
+> | 3.2 | Recordatorios sin plantilla | 🟡 A medias | El 02 ya usa plantilla. Falta **darla de alta en Meta**. El 03 sigue con texto libre (fuera del piloto) |
+> | 3.3 | Fuga de identidad | ✅ Resuelto | Nada. Solo por teléfono |
+> | 3.4 | Detector clínico | ✅ Resuelto | Nada. De 11/12 falsas derivaciones a 0 |
+> | 3.5 | Sin entidad paciente ni opt-out | ✅ Resuelto | Nada. Tabla `pacientes` creada en Supabase y BAJA/ALTA en el bot |
+> | 3.6 | No dice que es una IA | ✅ Resuelto | Probarlo con la batería (N1, N6). Falta `url_privacidad` para el enlace |
+> | 3.7 | Contrato no firmable | 🟡 A medias | Anexo II relleno. Faltan corchetes, DPAs en PDF y firma |
+> | 3.8 | Sin backups reales | 🔴 Abierto | Supabase Pro (25 $/mes) antes del primer paciente |
+> | 4 | Token de Meta que caduca / dos credenciales | 🟡 A medias | Credenciales unificadas ✅. Falta el **token permanente** |
+> | 4 | OAuth de Google en "Testing" | 🔴 Abierto | Publicar la app en Google Cloud |
+> | 4 | Una reserva cancela otras citas | ✅ Resuelto | — |
+> | 4 | Evento sin teléfono | ✅ Resuelto | — |
+> | 4 | La clínica no puede cerrar derivaciones | ✅ Resuelto | Workflow 07, activo |
+> | 4 | La clínica no ve lista de espera ni leads | ✅ Resuelto | Workflow 06 (email diario), activo desde el 24-sep |
+> | 4 | Derivación sin el 112 | ✅ Resuelto | — |
+> | 4 | Migrar el número es irreversible | 🔴 Abierto | Decisión antes de la demo: número nuevo (recomendado) |
+> | 4 | Precios venden cosas que no existen | 🔴 Abierto | Corregir `Clínica+` en `Negocio/Precios y planes.md` |
+> | 4 | Ejecuciones extra por callbacks | 🔴 Abierto | Vigilar el contador de n8n en el piloto |
+> | 6 | Multi-clínica | ✅ Resuelto | RLS en las 9 tablas y `clinica_id` obligatorio (SQL 07, 22-sep) |
+>
+> **Nuevo desde la auditoría:** el bot se salía del papel (escribía HTML, sumaba
+> y se disculpaba en inglés) → ✅ resuelto el 16-sep con un filtro en el código.
+> Los problemas nuevos del 24-sep están en
+> [PLAN-DE-ARREGLOS.md](./PLAN-DE-ARREGLOS.md), apartado "Problemas nuevos".
+
 > ## ✅ ACTUALIZACIÓN 15 DE SEPTIEMBRE — arreglado en los ficheros
 >
 > Los 5 bloqueantes que quedaban el 9-sep (modelo de IA, salida de error, fuga
 > de identidad, detector clínico y plantillas) y casi todo el plan están
-> **aplicados en los ficheros del repositorio, pero todavía no en tu n8n**: hay
-> que importarlos y probarlos. Qué está hecho y qué te toca a ti, en
+> **aplicados en los ficheros del repositorio**. ✅ *(24-sep: ya también en tu
+> n8n, importados el 22-sep. Falta probarlos.)* Qué está hecho y qué te toca a ti, en
 > [PLAN-DE-ARREGLOS.md](./PLAN-DE-ARREGLOS.md).
 >
 > **Una corrección a esta auditoría, comprobada ejecutando el código viejo:**
@@ -204,7 +239,7 @@ completo, por delante incluso de Meta.
 
 ## 3. Los 8 bloqueantes reales (deduplicados — el workflow encontró 15 IDs, pero son 8 problemas distintos)
 
-### 🔴 3.1 — El bot probablemente no responde ahora mismo
+### ✅ 3.1 [RESUELTO] — El bot probablemente no responde ahora mismo
 
 Groq retiró `llama-3.3-70b-versatile` (el modelo que usa tu nodo "Groq Chat
 Model") para cuentas gratuitas/developer el **16 de agosto de 2026**
@@ -225,7 +260,7 @@ pasar en silencio con cualquier otro fallo de proveedor.
 *Esfuerzo: 1-3 h el parche de emergencia; 12-20 h la migración completa de
 modelo y reajuste del prompt.*
 
-### 🔴 3.2 — Recordatorios, valoraciones y avisos de lista de espera no van a llegar (esto ya lo sabía yo, pero el workflow lo confirmó con fuente y lo amplió)
+### 🟡 3.2 [A MEDIAS: falta la plantilla en Meta] — Recordatorios, valoraciones y avisos de lista de espera no van a llegar (esto ya lo sabía yo, pero el workflow lo confirmó con fuente y lo amplió)
 
 Los 5 mensajes que tu negocio inicia (recordatorio 24h, solicitud de
 valoración, aviso de hueco liberado ×2, y las propias alertas del workflow
@@ -252,7 +287,7 @@ simplemente no funciona.
 de botón, que hoy caen en "solo gestiono texto") + aprobación de Meta
 (normalmente minutos, hasta 24-48h en sectores sensibles como salud).*
 
-### 🔴 3.3 — Fuga de identidad: cualquiera puede consultar, cancelar o mover la cita de otra persona
+### ✅ 3.3 [RESUELTO] — Fuga de identidad: cualquiera puede consultar, cancelar o mover la cita de otra persona
 
 Este es nuevo respecto a mi primera pasada y es serio. En `Resolver cita
 cancelacion` (línea 1806), `Resolver cita modificacion` (línea 2058) y
@@ -276,7 +311,7 @@ llama a la clínica" en vez de buscar por nombre.
 *Esfuerzo: 1-4 h. Es de las cosas más baratas de arreglar de toda la
 auditoría y de las que más daño hacen si no se arregla.*
 
-### 🔴 3.4 — El detector de "información clínica" se dispara con nombres y palabras normales
+### ✅ 3.4 [RESUELTO] — El detector de "información clínica" se dispara con nombres y palabras normales
 
 `Normalizar y enrutar` busca subcadenas sin límite de palabra: **"Dolores",
 "Salvador", "tomo nota", "me puse", "febrero", "después"** contienen
@@ -292,7 +327,7 @@ de".
 
 *Esfuerzo: 2-4 h.*
 
-### 🔴 3.5 — No existe entidad "paciente": sin consentimiento, sin opt-out, sin forma de atender un "no me escribas más"
+### ✅ 3.5 [RESUELTO] — No existe entidad "paciente": sin consentimiento, sin opt-out, sin forma de atender un "no me escribas más"
 
 `stop`/`baja`/`no me escribas` hoy solo cierran un lead comercial — no
 existe ningún flag que bloquee el resto de envíos. Un paciente que pide baja
@@ -307,7 +342,7 @@ tenga `opt_out=true`.
 
 *Esfuerzo: 6-12 h.*
 
-### 🔴 3.6 — El bot no dice que es una IA: el artículo 50 del Reglamento de IA europeo ya está en vigor (2 de agosto de 2026)
+### ✅ 3.6 [RESUELTO, falta probarlo] — El bot no dice que es una IA: el artículo 50 del Reglamento de IA europeo ya está en vigor (2 de agosto de 2026)
 
 Confirmado con fuente oficial de la Comisión Europea: el artículo 50
 (transparencia — informar de que se interactúa con IA) aplica desde el **2
@@ -330,7 +365,7 @@ implementar).
 
 *Esfuerzo: 4-8 h.*
 
-### 🔴 3.7 — El contrato de encargado no es firmable tal cual
+### 🟡 3.7 [A MEDIAS: faltan corchetes, DPAs y firma] — El contrato de encargado no es firmable tal cual
 
 El Anexo II (subencargados) sigue con corchetes `[VERIFICAR]`. Esta pasada
 sí verificó los datos reales que faltan:
@@ -352,7 +387,7 @@ sea gratis, porque tratar datos de un paciente real ya activa el artículo 28.
 *Esfuerzo: 3-5 h + 400-1.200 € de abogado para revisar 01+02+06 (contrastado
 contra el rango 300-700 € de tu propio documento).*
 
-### 🔴 3.8 — Sin backups reales, con un contrato que promete lo contrario
+### 🔴 3.8 [ABIERTO: Supabase Pro] — Sin backups reales, con un contrato que promete lo contrario
 
 El plan gratuito de Supabase **no incluye copias de seguridad** (confirmado
 en supabase.com/pricing: "Daily backups: Not included") y pausa el proyecto
@@ -375,42 +410,42 @@ No los voy a listar todos — para eso está el detalle en el historial de esta
 sesión. Estos son los que aportan algo que probablemente no tenías en la
 cabeza:
 
-- **El token temporal de Meta caduca cada 24h de verdad, y tienes dos
+- 🟡 **[A MEDIAS: credenciales unificadas, falta token permanente]** **El token temporal de Meta caduca cada 24h de verdad, y tienes dos
   credenciales de WhatsApp distintas** (una para el workflow 01, otra para
   02/03/04) que caducan por separado. Con el ritmo a ráfagas que tienes,
   el bot pasa la mayoría de las horas del mes sin poder enviar nada. Arreglo:
   20 minutos en Meta Business Suite → Usuarios del sistema → token
   permanente, y unificar las dos credenciales en una.
-- **El OAuth de Google (Calendar y Gmail) probablemente está en modo
+- 🔴 **[ABIERTO]** **El OAuth de Google (Calendar y Gmail) probablemente está en modo
   "Testing"**, lo que hace que los refresh tokens caduquen **cada 7 días**
   — una caída semanal silenciosa de reservas. Se arregla pasando la app a
   "In production" en la consola de Google Cloud (para uso propio no exige
   verificación).
-- **Una reserva nueva cancela en silencio TODAS las citas futuras
+- ✅ **[RESUELTO]** **Una reserva nueva cancela en silencio TODAS las citas futuras
   confirmadas del mismo paciente**, sin avisar a nadie — el código que
   detecta "duplicados" es más agresivo de lo que crees.
-- **El evento que crea el bot en Calendar no lleva el teléfono del
+- ✅ **[RESUELTO]** **El evento que crea el bot en Calendar no lleva el teléfono del
   paciente** — el propio requisito que tu ESTADO-DEL-PROYECTO pide para el
   futuro workflow 06, el bot de hoy no lo cumple.
-- **La clínica no tiene ninguna forma de cerrar una derivación** salvo que
+- ✅ **[RESUELTO: workflow 07]** **La clínica no tiene ninguna forma de cerrar una derivación** salvo que
   tú entres a Supabase y ejecutes SQL a mano. Mientras tanto el bot sigue
   callado 3h y el resumen semanal la sigue mostrando en rojo aunque ya se
   haya atendido.
-- **La clínica no ve la lista de espera ni los leads en ningún sitio** —
+- ✅ **[RESUELTO: workflow 06]** **La clínica no ve la lista de espera ni los leads en ningún sitio** —
   viven solo en Supabase. Dos funciones que cobras en los planes son
   invisibles para quien las tiene que usar.
-- **El mensaje de derivación al paciente no incluye el aviso "no puedo
+- ✅ **[RESUELTO]** **El mensaje de derivación al paciente no incluye el aviso "no puedo
   darte consejo médico" ni el 112**, que tu propio documento legal 06 exige.
-- **Migrar el número de WhatsApp de la clínica a la Cloud API es
+- 🔴 **[ABIERTO: decidir antes de la demo]** **Migrar el número de WhatsApp de la clínica a la Cloud API es
   irreversible**: si la clínica ya tiene la app de WhatsApp Business en ese
   número, lo pierde para siempre salvo que uses "Coexistence" (que exige ser
   Tech Provider o pasar por un BSP de pago). Decide esto *antes* de la
   demo, no lo descubras en el onboarding del primer cliente.
-- **La hoja de precios (`Clínica+`, 399€) vende multi-agenda y seguimiento
+- 🔴 **[ABIERTO]** **La hoja de precios (`Clínica+`, 399€) vende multi-agenda y seguimiento
   comercial automático que no existen** — ya lo tenía en mi primera pasada,
   y aquí se confirma con coste de construirlas: 25-50h y 10-20h
   respectivamente.
-- **Cada mensaje saliente de WhatsApp genera hasta 3 ejecuciones extra en
+- 🔴 **[ABIERTO: vigilar en el piloto]** **Cada mensaje saliente de WhatsApp genera hasta 3 ejecuciones extra en
   n8n Cloud** (los callbacks de estado). Con 150 citas/mes, una sola clínica
   puede rondar 4.400-5.300 ejecuciones/mes — el plan Starter (2.500) se
   queda corto ya en el primer mes de piloto, no con la segunda clínica.
