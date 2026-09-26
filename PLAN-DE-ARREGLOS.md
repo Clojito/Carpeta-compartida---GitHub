@@ -123,6 +123,12 @@
       días.
 - [ ] **Supabase Pro** (25 $/mes) antes del primer paciente real: copias diarias
       y sin pausa. Sin esto, el Anexo I del contrato miente.
+- [ ] **n8n estable** antes del primer paciente real: plan de pago de n8n Cloud o
+      n8n propio en un servidor de la UE. Hasta ahora se usan cuentas de prueba de
+      14 días en cadena: cada cuenta nueva cambia la URL del webhook de WhatsApp y
+      los IDs de credenciales, pierde el historial, deja mensajes de pacientes en
+      cuentas que ya no se pueden borrar (choca con el contrato de encargado y el
+      Anexo II) y probablemente va contra las condiciones de n8n.
 - [ ] Borra la credencial vieja `WhatsApp account 15` cuando todo funcione.
 
 ### Paso 6 — Batería completa y ajuste del prompt (9-16 h)
