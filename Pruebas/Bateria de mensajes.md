@@ -195,7 +195,7 @@ Tarde:
 | C6 | `a las 9 de la noche` | **T2** — 21:00 está fuera de horario. NO debe dar las 09:00 | ✅
 | C7 | `a las 8` | **T2** — 20:00 es la hora de cierre: debe rechazarla y decir la última hora real | ✅ bajo mi punto de vista creo que está bien.
 | C8 | `a las 3 pm` | 15:00 | ✅
-| C9 | `dentro de 2 días a las 3 pm` | **T5** — fecha correcta | 🟡 Ahora si que no me ha gustado ya que el mensaje te da a entender que puedes reservar a las 14:00 cuando la clinica cierra a esa hora ya. El sábado cerramos a las 14:00, ¿te va bien a esa hora o prefieres otro día? 😊
+| C9 | `dentro de 2 días a las 3 pm` | **T5** — fecha correcta | ❌ACTUALIZADO El sábado cerramos a las 14:00; ¿te viene bien a esa hora? 😊
 | C10 | `el jueves que viene` | **T5** — el jueves de la semana siguiente | ✅
 | C11 | `la semana que viene` | **T5** — debe pedir un día concreto | 🟡 ¿En qué día de la próxima semana te gustaría la revisión? (por ejemplo, el lunes 12 o el miércoles 14)
 | C12 | `el día 15` | **T5** — el 15 del mes en curso, o pregunta el mes | ✅ no pregunta pero guarda bien la cita
@@ -326,17 +326,23 @@ Tarde:
 
 | # | Mensaje | Qué debe pasar |
 |---|---|---|
-| EU1 | `Kaixo` (desde un número nuevo) | Aviso de primer contacto **en euskera** (IA, datos, BAJA) |
-| EU2 | `Bihar garbiketa bat nahi nuke arratsaldean` | Lista de horas libres de mañana por la tarde, en euskera |
-| EU3 | `Ane Etxeberria naiz, azterketa bat nahi dut ostiralean 10:00etan` | Reserva directa. Confirmación: *"Primeran, Ane Etxeberria. Zure hitzordua baieztatuta dago: azterketa, 2026ko urriaren XXan, 10:00etan..."* (con la fecha del viernes) |
-| EU4 | `Larunbatean 15:00etan azterketa bat, Miren Agirre izenean` | Sábado cierra a las 14:00: *"Urriaren XXan (larunbata) 14:00etan ixten dugu; beraz, beranduenez 13:30etan..."* |
-| EU5 | `Noiz da nire hitzordua?` | Busca sus citas y contesta en euskera |
-| EU6 | `Nire hitzordua bertan behera utzi nahi dut` | Pide los datos que falten y cancela, todo en euskera |
-| EU7 | `Hagineko min handia daukat eta odola ateratzen zait` | Deriva al equipo. Aviso legal **en euskera** con el 112 |
-| EU8 | `Zenbat balio du zuritzeak?` | Da el precio en euskera y lo guarda como interesado |
-| EU9 | `Ez idatzi gehiago, mesedez` | Baja de mensajes, confirmación en euskera |
-| EU10 | `Egun on, zita bat nahi dut` (bizkaiera) | Contesta en batua, no en dialecto |
-| EU11 | Empieza en euskera y a mitad pasa a castellano | Cambia de idioma con el cliente |
+| EU1 | `Kaixo` (desde un número nuevo) | Aviso de primer contacto **en euskera** (IA, datos, BAJA) | 
+| EU2 | `Bihar garbiketa bat nahi nuke arratsaldean` | Lista de horas libres de mañana por la tarde, en euskera | ❌ ¿Cuál hora de la tarde prefieres para la limpieza? -- ademas en español.
+| EU3 | `Ane Etxeberria naiz, azterketa bat nahi dut ostiralean 10:00etan` | Reserva directa. Confirmación: *"Primeran, Ane Etxeberria. Zure hitzordua baieztatuta dago: azterketa, 2026ko urriaren XXan, 10:00etan..."* (con la fecha del viernes) | ✅
+| EU4 | `Larunbatean 15:00etan azterketa bat, Miren Agirre izenean` | Sábado cierra a las 14:00: *"Urriaren XXan (larunbata) 14:00etan ixten dugu; beraz, beranduenez 13:30etan..."* | ✅
+| EU5 | `Noiz da nire hitzordua?` | Busca sus citas y contesta en euskera | 🟡 [0:27, 16/10/2026] Luis Ander: Noiz da nire hitzordua?
+[0:27, 16/10/2026] IA bot: Baieztatutako hitzordu hauek aurkitu ditut:
+- Azterketa: 2026/10/17, 10:00
+- Azterketa: 2026/10/17, 11:00
+- Azterketa: 2026/10/22, 10:00
+Gehiago ere badaude; nahi baduzu, esan tratamendua edo gutxi gorabeherako data bat, eta zehaztuko dut.
+
+| EU6 | `Nire hitzordua bertan behera utzi nahi dut` | Pide los datos que falten y cancela, todo en euskera | 🟡 ha dado demasiadas vueltas aunque lo entiendo perfectamente, simplemente se me ha complicado porque para hacer estas pruebas tengo la memoria quitada.
+| EU7 | `Hagineko min handia daukat eta odola ateratzen zait` | Deriva al equipo. Aviso legal **en euskera** con el 112 | ✅
+| EU8 | `Zenbat balio du zuritzeak?` | Da el precio en euskera y lo guarda como interesado | ❌ por alguna razon no responde absolutamente nada. Puedes verlo tu mismo en n8n
+| EU9 | `Ez idatzi gehiago, mesedez` | Baja de mensajes, confirmación en euskera | ✅
+| EU10 | `Egun on, zita bat nahi dut` (bizkaiera) | Contesta en batua, no en dialecto | ❌ al poner el mensaje EU9, ya se ha roto. Tambien, Para poner si lo ponia bien en español he puesto BAJA y ahi se ha quedado. 
+| EU11 | Empieza en euskera y a mitad pasa a castellano | Cambia de idioma con el cliente | 
 
 ---
 
