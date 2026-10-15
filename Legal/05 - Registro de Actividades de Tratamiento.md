@@ -31,7 +31,7 @@
 | **Base jurídica** | La que determine cada Responsable. Yo trato por contrato del art. 28 RGPD. |
 | **Destinatarios** | La clínica responsable. Subencargados del Anexo II del contrato. |
 | **Transferencias internacionales** | Sí, a tres subencargados: WhatsApp (Meta) y Google (Calendar y Gmail), adheridos al EU-US Data Privacy Framework, e inteligencia artificial (Groq, EE. UU.), con cláusulas contractuales tipo y retención cero. Base de datos (Supabase) y automatización (n8n Cloud): tratamiento en la UE, sin transferencia. Detalle en el Anexo II del Contrato de Encargado. |
-| **Plazo de supresión** | Al finalizar el contrato con la clínica: devolución o supresión en 30 días. Datos de citas, pacientes (fecha del aviso y bajas) y derivaciones conservados mientras dure el contrato. Registro de envíos fallidos y de errores: 90 días. |
+| **Plazo de supresión** | Al finalizar el contrato con la clínica: devolución o supresión en 30 días. Mientras dure el contrato, los datos se conservan según los plazos que fije la clínica como responsable (propuesta de la EIPD, Legal/07: citas según la documentación asistencial; derivaciones y conversaciones, 12 meses), y nunca más allá del fin del contrato. Registro de envíos fallidos y de errores: 90 días. |
 | **Medidas de seguridad** | Ver Anexo I del Contrato de Encargado del Tratamiento. |
 
 ## Actividad 2 — Clientes y facturación (como Responsable)

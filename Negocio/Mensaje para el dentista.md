@@ -34,9 +34,9 @@ algo a medias y me he tomado estos dos meses para dejarlo realmente
 terminado.
 
 Ya está listo y funcionando: el asistente coge las citas por WhatsApp
-solo, las mete en el calendario, avisa al paciente el día antes, le pide
-opinión después de la visita y os avisa a vosotros al momento si alguien
-escribe algo que necesita a una persona.
+solo, en castellano o en euskera, las mete en el calendario, avisa al
+paciente el día antes, os manda cada mañana un email con las citas del día
+y os avisa al momento si alguien escribe algo que necesita a una persona.
 
 Lo he estado probando estas semanas hasta dejarlo fino.
 
@@ -126,7 +126,9 @@ Si te dice que sí para mañana, tienes que estar listo. Comprueba:
 - [ ] Tu número está dado de alta en la lista de destinatarios de prueba de Meta
 - [ ] La secuencia completa funciona: reservar → modificar → cancelar
 - [ ] Un ejemplo de derivación urgente, que es lo que más impresiona
-- [ ] El email de resumen semanal, para enseñárselo impreso o en pantalla
+- [ ] El email diario de las 8:00 con las citas del día y el botón "Marcar
+      como atendida" de las derivaciones, para enseñárselo en pantalla
+- [ ] Una conversación en euskera, si la clínica atiende en euskera
 
 **Guion de la demo, en este orden:**
 
@@ -139,7 +141,10 @@ Si te dice que sí para mañana, tienes que estar listo. Comprueba:
    sangra" y que vea que el bot no diagnostica, sino que avisa al equipo. A un
    dentista le preocupa que un robot dé consejo médico: quítale ese miedo antes
    de que lo pregunte.
-4. **Cierra el resumen semanal.** Es lo que le hace sentir que controla.
+4. **Cierra con el email diario de las 8:00.** Las citas del día y las
+   derivaciones pendientes con su botón de "atendida": es lo que le hace
+   sentir que controla. No prometas valoraciones ni resumen semanal: no entran
+   en el piloto (Alcance A) y necesitarían otra plantilla de Meta.
 5. **Y ahí propón el piloto.** No antes.
 
 **No hables de precio en la primera reunión** salvo que pregunte. Si pregunta,
