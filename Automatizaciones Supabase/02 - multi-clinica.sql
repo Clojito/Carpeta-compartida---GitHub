@@ -107,23 +107,23 @@ where id = '11111111-1111-1111-1111-111111111111';
 -- ----------------------------------------------------------------------------
 -- 4. Tratamientos de esa clinica
 --    Los precios y duraciones son exactamente los que estaban en el prompt
---    y en el codigo del workflow 01.
+--    y en el codigo del workflow 01. Los sinonimos incluyen euskera (16-oct).
 -- ----------------------------------------------------------------------------
 insert into tratamientos (clinica_id, nombre, precio_texto, duracion_minutos, nota, sinonimos, orden) values
   ('11111111-1111-1111-1111-111111111111', 'Revision',       '30€',          30, null,
-   array['revision','revision dental','revisao','checkup','check-up'], 1),
+   array['revision','revision dental','revisao','checkup','check-up','azterketa','berrikuspena'], 1),
 
   ('11111111-1111-1111-1111-111111111111', 'Limpieza',       '50€',          45, null,
-   array['limpieza','limpeza','nettoyage','cleaning'], 2),
+   array['limpieza','limpeza','nettoyage','cleaning','garbiketa','hortz-garbiketa','hortz garbiketa'], 2),
 
   ('11111111-1111-1111-1111-111111111111', 'Blanqueamiento', '150€',         90, null,
-   array['blanqueamiento','branqueamento','blanchiment','whitening'], 3),
+   array['blanqueamiento','branqueamento','blanchiment','whitening','zuritzea','zuritze','hortz zuritzea'], 3),
 
   ('11111111-1111-1111-1111-111111111111', 'Empaste',        '80€',          60, null,
-   array['empaste','obturacion','plombage','filling'], 4),
+   array['empaste','obturacion','plombage','filling','enpastea','enpaste'], 4),
 
   ('11111111-1111-1111-1111-111111111111', 'Ortodoncia',     'desde 1.500€', 60, 'primera visita',
-   array['ortodoncia','ortodontia','orthodontie','orthodontics'], 5)
+   array['ortodoncia','ortodontia','orthodontie','orthodontics','ortodontzia'], 5)
 on conflict (clinica_id, nombre) do update set
   precio_texto     = excluded.precio_texto,
   duracion_minutos = excluded.duracion_minutos,
